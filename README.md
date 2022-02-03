@@ -3,10 +3,12 @@ SoFiA Image Pipeline (SIP)
 
 Introduction
 ------------
-Take a SoFiA generated source catalog and produce images for publication or quick inspection.  Images include moments, pv-diagrams, optical overlay with HI contours and spectra, with and without noise.
+SIP takes a SoFiA generated source catalog and produce images for publication or quick inspection.  Images include moments, pv-diagrams, optical overlay with HI contours and spectra, with and without noise.
 
 Usage
 -----
+Works under the assumption that the catalog file and cubelets are in the same directory structure as created by SoFiA. Output from this program will be in a folder next to `*_cubelets` called `*_figures`.
+
 Get help on the parameters: 
 * `python3 image_pipeline.py -h`
 
@@ -26,9 +28,9 @@ Tested with: \
 `Numpy 1.20.2` \
 `Reproject 0.7.1`
 
-Only guaranteed to run with the SoFiA 2.4.1 (bba8c43) for now, but may work with earlier verions of SoFiA-2.  SoFiA-2 needs to have `parameter.wcs` = True for units in images to make sense. 
+Only guaranteed to run with the SoFiA 2.4.1 (bba8c43) for now, but may work with earlier verions of SoFiA-2.  SoFiA-2 needs to have `parameter.wcs = True` for units in images to make sense. 
 
-Does not work with current version of SoFiA-1 due to some discrepancies in output.  
+Does not currently work with SoFiA-1 due to some discrepancies in output.  
 
 
 Installation
