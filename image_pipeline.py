@@ -91,7 +91,7 @@ if ('ra' not in catalog.colnames) and (not original):
 elif ('ra' not in catalog.colnames) and (original):
     print("\tWARNING: Looks like catalog doesn't contain 'ra' and 'dec' columns. But can derive them with \n" \
           "\t\tthe pixel positions in the catalog provided.")
-    print("\tWARNING: This probably means you ran SoFiA with 'parameter.wcs = True' which means the units \n" \
+    print("\tWARNING: This probably means you ran SoFiA with 'parameter.wcs = False' which means the units \n" \
           "\t\t in your maps may be completely wacky! (Channel width knowledge is not maintained.)")
     ra, dec, freq = get_radecfreq(catalog, original)
     catalog['ra'] = ra
@@ -105,11 +105,12 @@ elif ('ra' not in catalog.colnames) and (original):
 # Set up some directories
 cubelet_dir = catalog_file.split("_cat.")[0] + '_cubelets/'
 if not os.path.isdir(cubelet_dir):
-    print("\tCubelet directory does not exist.")
+    print("\tERROR: Cubelet directory does not exist. Need to run SoFiA-2 or restructure your directories.")
+    exit()
 
 figure_dir = catalog_file.split("_cat.")[0] + '_figures/'
 if not os.path.isdir(figure_dir):
-    print("\tMaking figure directory")
+    print("\tMaking figure directory.")
     os.system('mkdir {}'.format(figure_dir))
 
 src_basename = cubelet_dir + catalog_file.split("/")[-1].split("_cat.")[0]
@@ -120,7 +121,7 @@ n_src = 0
 
 for source in catalog:
 
-    source['id'] = int(source['id'])  # For SoFiA-1 xml files
+    source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
     make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia)
     make_spectra.main(source, src_basename, original, suffix=suffix)
 

@@ -45,7 +45,7 @@ def get_noise_spec(source, src_basename, original=None):
 
         with open('temp.txt', 'w') as f:
             f.write("# Integrated source spectrum with noise\n")
-            f.write("# Creator: hessFDP_pipeline.py\n") #%s\n#\n" % sofia_version_full)
+            f.write("# Creator: SoFiA-image-pipeline.py\n") #%s\n#\n" % sofia_version_full)
             f.write("# \n")
             f.write("# The source spectrum, with noise, is calculated by integrating over\n")
             f.write("# the 2D mask of the source in every channel.  This means every row \n")
@@ -137,12 +137,13 @@ def main(source, src_basename, original=None, suffix='png'):
     # Make plot of SoFiA masked spectrum
     make_spec(source, src_basename, cube_params, suffix=suffix)
 
-    # If desired,
+    # Make text file of spectrum with noise; use full frequency range of original cube if provided:
+    # Can be a bit more precise here in the output options/specification.
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
     if original or (not os.path.isfile(outfile)):
         get_noise_spec(source, src_basename, original)
 
-    # Make full spectrum plot
+    # Make plot of spectrum with noise
     make_specfull(source, src_basename, cube_params, suffix=suffix, full=False)
 
     plt.close('all')
