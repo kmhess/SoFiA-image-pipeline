@@ -36,7 +36,7 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png'):
 
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt[0].header)
 
-        base_contour = 3 * source['rms'] * cube_params['chan_width'].value
+        base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
@@ -81,7 +81,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, suffix='png'):
 
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        base_contour = 3 * source['rms'] * cube_params['chan_width'].value
+        base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
@@ -130,7 +130,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, suffix='png'):
         snr_reprojected, footprint = reproject_interp(hdulist_snr, opt_head)
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        base_contour = 3 * source['rms'] * cube_params['chan_width'].value
+        base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
 
         wa_cmap = colors.ListedColormap(['w', 'royalblue', 'limegreen', 'yellow', 'orange', 'r'])
@@ -256,7 +256,7 @@ def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head,
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        base_contour = 3 * source['rms'] * cube_params['chan_width'].value
+        base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format (nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
