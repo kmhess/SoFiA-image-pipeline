@@ -308,7 +308,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
         ax1.autoscale(False)
         ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
                  transform=ax1.get_transform('world'))
-        ax1.plot([ang1, ang2], [freq_hi.value, freq_hi.value], c='orange', linestyle='--',
+        ax1.plot([ang1, ang2], [HI_restfreq.value, HI_restfreq.value], c='orange', linestyle='--',
                  linewidth=0.75, transform=ax1.get_transform('world'))
         ax1.set_title(source['name'], fontsize=16)
         ax1.tick_params(axis='both', which='major', labelsize=18)
