@@ -323,7 +323,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
         ax2.set_ylabel('Optical Velocity [km/s]')
         ax1.text(0.5, 0.05, 'Kinematic PA = {:5.1f} deg'.format(source['kin_pa']), ha='center', va='center',
                  transform=ax1.transAxes, color='orange', fontsize=18)
-        fig.savefig('test2' + '_pv.png', bbox_inches='tight')
+        fig.savefig(outfile, bbox_inches='tight')
         pv.close()
 
     else:
