@@ -99,6 +99,17 @@ elif ('ra' not in catalog.colnames) and (original):
     catalog['freq'] = freq
     print(freq)
 
+# Rename the spectral column if cube was in velocity. For now treat all velocity axes the same (dumb temporary fix)
+if 'v_app' in catalog.colnames:
+    catalog.rename_column('v_app', 'v_col')
+elif 'v_rad' in catalog.colnames:
+    catalog.rename_column('v_rad', 'v_col')
+elif 'v_opt' in catalog.colnames:
+    catalog.rename_column('v_opt', 'v_col')
+elif 'freq' not in catalog.colnames:
+    print("ERROR: Column name for spectral axis not recognized.")
+    exit ()
+
 # Allow for some source selection?
 
 
