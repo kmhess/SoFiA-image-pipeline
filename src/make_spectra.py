@@ -6,7 +6,7 @@ from astropy import units as u
 import matplotlib.pyplot as plt
 import numpy as np
 
-from modules.functions import chan2freq
+from modules.functions import chan2freq, chan2vel
 from modules.functions import get_info
 from modules.functions import get_subcube
 
@@ -29,8 +29,10 @@ def get_noise_spec(source, src_basename, original=None):
             print("\tWARNING: Original data cube not provided: making spectrum of subcube with noise.")
             fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
             cube = fits.getdata(fits_file)
-            mask = fits.getdata(src_basename + '_{}_mask.fits'.format (source['id']))
-            channels = np.asarray(range(cube.shape[0])) + source['z_min']
+            mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
+            spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
+                                       names=['chan', 'col2', 'f_sum', 'n_pix'])
+            channels = spec_template['chan']
         else:
             print("\tOriginal data cube provided: making full spectrum image with noise.")
             fits_file = original
@@ -39,7 +41,6 @@ def get_noise_spec(source, src_basename, original=None):
             channels = np.asarray(range(cube.shape[0]))
 
         mask2d = np.sum(mask, axis=0)
-        frequency = chan2freq(channels, fits_file)
         spectrum = np.nansum(cube[:, mask2d != 0], axis=1)
         n_pix = 0 * channels + np.sum(mask2d != 0)
 
@@ -53,10 +54,18 @@ def get_noise_spec(source, src_basename, original=None):
             f.write("# for every point.\n")
             f.write("# \n")
 
-        ascii.write([channels, frequency, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
-                    names=['chan', 'freq', 'f_sum', 'n_pix'])
+            if 'freq' in source.colnames:
+                frequency = spec_template['col2'] if spec_template else chan2freq(channels, fits_file)
+                ascii.write([channels, frequency, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
+                            names=['chan', 'freq', 'f_sum', 'n_pix'])
+            else:
+                velocities = spec_template['col2'] if spec_template else chan2vel(channels, fits_file)
+                ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
+                            names=['chan', 'velo', 'f_sum', 'n_pix'])
         os.system("cat temp.txt temp2.txt > {}".format(outfile))
         os.system("rm temp.txt temp2.txt")
+
+        return
 
 
 # Make full spectrum plot:
@@ -68,7 +77,10 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
 
         print("\tMaking HI spectrum plot covering the full frequency range.")
         spec = ascii.read(outfile[:-1*len(suffix)] + 'txt')
-        optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI)
+        if 'freq' in source.colnames:
+            optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+        else:
+            optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
 
         if full == True:
             fig = plt.figure(figsize=(15, 4))
@@ -76,11 +88,11 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
             fig = plt.figure(figsize=(8, 4))
 
         ax_spec = fig.add_subplot(111)
-        ax_spec.plot([optical_velocity[-1].value-10, optical_velocity[0].value+10], [0, 0], '--', color='gray')
-        ax_spec.errorbar(optical_velocity[:].value, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
+        ax_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
+        ax_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
                          yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         ax_spec.set_title(source['name'])
-        ax_spec.set_xlim(optical_velocity[-1].value-5, optical_velocity[0].value+5)
+        ax_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax_spec.set_ylabel("Integrated Flux [Jy]")
         ax_spec.set_xlabel("Optical Velocity [km/s]")
 
@@ -109,17 +121,21 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
     if not os.path.isfile(outfile):
 
         print("\tMaking HI SoFiA masked spectrum plot.")
-        spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                          names=['chan', 'freq', 'f_sum', 'n_pix'])
-        optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI)
-
+        if 'freq' in source.colnames:
+            spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
+                              names=['chan', 'freq', 'f_sum', 'n_pix'])
+            optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+        else:
+            spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
+                              names=['chan', 'velo', 'f_sum', 'n_pix'])
+            optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
         fig = plt.figure(figsize=(8, 4))
         ax_spec = fig.add_subplot(111)
-        ax_spec.plot([optical_velocity[-1].value-10, optical_velocity[0].value+10], [0, 0], '--', color='gray')
-        ax_spec.errorbar(optical_velocity[:].value, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
+        ax_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
+        ax_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
                          yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         ax_spec.set_title(source['name'])
-        ax_spec.set_xlim(optical_velocity[-1].value-5, optical_velocity[0].value+5)
+        ax_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax_spec.set_ylabel("Integrated Flux [Jy]")
         ax_spec.set_xlabel("Optical Velocity [km/s]")
         fig.savefig(outfile, bbox_inches='tight')
