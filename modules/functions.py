@@ -11,6 +11,7 @@ def chan2freq(channels, fits_name):
 
 
 def chan2vel(channels, fits_name):
+    print("\tWARNING: Assuming channels are uniform width in velocity (may not be the case)!")
     header = fits.getheader(fits_name)
     # Need to deal with different types of headers and velocity scaling with or without frequency!!! (Also bary vs topo, etc)
     velocities = (header['CDELT3'] * (channels - header['CRPIX3'] - 1) + header['CRVAL3']) * u.m / u.s
