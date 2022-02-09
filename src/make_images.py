@@ -199,19 +199,12 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
             velmax = freqmin.to(u.km / u.s, equivalencies=optical_HI).value + 5
             velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value - 5
         else:
-            # For now treat all velocity axes the same (dumb temporary fix)
-            if 'v_app' in source.colnames: v_column = 'v_app'
-            elif 'v_rad' in source.colnames: v_column = 'v_rad'
-            elif 'v_opt' in source.colnames: v_column = 'v_opt'
-            else:
-                print("ERROR: Column name for spectral axis not recognized.")
-                exit()
             # Convert moment map from m/s into units of km/s.
             for i in range(mom1[0].data.shape[0]):
                 for j in range(mom1[0].data.shape[1]):
                     mom1[0].data[i][j] = (mom1[0].data[i][j] * u.m / u.s).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
-            v_sys = (source[v_column] * u.m / u.s).to(u.km / u.s).value
+            v_sys = (source['v_col'] * u.m / u.s).to(u.km / u.s).value
             # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
             w50 = (source['w50'] * cube_params['chan_width']).to(u.km / u.s).value
             w20 = (source['w20'] * cube_params['chan_width']).to(u.km / u.s).value
@@ -330,22 +323,32 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
         ax1.contour(pv[0].data, colors='black', levels=[-2 * pv_rms, 2 * pv_rms, 4 * pv_rms])
         ax1.autoscale(False)
         ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
-                 transform=ax1.get_transform('world'))
-        ax1.plot([ang1, ang2], [HI_restfreq.value, HI_restfreq.value], c='orange', linestyle='--',
-                 linewidth=0.75, transform=ax1.get_transform('world'))
+                 transform=ax1.get_transform ('world'))
         ax1.set_title(source['name'], fontsize=16)
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.set_xlabel('Angular Offset [deg]', fontsize=16)
-        ax1.set_ylabel('Frequency [Hz]', fontsize=16)
-        ax1.coords[1].set_ticks_position('l')
-        freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
-        ax2 = ax1.twinx()
-        vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
-        vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
-        ax2.set_ylim(vel2, vel1)
-        ax2.set_ylabel('Optical Velocity [km/s]')
         ax1.text(0.5, 0.05, 'Kinematic PA = {:5.1f} deg'.format(source['kin_pa']), ha='center', va='center',
                  transform=ax1.transAxes, color='orange', fontsize=18)
+        ax1.coords[1].set_ticks_position('l')
+
+        if 'freq' in source.colnames:
+            freq_sys = source['freq']
+            ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
+                     linewidth=0.75, transform=ax1.get_transform('world'))
+            ax1.set_ylabel('Frequency [Hz]', fontsize=16)
+            # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
+            ax2 = ax1.twinx()
+            vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
+            vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
+            ax2.set_ylim(vel2, vel1)
+            ax2.set_ylabel('Optical Velocity [km/s]')
+        else:
+
+            vel_sys = source['v_col']
+            ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
+                     linewidth=0.75, transform=ax1.get_transform('world'))
+            ax1.set_ylabel('Velocity [m/s]', fontsize=16)
+
         fig.savefig(outfile, bbox_inches='tight')
         pv.close()
 
