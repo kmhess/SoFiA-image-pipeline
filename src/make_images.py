@@ -12,7 +12,7 @@ import numpy as np
 from reproject import reproject_interp
 
 from modules.functions import get_info
-from modules.functions import chan2freq
+from modules.functions import chan2freq, chan2vel
 from modules.get_ancillary import *
 
 HI_restfreq = 1420405751.77 * u.Hz
@@ -51,7 +51,7 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png'):
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
         ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text (0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes,
+        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes,
                   color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
@@ -177,38 +177,61 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
             print("\tNo mom1 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        for i in range(mom1[0].data.shape[0]):
-            for j in range(mom1[0].data.shape[1]):
-                mom1[0].data[i][j] = (mom1[0].data[i][j] * u.Hz).to(u.km/u.s, equivalencies=optical_HI).value
-                # Set crazy mom1 values to nan:
-                # if (mom1[0].data[i][j] > velmax) | (mom1[0].data[i][j] < velmin):
-                #     mom1[0].data[i][j] = np.nan
+        # Do some preparatory work depending on the units of the spectral axis on the input cube.
+        if 'freq' in source.colnames:
+            # Convert moment map from Hz into units of km/s
+            for i in range(mom1[0].data.shape[0]):
+                for j in range(mom1[0].data.shape[1]):
+                    mom1[0].data[i][j] = (mom1[0].data[i][j] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+            # Calculate spectral quantities for plotting
+            v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=optical_HI).value
+            # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
+            w50 = (const.c * source['w50'] * u.Hz / (source['freq'] * u.Hz)).to(u.km/u.s,
+                                                                                equivalencies=optical_HI).value
+            w20 = (const.c * source['w20'] * u.Hz / (source['freq'] * u.Hz)).to(u.km/u.s,
+                                                                                equivalencies=optical_HI).value
+            if sofia == 2:
+                freqmin = chan2freq(source['z_min'], src_basename + '_{}_cube.fits'.format(source['id']))
+                freqmax = chan2freq(source['z_max'], src_basename + '_{}_cube.fits'.format(source['id']))
+            elif sofia == 1:
+                freqmin = chan2freq(source['z_min'], src_basename + '_{}.fits'.format(source['id']))
+                freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id']))
+            velmax = freqmin.to(u.km / u.s, equivalencies=optical_HI).value + 5
+            velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value - 5
+        else:
+            # For now treat all velocity axes the same (dumb temporary fix)
+            if 'v_app' in source.colnames: v_column = 'v_app'
+            elif 'v_rad' in source.colnames: v_column = 'v_rad'
+            elif 'v_opt' in source.colnames: v_column = 'v_opt'
+            else:
+                print("ERROR: Column name for spectral axis not recognized.")
+                exit()
+            # Convert moment map from m/s into units of km/s.
+            for i in range(mom1[0].data.shape[0]):
+                for j in range(mom1[0].data.shape[1]):
+                    mom1[0].data[i][j] = (mom1[0].data[i][j] * u.m / u.s).to(u.km / u.s).value
+            # Calculate spectral quantities for plotting
+            v_sys = (source[v_column] * u.m / u.s).to(u.km / u.s).value
+            # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
+            w50 = (source['w50'] * cube_params['chan_width']).to(u.km / u.s).value
+            w20 = (source['w20'] * cube_params['chan_width']).to(u.km / u.s).value
+            velmin = chan2vel(source['z_min'], src_basename +
+                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value + 5
+            velmax = chan2vel(source['z_max'], src_basename +
+                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value - 5
+
         mom1_reprojected, footprint = reproject_interp(mom1, opt_head)
         # mom1_reprojected[significance<2.0] = np.nan
 
-        kinpa = source['kin_pa'] * u.deg
-        v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=optical_HI).value
-        w50 = (const.c * source['w50'] * u.Hz / (source['freq'] * u.Hz)).to(u.km/u.s,
-                                                                            equivalencies=optical_HI).value
-        w20 = (const.c * source['w20'] * u.Hz / (source['freq'] * u.Hz)).to(u.km/u.s,
-                                                                            equivalencies=optical_HI).value
-        if sofia == 2:
-            freqmin = chan2freq(source['z_min'], src_basename + '_{}_cube.fits'.format(source['id']))
-            freqmax = chan2freq(source['z_max'], src_basename + '_{}_cube.fits'.format(source['id']))
-        elif sofia == 1:
-            freqmin = chan2freq(source['z_min'], src_basename + '_{}.fits'.format(source['id']))
-            freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id']))
-        velmax = freqmin.to(u.km / u.s, equivalencies=optical_HI).value + 5
-        velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value - 5
-
         v_sys_label = "v_sys = {}   W_50 = {}  W_20 = {}".format(int(v_sys), int(w50), int(w20))
         hi_pos = SkyCoord(source['ra'], source['dec'], unit='deg')
+        kinpa = source['kin_pa'] * u.deg
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
         im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')  #vmin=velmin, vmax=velmax, origin='lower')
         # ax1.contour(hi_reprojected, linewidths=1, levels=[sensitivity, ], colors=['k', ])
-        if velmax - velmin > 200:
+        if np.abs(velmax - velmin) > 200:
             levels = [v_sys - 100, v_sys - 50, v_sys, v_sys + 50, v_sys + 100]
             clevels = ['white', 'gray', 'black', 'gray', 'white']
         else:
@@ -249,7 +272,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
 # Overlay HI contours on false color optical image
 def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head, suffix='png'):
 
-    outfile = src_basename.replace ('cubelets', 'figures') + '_{}_mom0pstr.{}'.format (source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0pstr.{}'.format(source['id'], suffix)
 
     if not os.path.isfile(outfile):
         print("\tMaking PanSTARRS image overlaid with HI contours.")
@@ -258,7 +281,7 @@ def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head,
 
         base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
-        nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format (nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
+        nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
@@ -277,7 +300,7 @@ def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head,
                               transform=ax1.transAxes, edgecolor='lightgray', linewidth=1))
         fig.savefig(outfile, bbox_inches='tight')
     else:
-        print('\t{} already exists. Will not overwrite.'.format (outfile))
+        print('\t{} already exists. Will not overwrite.'.format(outfile))
 
     return
 
@@ -285,7 +308,7 @@ def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head,
 # Make pv plot for object
 def make_pv(source, src_basename, cube_params, suffix='png'):
 
-    outfile = src_basename.replace ('cubelets', 'figures') + '_{}_pv.{}'.format (source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_pv.{}'.format(source['id'], suffix)
 
     if not os.path.isfile(outfile):
         try:
@@ -327,7 +350,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
         pv.close()
 
     else:
-        print('\t{} already exists. Will not overwrite.'.format (outfile))
+        print('\t{} already exists. Will not overwrite.'.format(outfile))
 
     return
 
@@ -340,7 +363,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png'
     if sofia == 2:
         cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']))
     elif sofia == 1:
-        cube_params = get_info (src_basename + '_{}.fits'.format (source['id']))
+        cube_params = get_info(src_basename + '_{}.fits'.format(source['id']))
 
     # Get the position of the source to retrieve an optical image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
@@ -370,8 +393,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png'
     pstar_view = opt_view
     if opt_view > 8*u.arcmin:
         pstar_view = 8*u.arcmin
-        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on\n" \
-              "\t\tPanSTARRS images (they are much bigger than DSS2).")
+        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on " \
+              "PanSTARRS images (they are much bigger than DSS2).")
     pstar_im, pstar_head = get_panstarrs(hi_pos_icrs, opt_view=pstar_view)
 
     # Temporarily replace with ICRS ra/dec for plotting purposes in the rest (won't change catalog file.):

@@ -10,6 +10,13 @@ def chan2freq(channels, fits_name):
     return frequencies
 
 
+def chan2vel(channels, fits_name):
+    header = fits.getheader(fits_name)
+    # Need to deal with different types of headers and velocity scaling with or without frequency!!! (Also bary vs topo, etc)
+    velocities = (channels * header['CDELT3'] + header['CRVAL3']) * u.m / u.s
+    return velocities
+
+
 def get_info(fits_name):
 
     # For FITS conventions on the equinox, see:
@@ -29,7 +36,17 @@ def get_info(fits_name):
         cellsize = header['CDELT2'] * 3600. * u.arcsec
         bmaj, bmin, bpa = 3.5 * cellsize, 3.5 * cellsize, 0
         pix_per_beam = bmaj / cellsize * bmin / cellsize * np.pi / (4 * np.log(2))
-    chan_width = header['CDELT3'] * u.Hz
+
+    chan_width = header['CDELT3']
+    if 'FREQ' in header['CTYPE3']:
+        units = u.Hz
+    else:
+        units = u.m / u.s
+    chan_width = chan_width * units
+
+    # Add code to deal with reference frame?  AIPS conventions use VELREF: http://parac.eu/AIPSMEM117.pdf
+    # spec_sys = header['SPECSYS']
+
     try:
         equinox = header['EQUINOX']
         if equinox < 1984.0:
