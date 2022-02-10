@@ -76,11 +76,16 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
     if not os.path.isfile(outfile):
 
         print("\tMaking HI spectrum plot covering the full frequency range.")
-        spec = ascii.read(outfile[:-1*len(suffix)] + 'txt')
         if 'freq' in source.colnames:
+            spec = ascii.read(outfile[:-1*len(suffix)] + 'txt')
             optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+            maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+            maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
         else:
+            spec = ascii.read(outfile[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
             optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
+            maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s).value
+            maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s).value
 
         if full == True:
             fig = plt.figure(figsize=(15, 4))
@@ -97,11 +102,9 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
         ax_spec.set_xlabel("Optical Velocity [km/s]")
 
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
-        if full == True:
-            maskmin = chan2freq(source['z_min'], hdu=hdu_pb).to(u.km / u.s, equivalencies=optical_HI).value
-            maskmax = chan2freq(source['z_max'], hdu=hdu_pb).to(u.km / u.s, equivalencies=optical_HI).value
-            ax_spec.plot([maskmin, maskmin], [np.nanmin(spectrumJy), np.nanmax(spectrumJy)], ':', color='gray')
-            ax_spec.plot([maskmax, maskmax], [np.nanmin(spectrumJy), np.nanmax(spectrumJy)], ':', color='gray')
+
+        ax_spec.plot([maskmin, maskmin], [np.nanmin(spectrumJy)*1.05, np.nanmax(spectrumJy)*1.05], ':', color='gray')
+        ax_spec.plot([maskmax, maskmax], [np.nanmin(spectrumJy)*1.05, np.nanmax(spectrumJy)*1.05], ':', color='gray')
 
         # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
         if (np.max(spectrumJy) > 2.) | (np.min(spectrumJy) < -1.):
