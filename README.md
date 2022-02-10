@@ -19,6 +19,21 @@ Examples:
 * Use ascii file with output images in png format and specify original data set: \
 `python3 image_pipeline.py -c <path/to/catalog.txt> -s png -o <path/to/original_cube.fits>`
 
+The program outputs individual *pngs but it may be useful to combine them all into one.  This can be accomplished with something like `imagemagick`.  Here is an example:
+```
+for src in sources:
+    new_png = "{}_combo.png".format(src)
+    convert_im = "/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert"
+    os.system("{} {}_mom0.png {}_mom0hi.png {}_snr.png {}_mom1.png +append temp.png".format(convert_im, src, src, src, src, src))
+    os.system("{} {}_spec.png -resize 125% temp2.png".format(convert_im, src))
+    os.system("{} {}_specfull.png -resize 125% temp3.png".format(convert_im, src))
+    os.system("{} temp2.png temp3.png {}_pv.png +append temp4.png".format(convert_im, src, src, src))
+    os.system("{} temp.png temp4.png -append {}".format(convert_im, newpng))
+    os.system('rm -rf temp.png temp2.png temp3.png temp4.png')
+```
+On your system, you will likely be able to replace `/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert` with simply `convert`.  Note `+` or `-` in front of `append` controls if the images are combined horizontally or vertically.
+This example places all images (except the PanSTARRS overlay) on two rows, with the spatial plots on the top row and the spectral plots on the bottom row. 
+
 Requirements
 ------------
 Tested with: \
