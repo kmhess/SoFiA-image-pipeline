@@ -175,7 +175,7 @@ output.writeMask2d         =  true
 output.writeRawMask        =  true
 output.writeMoments        =  true
 output.writeCubelets       =  true
-output.marginCubelets      =  0
+output.marginCubelets      =  5
 output.thresholdMom12      =  0.0
 output.overwrite           =  true
 
