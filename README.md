@@ -21,14 +21,15 @@ Examples:
 
 The program outputs individual *pngs but it may be useful to combine them all into one.  This can be accomplished with something like `imagemagick`.  Here is an example:
 ```
+convert_im = "/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert"
 for src in sources:
+    print("  {}".format(src))
     new_png = "{}_combo.png".format(src)
-    convert_im = "/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert"
     os.system("{} {}_mom0.png {}_mom0hi.png {}_snr.png {}_mom1.png +append temp.png".format(convert_im, src, src, src, src, src))
     os.system("{} {}_spec.png -resize 125% temp2.png".format(convert_im, src))
     os.system("{} {}_specfull.png -resize 125% temp3.png".format(convert_im, src))
     os.system("{} temp2.png temp3.png {}_pv.png +append temp4.png".format(convert_im, src, src, src))
-    os.system("{} temp.png temp4.png -append {}".format(convert_im, newpng))
+    os.system("{} temp.png temp4.png -append {}".format(convert_im, new_png))
     os.system('rm -rf temp.png temp2.png temp3.png temp4.png')
 ```
 On your system, you will likely be able to replace `/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert` with simply `convert`.  Note `+` or `-` in front of `append` controls if the images are combined horizontally or vertically.
