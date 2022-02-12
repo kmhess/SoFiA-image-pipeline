@@ -421,7 +421,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png'
         patch_height = (cube_params['bmaj'] / pstar_view).decompose()
         patch_width = (cube_params['bmin'] / pstar_view).decompose()
         patch_pstar = {'width': patch_width, 'height': patch_height}
-        make_panstarrs(source, src_basename, cube_params, patch, pstar_im, pstar_head, suffix=suffix)
+        make_panstarrs(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, suffix=suffix)
 
     # Use dss2 image as the base for regridding the HI since it is relatively small (although set by the number of pixels...
     # need to change this to take into account pixel scale to be rigorous.
