@@ -38,8 +38,8 @@ def get_info(fits_name, beam=None):
         bmin = beam[1] * u.arcsec
         bpa = 0
     elif len(beam) == 1:
-        print(f"\tWARNING: using user specified circular beam size of {beam} arcsec.")
-        bmaj = bmin = beam * u.arcsec
+        print(f"\tWARNING: using user specified circular beam size of {beam[0]} arcsec.")
+        bmaj = bmin = beam[0] * u.arcsec
         bpa = 0
     else:
         try:
