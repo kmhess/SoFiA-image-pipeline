@@ -37,6 +37,9 @@ parser.add_argument('-b', '--beam', default=None,
                     help='Specify the beam dimensions (bmaj,bmin,bpa) in arcsec, arcsec, deg. If only 1 value is\n'
                          'given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
 
+parser.add_argument('-i', '--image_size', default=6,
+                    help='Specify the minimum optical image size to retrieve in arcmin.  It will be adjusted if\n'
+                         'the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
 
 ###################################################################
 
@@ -48,8 +51,7 @@ try:
     beam = [int(b) for b in args.beam.split(',')]
 except:
     beam = []
-
-opt_view = 6*u.arcmin
+opt_view = float(args.image_size) * u.arcmin
 
 print("\n*****************************************************************")
 print("\tBeginning SoFiA-image-pipeline (SIP).")
