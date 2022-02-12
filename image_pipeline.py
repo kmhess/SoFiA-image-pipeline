@@ -44,8 +44,10 @@ parser.add_argument('-b', '--beam', default=None,
 args = parser.parse_args()
 suffix = args.suffix
 original = args.original
-beam = [int(b) for b in args.beam.split(',')]
-print("\t\tBEAM {}".format(beam))
+try:
+    beam = [int(b) for b in args.beam.split(',')]
+except:
+    beam = []
 
 opt_view = 6*u.arcmin
 
@@ -104,7 +106,6 @@ elif ('ra' not in catalog.colnames) and (original):
     catalog['ra'] = ra
     catalog['dec'] = dec
     catalog['freq'] = freq
-    print(freq)
 
 # Rename the spectral column if cube was in velocity. For now treat all velocity axes the same (dumb temporary fix)
 if 'v_app' in catalog.colnames:
