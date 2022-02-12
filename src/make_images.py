@@ -358,7 +358,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png', sofia=2, beam=None):
+def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None):
 
     print("\n\tStart making spatial images of the spectral line source {}: {}.".format(source['id'], source['name']))
 
@@ -392,7 +392,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png'
         print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view.value))
 
     # Get optical images, based on the HI position and given image size.
-    dss2 = get_dss2(hi_pos_icrs, opt_view, opt_pixels)
+    dss2 = get_dss2(hi_pos_icrs, opt_view)
     pstar_view = opt_view
     if opt_view > 8*u.arcmin:
         pstar_view = 8*u.arcmin
@@ -449,4 +449,4 @@ def main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png'
 
 if __name__ == '__main__':
 
-    main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png')
+    main(source, src_basename, opt_view=6*u.arcmin, suffix='png')

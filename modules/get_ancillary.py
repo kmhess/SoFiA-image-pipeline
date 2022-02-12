@@ -6,7 +6,10 @@ from astropy.wcs import WCS
 from astroquery.skyview import SkyView
 
 
-def get_dss2(hi_pos, opt_view=6*u.arcmin, opt_pixels=900):
+def get_dss2(hi_pos, opt_view=6*u.arcmin):
+
+    # DSS2 Blue images have a 1 arc/pix pixel scale, but retrieving ~the pixel scale doesn't work.
+    opt_pixels = int(opt_view.to(u.arcsec).value * 2)
 
     # Get DSS2 Blue optical image:
     if (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
