@@ -358,15 +358,15 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png', sofia=2):
+def main(source, src_basename, opt_view=6*u.arcmin, opt_pixels=900, suffix='png', sofia=2, beam=None):
 
     print("\n\tStart making spatial images of the spectral line source {}: {}.".format(source['id'], source['name']))
 
     # Get beam information from the source cubelet
     if sofia == 2:
-        cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']))
+        cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
     elif sofia == 1:
-        cube_params = get_info(src_basename + '_{}.fits'.format(source['id']))
+        cube_params = get_info(src_basename + '_{}.fits'.format(source['id']), beam)
 
     # Get the position of the source to retrieve an optical image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',

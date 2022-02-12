@@ -22,16 +22,21 @@ parser = ArgumentParser(description="Create images from a SoFiA catalog and cube
                                     "Only works with SoFiA-2 and wcs=True (for now).",
                         formatter_class=RawTextHelpFormatter)
 
-parser.add_argument('-c', '--catalog', default='catalog.txt',
+parser.add_argument('-c', '--catalog', default='test_data/UGC7012_cat.txt',
                     help='Specify the input XML or ascii catalog name (default: %(default)s).')
 
 parser.add_argument('-s', '--suffix', default='png',
-                    help='Specify the output image file type: png, pdf, eps, jpeg, tiff, etc %(default)s')
+                    help='Specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
 parser.add_argument('-o', '--original', default=None,
                     help='Specify the original fits data: used for plotting HI spectra *with* noise over \n'
                          'the full frequency range of the cube. Otherwise, plot with noise over frequency \n'
-                         'range in the cubelet (uses 2D mask to integrate).')
+                         'range in the cubelet.  Uses 2D mask to integrate. (No default).')
+
+parser.add_argument('-b', '--beam', default=None,
+                    help='Specify the beam dimensions (bmaj,bmin,bpa) in arcsec, arcsec, deg. If only 1 value is\n'
+                         'given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
+
 
 ###################################################################
 
@@ -39,6 +44,8 @@ parser.add_argument('-o', '--original', default=None,
 args = parser.parse_args()
 suffix = args.suffix
 original = args.original
+beam = [int(b) for b in args.beam.split(',')]
+print("\t\tBEAM {}".format(beam))
 
 opt_view = 6*u.arcmin
 
@@ -108,7 +115,7 @@ elif 'v_opt' in catalog.colnames:
     catalog.rename_column('v_opt', 'v_col')
 elif 'freq' not in catalog.colnames:
     print("ERROR: Column name for spectral axis not recognized.")
-    exit ()
+    exit()
 
 # Allow for some source selection?
 
@@ -133,8 +140,8 @@ n_src = 0
 for source in catalog:
 
     source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
-    make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia)
-    make_spectra.main(source, src_basename, original, suffix=suffix)
+    make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam)
+    make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     n_src += 1
 

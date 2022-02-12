@@ -18,25 +18,40 @@ def chan2vel(channels, fits_name):
     return velocities
 
 
-def get_info(fits_name):
+def get_info(fits_name, beam=None):
 
     # For FITS conventions on the equinox, see:
     # https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf
 
     header = fits.getheader(fits_name)
 
-    try:
-        bmaj = header['BMAJ'] * 3600. * u.arcsec
-        bmin = header['BMIN'] * 3600. * u.arcsec
-        bpa = header['BPA']
-        cellsize = header['CDELT2'] * 3600. * u.arcsec
-        pix_per_beam = bmaj / cellsize * bmin / cellsize * np.pi / (4 * np.log(2))
-    except:
-        print("\tWARNING: Couldn't find beam in primary header information; in other extension? " \
-              "Assuming beam is 3.5x3.5 pixels")
-        cellsize = header['CDELT2'] * 3600. * u.arcsec
-        bmaj, bmin, bpa = 3.5 * cellsize, 3.5 * cellsize, 0
-        pix_per_beam = bmaj / cellsize * bmin / cellsize * np.pi / (4 * np.log(2))
+    cellsize = header['CDELT2'] * 3600. * u.arcsec
+
+    if len(beam) == 3:
+        print(f"\tUsing user specified beam: {beam[0]} arcsec by {beam[1]} arcsec; PA: {beam[2]} deg")
+        bmaj = beam[0] * u.arcsec
+        bmin = beam[1] * u.arcsec
+        bpa = beam[2]
+    elif len(beam) == 2:
+        print(f"\tWARNING: assuming PA = 0. Using user specified beam: {beam[0]} arcsec by {beam[1]} arcsec.")
+        bmaj = beam[0] * u.arcsec
+        bmin = beam[1] * u.arcsec
+        bpa = 0
+    elif len(beam) == 1:
+        print(f"\tWARNING: using user specified circular beam size of {beam} arcsec.")
+        bmaj = bmin = beam * u.arcsec
+        bpa = 0
+    else:
+        try:
+            bmaj = header['BMAJ'] * 3600. * u.arcsec
+            bmin = header['BMIN'] * 3600. * u.arcsec
+            bpa = header['BPA']
+        except:
+            print("\tWARNING: Couldn't find beam in primary header information; in other extension? " \
+                  "Assuming beam is 3.5x3.5 pixels")
+            bmaj, bmin, bpa = 3.5 * cellsize, 3.5 * cellsize, 0
+
+    pix_per_beam = bmaj / cellsize * bmin / cellsize * np.pi / (4 * np.log(2))
 
     chan_width = header['CDELT3']
     if 'FREQ' in header['CTYPE3']:
