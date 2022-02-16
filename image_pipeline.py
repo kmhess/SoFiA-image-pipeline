@@ -25,7 +25,7 @@ parser = ArgumentParser(description="Create images from a SoFiA catalog and cube
 parser.add_argument('-c', '--catalog', default='test_data/UGC7012_cat.txt',
                     help='Specify the input XML or ascii catalog name (default: %(default)s).')
 
-parser.add_argument('-s', '--suffix', default='png',
+parser.add_argument('-x', '--suffix', default='png',
                     help='Specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
 parser.add_argument('-o', '--original', default=None,
@@ -41,6 +41,10 @@ parser.add_argument('-i', '--image_size', default=6,
                     help='Specify the minimum optical image size to retrieve in arcmin.  It will be adjusted if\n'
                          'the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
 
+parser.add_argument('-s', '--surveys', default=None,
+                    help='Specify the surveys to retrieve and on which to overlay HI contours. So far, DSS2 blue\n'
+                         'and PanSTARRS alway by default. This allows the option to add COSMO HST for CHILES: -k \'hst\'.')
+
 ###################################################################
 
 # Parse the arguments above
@@ -52,6 +56,10 @@ try:
 except:
     beam = []
 opt_view = float(args.image_size) * u.arcmin
+try:
+    surveys = [k for k in args.surveys.split(',')]
+except:
+    surveys = []
 
 print("\n*****************************************************************")
 print("\tBeginning SoFiA-image-pipeline (SIP).")
@@ -143,7 +151,7 @@ n_src = 0
 for source in catalog:
 
     source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
-    make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam)
+    make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam, surveys=surveys)
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     n_src += 1

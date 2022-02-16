@@ -8,12 +8,14 @@ from astropy.wcs import WCS
 from matplotlib import colors
 from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
+from matplotlib.colors import PowerNorm #, LogNorm
 import numpy as np
 from reproject import reproject_interp
 
 from modules.functions import get_info
 from modules.functions import chan2freq, chan2vel
 from modules.get_ancillary import *
+from modules.get_hst_cosmos import get_hst_cosmos
 
 HI_restfreq = 1420405751.77 * u.Hz
 optical_HI = u.doppler_optical(HI_restfreq)
@@ -22,9 +24,9 @@ optical_HI = u.doppler_optical(HI_restfreq)
 ###################################################################
 
 # Overlay HI contours on optical image
-def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png'):
+def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png', survey=''):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0.{}'.format(source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey, suffix)
 
     if not os.path.isfile(outfile):
         try:
@@ -42,8 +44,15 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png'):
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt[0].header))
-        ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
-                   vmax=np.percentile(opt[0].data, 99.8), origin='lower')
+        if survey == 'hst':
+            # ax1.imshow(opt[0].data, origin='lower', cmap='twilight', norm=LogNorm(vmax=5))
+            # ax1.imshow(opt[0].data, origin='lower', cmap='Greys', norm=LogNorm(vmin=-0.003, vmax=30))
+            ax1.imshow(opt[0].data, origin='lower', cmap='Greys',
+                       norm=PowerNorm(gamma=0.25, vmin=np.percentile(opt[0].data, 20),
+                                      vmax=np.percentile(opt[0].data, 99.5)))
+        else:
+            ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
+                       vmax=np.percentile(opt[0].data, 99.8), origin='lower')
         ax1.contour(hi_reprojected, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10))
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
                     transform=ax1.get_transform('fk5'))
@@ -358,7 +367,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None):
+def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, surveys=None):
 
     print("\n\tStart making spatial images of the spectral line source {}: {}.".format(source['id'], source['name']))
 
@@ -396,7 +405,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     pstar_view = opt_view
     if opt_view > 8*u.arcmin:
         pstar_view = 8*u.arcmin
-        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on " \
+        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on "
               "PanSTARRS images (they are much bigger than DSS2).")
     pstar_im, pstar_head = get_panstarrs(hi_pos_icrs, opt_view=pstar_view)
 
@@ -429,6 +438,17 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     if not dss2:
         opt_head = pstar_head
         patch = patch_pstar
+
+    if ('hst' in surveys) | ('HST' in surveys):
+        hst_opt_view = 40 * u.arcsec
+        if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
+            hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
+        hst_opt = get_hst_cosmos(source, opt_view=hst_opt_view)
+        if hst_opt:
+            patch_height = (cube_params['bmaj'] / hst_opt_view).decompose()
+            patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
+            patch_hst = {'width': patch_width, 'height': patch_height}
+            make_mom0dss2(source, src_basename, cube_params, patch_hst, hst_opt, suffix=suffix, survey='hst')
 
     # Make the rest of the images if there is an optical image to regrid to.
     # Could change this to make images no matter what...
