@@ -104,8 +104,10 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
 
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
 
-        ax_spec.plot([maskmin, maskmin], [np.nanmin(spectrumJy)*1.05, np.nanmax(spectrumJy)*1.05], ':', color='gray')
-        ax_spec.plot([maskmax, maskmax], [np.nanmin(spectrumJy)*1.05, np.nanmax(spectrumJy)*1.05], ':', color='gray')
+        # Plot limit of SoFiA mask
+        ymin, ymax = ax_spec.get_ylim()
+        ax_spec.plot([maskmin, maskmin], [0.95*ymin, 0.95*ymax], ':', color='gray')
+        ax_spec.plot([maskmax, maskmax], [0.95*ymin, 0.95*ymax], ':', color='gray')
 
         # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
         if (np.max(spectrumJy) > 2.) | (np.min(spectrumJy) < -1.):
