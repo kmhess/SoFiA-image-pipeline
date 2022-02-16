@@ -6,10 +6,7 @@ from astropy import units as u
 import matplotlib.pyplot as plt
 import numpy as np
 
-from modules.functions import chan2freq, chan2vel
-from modules.functions import get_info
-from modules.functions import get_subcube
-
+from modules.functions import chan2freq, chan2vel, get_info, get_subcube
 
 HI_restfreq = 1420405751.77 * u.Hz
 optical_HI = u.doppler_optical(HI_restfreq)
