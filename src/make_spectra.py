@@ -38,6 +38,7 @@ def get_noise_spec(source, src_basename, original=None):
             fits_file = original
             cube = get_subcube(source, original)
             mask = get_subcube(source, original[:-5] + '_mask.fits')
+            spec_template = None
             channels = np.asarray(range(cube.shape[0]))
 
         mask2d = np.sum(mask, axis=0)
