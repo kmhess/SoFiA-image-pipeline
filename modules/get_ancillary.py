@@ -1,4 +1,4 @@
-from modules.panstarrs_fcns import *
+from modules.panstarrs_fcns import getcolorim, geturl
 
 from astropy.io import fits
 from astropy import units as u
