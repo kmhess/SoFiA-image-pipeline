@@ -11,6 +11,7 @@ import matplotlib.pyplot as plt
 from matplotlib.colors import PowerNorm #, LogNorm
 import numpy as np
 from reproject import reproject_interp
+from urllib.error import HTTPError
 
 from modules.functions import get_info
 from modules.functions import chan2freq, chan2vel
@@ -24,13 +25,14 @@ optical_HI = u.doppler_optical(HI_restfreq)
 ###################################################################
 
 # Overlay HI contours on optical image
-def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png', survey=''):
+def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png', survey='DSS2 Blue'):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey, suffix)
+    survey_nospace = survey.replace(" ", "").lower()
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey_nospace, suffix)
 
     if not os.path.isfile(outfile):
         try:
-            print("\tMaking DSS2 Blue optical overlaid with HI contours.")
+            print("\tMaking {} optical overlaid with HI contours.".format(survey))
             hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -401,12 +403,12 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view.value))
 
     # Get optical images, based on the HI position and given image size.
-    dss2 = get_dss2(hi_pos_icrs, opt_view)
+    dss2 = get_skyview(hi_pos_icrs, opt_view=opt_view, survey='DSS2 Blue')
     pstar_view = opt_view
     if opt_view > 8*u.arcmin:
         pstar_view = 8*u.arcmin
-        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on "
-              "PanSTARRS images (they are much bigger than DSS2).")
+        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on PanSTARRS "
+              "images (they are much bigger than DSS2).")
     pstar_im, pstar_head = get_panstarrs(hi_pos_icrs, opt_view=pstar_view)
 
     # Temporarily replace with ICRS ra/dec for plotting purposes in the rest (won't change catalog file.):
@@ -439,7 +441,9 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         opt_head = pstar_head
         patch = patch_pstar
 
+    # For CHILES: plot HI contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
+        surveys.remove('hst')
         hst_opt_view = 40 * u.arcsec
         if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
             hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
@@ -449,6 +453,19 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
             make_mom0dss2(source, src_basename, cube_params, patch_hst, hst_opt, suffix=suffix, survey='hst')
+
+    # If requested, plot the HI contours on any number of surveys available through SkyView.
+    if len(surveys) > 0:
+        for survey in surveys:
+            try:
+                overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey)
+                make_mom0dss2(source, src_basename, cube_params, patch, overlay_image, suffix=suffix, survey=survey)
+            except ValueError:
+                print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
+                      "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
+                      "surveys.".format(survey))
+            except HTTPError:
+                print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
 
     # Make the rest of the images if there is an optical image to regrid to.
     # Could change this to make images no matter what...
