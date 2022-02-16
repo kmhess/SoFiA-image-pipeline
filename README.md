@@ -14,10 +14,10 @@ Get help on the parameters:
 
 Examples:
 * Use the xml file with output images in pdf format: \
-`python3 image_pipeline.py -c <path/to/catalog.xml> -s pdf`
+`python3 image_pipeline.py -c <path/to/catalog.xml> -x pdf`
 
 * Use ascii file with output images in png format and specify original data set: \
-`python3 image_pipeline.py -c <path/to/catalog.txt> -s png -o <path/to/original_cube.fits>`
+`python3 image_pipeline.py -c <path/to/catalog.txt> -x png -o <path/to/original_cube.fits>`
 
 The program outputs individual *pngs but it may be useful to combine them all into one.  This can be accomplished with something like `imagemagick`.  Here is an example:
 ```
