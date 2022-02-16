@@ -6,7 +6,8 @@ import numpy as np
 
 def chan2freq(channels, fits_name):
     header = fits.getheader(fits_name)
-    frequencies = (header['CDELT3'] * (channels - header['CRPIX3'] - 1) + header['CRVAL3']) * u.m / u.s
+    print("freq",header['CDELT3'],header['CRPIX3'],header['CRVAL3'])
+    frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
     return frequencies
 
 
@@ -14,7 +15,8 @@ def chan2vel(channels, fits_name):
     print("\tWARNING: Assuming channels are uniform width in velocity (may not be the case)!")
     header = fits.getheader(fits_name)
     # Need to deal with different types of headers and velocity scaling with or without frequency!!! (Also bary vs topo, etc)
-    velocities = (header['CDELT3'] * (channels - header['CRPIX3'] - 1) + header['CRVAL3']) * u.m / u.s
+    print("velo",header['CDELT3'],header['CRPIX3'],header['CRVAL3'])
+    velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
     return velocities
 
 
