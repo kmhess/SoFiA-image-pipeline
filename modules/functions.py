@@ -2,15 +2,37 @@ from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
 import numpy as np
+from typing import Iterable
 
 
 def chan2freq(channels, fits_name):
+    """Convert channels to frequencies.
+
+    :param channels: which channels to convert
+    :type channels: Iterable[int]
+    :param fits_name: name of the FITS file
+    :type fits_name: str
+    :return: frequencies
+    :rtype: Iterable[float]
+    """
     header = fits.getheader(fits_name)
     frequencies = (header['CDELT3'] * (channels - header['CRPIX3'] - 1) + header['CRVAL3']) * u.m / u.s
     return frequencies
 
 
 def chan2vel(channels, fits_name):
+    """Convert channels to velocities.
+
+    N.B.: This assumes the channels have uniform width in velocity space,
+          which may not be the case!
+
+    :param channels: the channels to convert
+    :type channels: Iterable[int]
+    :param fits_name: name of the FITS file
+    :type fits_name: str
+    :return: calculated velocities
+    :rtype: Iterable[float]
+    """
     print("\tWARNING: Assuming channels are uniform width in velocity (may not be the case)!")
     header = fits.getheader(fits_name)
     # Need to deal with different types of headers and velocity scaling with or without frequency!!! (Also bary vs topo, etc)
@@ -19,6 +41,18 @@ def chan2vel(channels, fits_name):
 
 
 def get_info(fits_name, beam=None):
+    """Get the beam info from a FITS file.
+
+    :param fits_name: name of the FITS file
+    :type fits_name: str
+    :param beam: beam specifications, defaults to None. Specifications are
+        given in arcsec (axes) and degrees (position_angle), and formatted as
+        {[major_axis, minor_axis, position_angle]|[major_axis, minor_axis]|
+        [position_angle]}
+    :type beam: Iterable[float], optional
+    :return: The characteristics of the beam
+    :rtype: dict
+    """
 
     # For FITS conventions on the equinox, see:
     # https://fits.gsfc.nasa.gov/standard40/fits_standard40aa-le.pdf
