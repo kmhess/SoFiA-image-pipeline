@@ -2,7 +2,6 @@ from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
 import numpy as np
-from typing import Iterable
 
 
 def chan2freq(channels, fits_name):
