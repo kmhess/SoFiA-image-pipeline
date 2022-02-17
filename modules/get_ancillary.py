@@ -6,7 +6,7 @@ from astropy.wcs import WCS
 from astroquery.skyview import SkyView
 
 
-def get_dss2(hi_pos, opt_view=6*u.arcmin):
+def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
 
     # DSS2 Blue images have a 1 arc/pix pixel scale, but retrieving ~the pixel scale doesn't work.
     opt_pixels = int(opt_view.to(u.arcsec).value * 2)
@@ -14,18 +14,18 @@ def get_dss2(hi_pos, opt_view=6*u.arcmin):
     # Get DSS2 Blue optical image:
     if (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
         path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS',
-                                  width=opt_view, height=opt_view, survey=['DSS2 Blue'], pixels=opt_pixels,
+                                  width=opt_view, height=opt_view, survey=[survey], pixels=opt_pixels,
                                   cache=False)
-    # Note that there seems to be a bug in SkyView that it won't retrieve non-J2000.0.  Keep an eye on this!
+    # Note that there seems to be a bug in SkyView that it sometimes won't retrieve non-J2000.0.  Keep an eye on this!
     else:
         path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates=hi_pos.equinox.value,
-                                  width=opt_view, height=opt_view, survey=['DSS2 Blue'], pixels=opt_pixels,
+                                  width=opt_view, height=opt_view, survey=[survey], pixels=opt_pixels,
                                   cache=False)
     if len(path) != 0:
-        print("\tOptical image retrieved from DSS2 Blue.")
+        print("\tOptical image retrieved from {}.".format(survey))
         result = path[0]
     else:
-        print("\tWARNING: No DSS2 Blue image retrieved.  Bug, or server error?  Try again later?")
+        print("\tWARNING: No {} image retrieved.  Bug, or server error?  Try again later?".format(survey))
         result = None
 
     return result

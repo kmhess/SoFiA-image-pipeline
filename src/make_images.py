@@ -8,12 +8,15 @@ from astropy.wcs import WCS
 from matplotlib import colors
 from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
+from matplotlib.colors import PowerNorm #, LogNorm
 import numpy as np
 from reproject import reproject_interp
+from urllib.error import HTTPError
 
 from modules.functions import get_info
 from modules.functions import chan2freq, chan2vel
 from modules.get_ancillary import *
+from modules.get_hst_cosmos import get_hst_cosmos
 
 HI_restfreq = 1420405751.77 * u.Hz
 optical_HI = u.doppler_optical(HI_restfreq)
@@ -22,13 +25,14 @@ optical_HI = u.doppler_optical(HI_restfreq)
 ###################################################################
 
 # Overlay HI contours on optical image
-def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, suffix='png'):
+def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0.{}'.format(source['id'], suffix)
+    survey_nospace = survey.replace(" ", "").lower()
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey_nospace, suffix)
 
     if not os.path.isfile(outfile):
         try:
-            print("\tMaking DSS2 Blue optical overlaid with HI contours.")
+            print("\tMaking {} optical overlaid with HI contours.".format(survey))
             hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -41,8 +45,15 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, s
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt[0].header))
-        ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
-                   vmax=np.percentile(opt[0].data, 99.8), origin='lower')
+        if survey == 'hst':
+            # ax1.imshow(opt[0].data, origin='lower', cmap='twilight', norm=LogNorm(vmax=5))
+            # ax1.imshow(opt[0].data, origin='lower', cmap='Greys', norm=LogNorm(vmin=-0.003, vmax=30))
+            ax1.imshow(opt[0].data, origin='lower', cmap='Greys',
+                       norm=PowerNorm(gamma=0.25, vmin=np.percentile(opt[0].data, 20),
+                                      vmax=np.percentile(opt[0].data, 99.5)))
+        else:
+            ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
+                       vmax=np.percentile(opt[0].data, 99.8), origin='lower')
         ax1.contour(hi_reprojected, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10))
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
                     transform=ax1.get_transform('fk5'))
@@ -99,7 +110,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        cbar.set_label("HI Intensity [Jy/beam*Hz]", fontsize=18)
+        cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=18)
 
         fig.savefig(outfile, bbox_inches='tight')
 
@@ -175,6 +186,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
             return
 
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
+        convention = 'Optical'
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
             for i in range(mom1[0].data.shape[0]):
@@ -209,6 +221,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value + 5
             velmax = chan2vel(source['z_max'], src_basename +
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value - 5
+            if cube_params['spec_axis'] == 'VRAD': convention = 'Radio'
 
         mom1_reprojected, footprint = reproject_interp(mom1, opt_head)
         # mom1_reprojected[significance<2.0] = np.nan
@@ -247,7 +260,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         # cbar.set_label("Barycentric Optical Velocity [km/s]", fontsize=18)
-        cbar.set_label("Optical velocity [km/s]", fontsize=18)
+        cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
         fig.savefig(outfile, bbox_inches='tight')
 
@@ -319,7 +332,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
         ax1.contour(pv[0].data, colors='black', levels=[-2 * pv_rms, 2 * pv_rms, 4 * pv_rms])
         ax1.autoscale(False)
         ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
-                 transform=ax1.get_transform ('world'))
+                 transform=ax1.get_transform('world'))
         ax1.set_title(source['name'], fontsize=16)
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.set_xlabel('Angular Offset [deg]', fontsize=16)
@@ -327,6 +340,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
                  transform=ax1.transAxes, color='orange', fontsize=18)
         ax1.coords[1].set_ticks_position('l')
 
+        convention = 'Optical'
         if 'freq' in source.colnames:
             freq_sys = source['freq']
             ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
@@ -337,13 +351,14 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
             vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
             ax2.set_ylim(vel2, vel1)
-            ax2.set_ylabel('Optical Velocity [km/s]')
+            ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention))
         else:
-
+            if cube_params['spec_axis'] == 'VRAD': convention = 'Radio'
             vel_sys = source['v_col']
             ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
                      linewidth=0.75, transform=ax1.get_transform('world'))
-            ax1.set_ylabel('Velocity [m/s]', fontsize=16)
+            ax1.set_ylabel('{} {} velocity [m/s]'.format(cube_params['spec_sys'].capitalize(), convention,
+                                                        fontsize=18))
 
         fig.savefig(outfile, bbox_inches='tight')
         pv.close()
@@ -354,7 +369,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, snr_range=[2,3]):
+def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, surveys=None, snr_range=[2,3]):
 
     print("\n\tStart making spatial images of the spectral line source {}: {}.".format(source['id'], source['name']))
 
@@ -399,12 +414,12 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view.value))
 
     # Get optical images, based on the HI position and given image size.
-    dss2 = get_dss2(hi_pos_icrs, opt_view)
+    dss2 = get_skyview(hi_pos_icrs, opt_view=opt_view, survey='DSS2 Blue')
     pstar_view = opt_view
     if opt_view > 8*u.arcmin:
         pstar_view = 8*u.arcmin
-        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on " \
-              "PanSTARRS images (they are much bigger than DSS2).")
+        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on PanSTARRS "
+              "images (they are much bigger than DSS2).")
     pstar_im, pstar_head = get_panstarrs(hi_pos_icrs, opt_view=pstar_view)
 
     # Temporarily replace with ICRS ra/dec for plotting purposes in the rest (won't change catalog file.):
@@ -436,6 +451,32 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     if not dss2:
         opt_head = pstar_head
         patch = patch_pstar
+
+    # For CHILES: plot HI contours on HST image if desired.
+    if ('hst' in surveys) | ('HST' in surveys):
+        surveys.remove('hst')
+        hst_opt_view = 40 * u.arcsec
+        if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
+            hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
+        hst_opt = get_hst_cosmos(source, opt_view=hst_opt_view)
+        if hst_opt:
+            patch_height = (cube_params['bmaj'] / hst_opt_view).decompose()
+            patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
+            patch_hst = {'width': patch_width, 'height': patch_height}
+            make_mom0dss2(source, src_basename, cube_params, patch_hst, hst_opt, suffix=suffix, survey='hst')
+
+    # If requested, plot the HI contours on any number of surveys available through SkyView.
+    if len(surveys) > 0:
+        for survey in surveys:
+            try:
+                overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey)
+                make_mom0dss2(source, src_basename, cube_params, patch, overlay_image, suffix=suffix, survey=survey)
+            except ValueError:
+                print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
+                      "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
+                      "surveys.".format(survey))
+            except HTTPError:
+                print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
 
     # Make the rest of the images if there is an optical image to regrid to.
     # Could change this to make images no matter what...
