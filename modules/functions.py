@@ -97,10 +97,21 @@ def get_info(fits_name, beam=None):
         else:
             equinox = 'J' + str(equinox)
             frame = 'fk5'
+        print("\tFound {} equinox in header.".format(equinox))
     except:
-        print("\tWARNING: No equinox information in header; assuming ICRS frame.")
-        equinox = None
-        frame = 'icrs'
+        try:
+            equinox = header['EPOCH']
+            if equinox < 1984.0:
+                equinox = 'B' + str (equinox)
+                frame = 'fk4'
+            else:
+                equinox = 'J' + str (equinox)
+                frame = 'fk5'
+            print("\tWARNING: Using deprecated EPOCH in header for equinox: {}.".format(equinox))
+        except:
+            print("\tWARNING: No equinox information in header; assuming ICRS frame.")
+            equinox = None
+            frame = 'icrs'
 
     return {'bmaj': bmaj, 'bmin': bmin, 'bpa': bpa, 'pix_per_beam': pix_per_beam, 'chan_width': chan_width,
             'equinox': equinox, 'frame': frame, 'cellsize': cellsize, 'spec_sys': spec_sys, 'spec_axis': spec_axis}
