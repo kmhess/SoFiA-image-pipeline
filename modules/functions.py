@@ -17,6 +17,15 @@ def chan2vel(channels, fits_name):
     velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
     return velocities
 
+def f2nhi(sbr, bunit, bmaj, bmin):
+    if bunit == 'Jy/beam*m/s':
+      nhi = 1.104e+21 * sbr / bmaj / bmin
+    elif bunit == 'Jy/beam*Hz':
+      nhi = 2.330e+20 * sbr / bmaj / bmin
+    else:
+      print("\tWARNING: Mom0 imag units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
+      nhi = sbr
+    return nhi
 
 def get_info(fits_name, beam=None):
 
