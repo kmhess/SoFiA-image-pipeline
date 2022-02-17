@@ -112,7 +112,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, suffix='png'):
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        cbar.set_label("HI Intensity [Jy/beam*Hz]", fontsize=18)
+        cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=18)
 
         fig.savefig(outfile, bbox_inches='tight')
 
@@ -189,6 +189,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
             return
 
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
+        convention = 'Optical'
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
             for i in range(mom1[0].data.shape[0]):
@@ -223,6 +224,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value + 5
             velmax = chan2vel(source['z_max'], src_basename +
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value - 5
+            if cube_params['spec_axis'] == 'VRAD': convention = 'Radio'
 
         mom1_reprojected, footprint = reproject_interp(mom1, opt_head)
         # mom1_reprojected[significance<2.0] = np.nan
@@ -261,7 +263,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         # cbar.set_label("Barycentric Optical Velocity [km/s]", fontsize=18)
-        cbar.set_label("Optical velocity [km/s]", fontsize=18)
+        cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
         fig.savefig(outfile, bbox_inches='tight')
 
@@ -334,7 +336,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
         ax1.contour(pv[0].data, colors='black', levels=[-2 * pv_rms, 2 * pv_rms, 4 * pv_rms])
         ax1.autoscale(False)
         ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
-                 transform=ax1.get_transform ('world'))
+                 transform=ax1.get_transform('world'))
         ax1.set_title(source['name'], fontsize=16)
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.set_xlabel('Angular Offset [deg]', fontsize=16)
@@ -342,6 +344,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
                  transform=ax1.transAxes, color='orange', fontsize=18)
         ax1.coords[1].set_ticks_position('l')
 
+        convention = 'Optical'
         if 'freq' in source.colnames:
             freq_sys = source['freq']
             ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
@@ -352,13 +355,14 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
             vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
             ax2.set_ylim(vel2, vel1)
-            ax2.set_ylabel('Optical Velocity [km/s]')
+            ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention))
         else:
-
+            if cube_params['spec_axis'] == 'VRAD': convention = 'Radio'
             vel_sys = source['v_col']
             ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
                      linewidth=0.75, transform=ax1.get_transform('world'))
-            ax1.set_ylabel('Velocity [m/s]', fontsize=16)
+            ax1.set_ylabel('{} {} velocity [m/s]'.format(cube_params['spec_sys'].capitalize(), convention,
+                                                        fontsize=18))
 
         fig.savefig(outfile, bbox_inches='tight')
         pv.close()
