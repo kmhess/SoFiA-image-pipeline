@@ -77,12 +77,14 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
     if not os.path.isfile(outfile):
 
         print("\tMaking HI spectrum plot covering the full frequency range.")
+        convention = 'Optical'
         if 'freq' in source.colnames:
             spec = ascii.read(outfile[:-1*len(suffix)] + 'txt')
             optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
             maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
             maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
         else:
+            if 'vrad' in source.colnames: convention = 'Radio'
             spec = ascii.read(outfile[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
             optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
             maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s).value
@@ -100,7 +102,7 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
         ax_spec.set_title(source['name'])
         ax_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax_spec.set_ylabel("Integrated Flux [Jy]")
-        ax_spec.set_xlabel("Optical Velocity [km/s]")
+        ax_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
 
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
 
@@ -127,11 +129,13 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
     if not os.path.isfile(outfile):
 
         print("\tMaking HI SoFiA masked spectrum plot.")
+        convention = 'Optical'
         if 'freq' in source.colnames:
             spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                               names=['chan', 'freq', 'f_sum', 'n_pix'])
             optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
         else:
+            if 'vrad' in source.colnames: convention = 'Radio'
             spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                               names=['chan', 'velo', 'f_sum', 'n_pix'])
             optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
@@ -143,7 +147,7 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
         ax_spec.set_title(source['name'])
         ax_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax_spec.set_ylabel("Integrated Flux [Jy]")
-        ax_spec.set_xlabel("Optical Velocity [km/s]")
+        ax_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
         fig.savefig(outfile, bbox_inches='tight')
 
     return
