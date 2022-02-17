@@ -22,7 +22,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 ###################################################################
 
 # Overlay HI contours on optical image
-def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png'):
+def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, suffix='png'):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0.{}'.format(source['id'], suffix)
 
@@ -36,7 +36,6 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png'):
 
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt[0].header)
 
-        base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
@@ -67,7 +66,7 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, suffix='png'):
 
 
 # Make HI grey scale image
-def make_mom0(source, src_basename, cube_params, patch, opt_head, suffix='png'):
+def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0hi.{}'.format(source['id'], suffix)
 
@@ -81,7 +80,6 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, suffix='png'):
 
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
@@ -114,7 +112,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, suffix='png'):
 
 
 # Make HI significance image
-def make_snr(source, src_basename, cube_params, patch, opt_head, suffix='png'):
+def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_snr.{}'.format(source['id'], suffix)
 
@@ -130,7 +128,6 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, suffix='png'):
         snr_reprojected, footprint = reproject_interp(hdulist_snr, opt_head)
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
 
         wa_cmap = colors.ListedColormap(['w', 'royalblue', 'limegreen', 'yellow', 'orange', 'r'])
@@ -263,7 +260,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
 
 
 # Overlay HI contours on false color optical image
-def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head, suffix='png'):
+def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png'):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0pstr.{}'.format(source['id'], suffix)
 
@@ -272,7 +269,6 @@ def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head,
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        base_contour = 3 * source['rms'] * np.abs(cube_params['chan_width'].value)
         nhi19 = 2.33e20 * base_contour / (cube_params['bmaj'].value * cube_params['bmin'].value) / 1e19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
@@ -358,7 +354,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None):
+def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, snr_range=[2,3]):
 
     print("\n\tStart making spatial images of the spectral line source {}: {}.".format(source['id'], source['name']))
 
@@ -367,6 +363,17 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
     elif sofia == 1:
         cube_params = get_info(src_basename + '_{}.fits'.format(source['id']), beam)
+
+    # Calculate base contour
+    try:
+        with fits.open(src_basename + '_{}_snr.fits'.format(str(source['id']))) as hdulist_snr, fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi:
+             HIlowest = np.median(hdulist_hi[0].data[(hdulist_snr[0].data > snr_range[0])*(hdulist_snr[0].data < snr_range[1])])
+        print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,HIlowest))
+    except FileNotFoundError:
+        print("\tNo SNR and/or mom0 fits file. Perhaps you ran SoFiA without generating moments?")
+        return
+#    with fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi
+#    base_contour = np.median(hdulist_hi[0].data[(hdulist_snr[0].data > snr_range[0])*(hdulist_snr[0].data < snr_range[1])])
 
     # Get the position of the source to retrieve an optical image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
@@ -411,7 +418,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Create the first optical overlay figure:
     if dss2:
-        make_mom0dss2(source, src_basename, cube_params, patch, dss2, suffix=suffix)
+        make_mom0dss2(source, src_basename, cube_params, patch, dss2, HIlowest, suffix=suffix)
         opt_head = dss2[0].header
         dss2.close()
 
@@ -421,7 +428,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         patch_height = (cube_params['bmaj'] / pstar_view).decompose()
         patch_width = (cube_params['bmin'] / pstar_view).decompose()
         patch_pstar = {'width': patch_width, 'height': patch_height}
-        make_panstarrs(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, suffix=suffix)
+        make_panstarrs(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest, suffix=suffix)
 
     # Use dss2 image as the base for regridding the HI since it is relatively small (although set by the number of pixels...
     # need to change this to take into account pixel scale to be rigorous.
@@ -433,8 +440,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # Make the rest of the images if there is an optical image to regrid to.
     # Could change this to make images no matter what...
     if dss2 or pstar_im:
-        make_mom0(source, src_basename, cube_params, patch, opt_head, suffix=suffix)
-        make_snr(source, src_basename, cube_params, patch, opt_head, suffix=suffix)
+        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
+        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=opt_view, suffix=suffix, sofia=2)
 
     # Make pv if it was created (only in SoFiA-1); not dependent on optical image.
@@ -449,4 +456,4 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
 if __name__ == '__main__':
 
-    main(source, src_basename, opt_view=6*u.arcmin, suffix='png')
+    main(source, src_basename, opt_view=6*u.arcmin, suffix='png', snr_range=[2,3])
