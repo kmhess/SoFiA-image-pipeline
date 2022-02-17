@@ -17,7 +17,7 @@ def chan2vel(channels, fits_name):
     velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
     return velocities
 
-def f2nhi(sbr, bunit, bmaj, bmin):
+def sbr2nhi(sbr, bunit, bmaj, bmin):
     if bunit == 'Jy/beam*m/s':
       nhi = 1.104e+21 * sbr / bmaj / bmin
     elif bunit == 'Jy/beam*Hz':

@@ -14,7 +14,7 @@ from reproject import reproject_interp
 from urllib.error import HTTPError
 
 from modules.functions import get_info
-from modules.functions import chan2freq, chan2vel, f2nhi
+from modules.functions import chan2freq, chan2vel, sbr2nhi
 from modules.get_ancillary import *
 from modules.get_hst_cosmos import get_hst_cosmos
 
@@ -41,7 +41,7 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, s
 
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt[0].header)
 
-        nhi19 = f2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
+        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
         fig = plt.figure(figsize=(8, 8))
@@ -92,7 +92,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        nhi19 = f2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
+        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
         fig = plt.figure(figsize=(8, 8))
@@ -140,7 +140,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         snr_reprojected, footprint = reproject_interp(hdulist_snr, opt_head)
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        nhi19 = f2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
+        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
 
         wa_cmap = colors.ListedColormap(['w', 'royalblue', 'limegreen', 'yellow', 'orange', 'r'])
         boundaries = [0, 1, 2, 3, 4, 5, 6]
@@ -283,7 +283,7 @@ def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head,
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        nhi19 = f2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
+        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
         fig = plt.figure(figsize=(8, 8))
