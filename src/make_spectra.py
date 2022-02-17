@@ -170,5 +170,5 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
 
 
 if __name__ == '__main__':
-
-    main(source, src_basename, original=None, suffix='png')
+    pass
+    # main(source, src_basename, original=None, suffix='png')
