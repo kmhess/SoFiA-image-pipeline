@@ -173,7 +173,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 
 # Make velocity map for object
-def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.arcmin, suffix='png', sofia=2):
+def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_view=6*u.arcmin, suffix='png', sofia=2):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom1.{}'.format(source['id'], suffix)
 
@@ -225,7 +225,12 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=6*u.a
             if cube_params['spec_axis'] == 'VRAD': convention = 'Radio'
 
         mom1_reprojected, footprint = reproject_interp(mom1, opt_head)
-        # mom1_reprojected[significance<2.0] = np.nan
+
+        # Only plot values above the lowest calculated HI value:
+        hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
+
+        mom1_reprojected[hi_reprojected < HIlowest] = np.nan
 
         v_sys_label = "v_sys = {}   W_50 = {}  W_20 = {}".format(int(v_sys), int(w50), int(w20))
         hi_pos = SkyCoord(source['ra'], source['dec'], unit='deg')
@@ -487,7 +492,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     if dss2 or pstar_im:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
-        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view=opt_view, suffix=suffix, sofia=2)
+        make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_view=opt_view, suffix=suffix,
+                  sofia=2)
 
     # Make pv if it was created (only in SoFiA-1); not dependent on optical image.
     make_pv(source, src_basename, cube_params, suffix=suffix)
