@@ -48,8 +48,9 @@ parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float
                          ' of all pixels whose SNR value is within the given range. Default is [2,3].')
 
 parser.add_argument('-s', '--surveys', default=None,
-                    help='Specify the surveys to retrieve and on which to overlay HI contours. So far, DSS2 blue\n'
-                         'and PanSTARRS alway by default. This allows the option to add COSMO HST for CHILES: -k \'hst\'.')
+                    help='Specify additional SkyView surveys to retrieve from astroquery on which to overlay HI\n'
+                         ' contours. DSS2 Blue is always made by default. These additional non-SkyView options are\n'
+                         ' available: \'panstarrs\',\'hst\'.  \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
 
 parser.add_argument('-m', '--imagemagick', default=False,
                     help='If imagemagick is installed on user\'s system, optionally combine main plots into single '
@@ -68,10 +69,14 @@ try:
 except:
     beam = []
 opt_view = float(args.image_size) * u.arcmin
+surveys = ['DSS2 Blue']
 try:
-    surveys = [k for k in args.surveys.split(',')]
+    surveys += [k for k in args.surveys.split(',')]
+    # Remove duplicate DSS2 Blue if it has also been specified by the user (order doesn't matter right now):
+    if 'DSS2 Blue' in args.surveys.split(','): surveys.remove('DSS2 Blue')
 except:
-    surveys = []
+    pass
+surveys = tuple(surveys)
 
 print("\n*****************************************************************")
 print("\tBeginning SoFiA-image-pipeline (SIP).")
@@ -163,7 +168,8 @@ n_src = 0
 for source in catalog:
 
     source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
-    make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam, surveys=surveys, snr_range=args.snr_range)
+    make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
+                     surveys=list(surveys), snr_range=args.snr_range)
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     if imagemagick:
