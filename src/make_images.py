@@ -33,7 +33,7 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, s
 
     if not os.path.isfile(outfile):
         try:
-            print("\tMaking {} optical overlaid with HI contours.".format(survey))
+            print("\tMaking {} overlaid with HI contours.".format(survey))
             hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -467,7 +467,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_height = (cube_params['bmaj'] / hst_opt_view).decompose()
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
-            make_mom0dss2(source, src_basename, cube_params, patch_hst, hst_opt, suffix=suffix, survey='hst')
+            make_mom0dss2(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst')
 
     # If requested, plot the HI contours on any number of surveys available through SkyView.
     if len(surveys) > 0:
