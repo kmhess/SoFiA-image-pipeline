@@ -416,12 +416,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Get optical images, based on the HI position and given image size.
     dss2 = get_skyview(hi_pos_icrs, opt_view=opt_view, survey='DSS2 Blue')
-    pstar_view = opt_view
-    if opt_view > 8*u.arcmin:
-        pstar_view = 8*u.arcmin
-        print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on PanSTARRS "
-              "images (they are much bigger than DSS2).")
-    pstar_im, pstar_head = get_panstarrs(hi_pos_icrs, opt_view=pstar_view)
 
     # Temporarily replace with ICRS ra/dec for plotting purposes in the rest (won't change catalog file.):
     source['ra'] = hi_pos_icrs.ra.deg
@@ -434,17 +428,26 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Create the first optical overlay figure:
     if dss2:
+        surveys.remove('DSS2 Blue')
         make_mom0dss2(source, src_basename, cube_params, patch, dss2, HIlowest, suffix=suffix)
         opt_head = dss2[0].header
         dss2.close()
 
-    # In theory can have different sizes for the panstarrs and dss2 images, but then need to recalculate the patch
-    # to represent the beam size.  This isn't done rigorously yet.
-    if pstar_im:
-        patch_height = (cube_params['bmaj'] / pstar_view).decompose()
-        patch_width = (cube_params['bmin'] / pstar_view).decompose()
-        patch_pstar = {'width': patch_width, 'height': patch_height}
-        make_panstarrs(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest, suffix=suffix)
+    # Create a false color optical panstarrs overlay, if requested, or if dss2 fails for some reason:
+    if ('panstarrs' in surveys) | (not dss2):
+        surveys.remove('panstarrs')
+        pstar_view = opt_view
+        if opt_view > 8 * u.arcmin:
+            pstar_view = 8 * u.arcmin
+            print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on PanSTARRS "
+                  "images (they are much bigger than DSS2).")
+        pstar_im, pstar_head = get_panstarrs (hi_pos_icrs, opt_view=pstar_view)
+        # In theory can have different sizes for the panstarrs and dss2 images, but then need to recalculate the patch.
+        if pstar_im:
+            patch_height = (cube_params['bmaj'] / pstar_view).decompose()
+            patch_width = (cube_params['bmin'] / pstar_view).decompose()
+            patch_pstar = {'width': patch_width, 'height': patch_height}
+            make_panstarrs(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest, suffix=suffix)
 
     # Use dss2 image as the base for regridding the HI since it is relatively small (although set by the number of pixels...
     # need to change this to take into account pixel scale to be rigorous.
