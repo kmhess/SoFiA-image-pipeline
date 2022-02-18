@@ -72,11 +72,10 @@ opt_view = float(args.image_size) * u.arcmin
 surveys = ['DSS2 Blue']
 try:
     surveys += [k for k in args.surveys.split(',')]
-    # Remove duplicate DSS2 Blue if it has also been specified by the user (order doesn't matter right now):
-    if 'DSS2 Blue' in args.surveys.split(','): surveys.remove('DSS2 Blue')
 except:
     pass
-surveys = tuple(surveys)
+# Remove duplicates if necessary (order doesn't matter right now; might later):
+surveys = tuple(set(surveys))
 
 print("\n*****************************************************************")
 print("\tBeginning SoFiA-image-pipeline (SIP).")
