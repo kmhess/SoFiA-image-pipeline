@@ -14,6 +14,7 @@ from modules.get_ancillary import *
 from modules.functions import get_radecfreq
 from src import make_images
 from src import make_spectra
+from src.combine_images import combine_images
 
 
 ###################################################################
@@ -45,12 +46,18 @@ parser.add_argument('-s', '--surveys', default=None,
                     help='Specify the surveys to retrieve and on which to overlay HI contours. So far, DSS2 blue\n'
                          'and PanSTARRS alway by default. This allows the option to add COSMO HST for CHILES: -k \'hst\'.')
 
+parser.add_argument('-m', '--imagemagick', default=False,
+                    help='If imagemagick is installed on user\'s system, optionally combine main plots into single '
+                         'large file',
+                    action='store_true')
+
 ###################################################################
 
 # Parse the arguments above
 args = parser.parse_args()
 suffix = args.suffix
 original = args.original
+imagemagick = args.imagemagick
 try:
     beam = [int(b) for b in args.beam.split(',')]
 except:
@@ -153,6 +160,9 @@ for source in catalog:
     source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
     make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam, surveys=surveys)
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
+
+    if imagemagick:
+        combine_images(source, src_basename)
 
     n_src += 1
 
