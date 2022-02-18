@@ -471,7 +471,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         for survey in surveys:
             try:
                 overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey)
-                make_mom0dss2(source, src_basename, cube_params, patch, overlay_image, suffix=suffix, survey=survey)
+                make_mom0dss2(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix, survey=survey)
             except ValueError:
                 print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
                       "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
