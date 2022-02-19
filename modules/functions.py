@@ -15,7 +15,7 @@ def chan2freq(channels, fits_name):
     :rtype: Iterable[float]
     """
     header = fits.getheader(fits_name)
-    frequencies = (header['CDELT3'] * (channels - header['CRPIX3'] - 1) + header['CRVAL3']) * u.m / u.s
+    frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
     return frequencies
 
 
@@ -35,9 +35,18 @@ def chan2vel(channels, fits_name):
     print("\tWARNING: Assuming channels are uniform width in velocity (may not be the case)!")
     header = fits.getheader(fits_name)
     # Need to deal with different types of headers and velocity scaling with or without frequency!!! (Also bary vs topo, etc)
-    velocities = (header['CDELT3'] * (channels - header['CRPIX3'] - 1) + header['CRVAL3']) * u.m / u.s
+    velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
     return velocities
 
+def sbr2nhi(sbr, bunit, bmaj, bmin):
+    if bunit == 'Jy/beam*m/s':
+      nhi = 1.104e+21 * sbr / bmaj / bmin
+    elif bunit == 'Jy/beam*Hz':
+      nhi = 2.330e+20 * sbr / bmaj / bmin
+    else:
+      print("\tWARNING: Mom0 imag units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
+      nhi = sbr
+    return nhi
 
 def get_info(fits_name, beam=None):
     """Get the beam info from a FITS file.
@@ -93,9 +102,33 @@ def get_info(fits_name, beam=None):
         units = u.m / u.s
     chan_width = chan_width * units
 
-    # Add code to deal with reference frame?  AIPS conventions use VELREF: http://parac.eu/AIPSMEM117.pdf
-    # spec_sys = header['SPECSYS']
+    # Try to determine the reference frame.  AIPS conventions use VELREF: http://parac.eu/AIPSMEM117.pdf
+    try:
+        spec_sys = header['SPECSYS']
+        print("\tFound {} reference frame specified in SPECSYS in header.".format(spec_sys))
+    except:
+        try:
+            velref = header['VELREF']
+            if velref == 1: spec_sys = 'LSR'
+            if velref == 2: spec_sys = 'HELIOCEN'
+            if velref == 3: spec_sys = 'TOPOCENT'
+            print("\tDerived {} reference frame from VELREF in header using AIPS convention.".format(spec_sys))
+        except:
+            spec_sys = 'TOPOCENT'
+            print("\tNo SPECSYS or VELREF in header, assuming data in TOPOCENT reference frame.")
 
+    # Try to determine the spectral coordinates
+    spec_axis = header['CTYPE3']
+    print("\tFound spectral axis type {} in header.".format(spec_axis))
+    if ("-" in spec_axis) and spec_sys:
+        print("\tWARNING: dropping end of spectral axis type. Using SPECSYS/VELREF for reference frame.")
+        spec_axis = spec_axis.split ("-")[0]
+    elif ("-" in spec_axis) and (not spec_sys):
+        print("\tWARNING: attempting to use end of spectral axis type for reference frame.")
+        spec_axis = spec_axis.split("-")[0]
+        spec_sys = spec_axis.split("-")[1]
+
+    # Try to determine the equinox of the observations
     try:
         equinox = header['EQUINOX']
         if equinox < 1984.0:
@@ -104,13 +137,24 @@ def get_info(fits_name, beam=None):
         else:
             equinox = 'J' + str(equinox)
             frame = 'fk5'
+        print("\tFound {} equinox in header.".format(equinox))
     except:
-        print("\tWARNING: No equinox information in header; assuming ICRS frame.")
-        equinox = None
-        frame = 'icrs'
+        try:
+            equinox = header['EPOCH']
+            if equinox < 1984.0:
+                equinox = 'B' + str (equinox)
+                frame = 'fk4'
+            else:
+                equinox = 'J' + str (equinox)
+                frame = 'fk5'
+            print("\tWARNING: Using deprecated EPOCH in header for equinox: {}.".format(equinox))
+        except:
+            print("\tWARNING: No equinox information in header; assuming ICRS frame.")
+            equinox = None
+            frame = 'icrs'
 
-    return {'bmaj': bmaj, 'bmin': bmin, 'bpa': bpa, 'pix_per_beam': pix_per_beam,
-            'chan_width': chan_width, 'equinox': equinox, 'frame': frame, 'cellsize': cellsize}
+    return {'bmaj': bmaj, 'bmin': bmin, 'bpa': bpa, 'pix_per_beam': pix_per_beam, 'chan_width': chan_width,
+            'equinox': equinox, 'frame': frame, 'cellsize': cellsize, 'spec_sys': spec_sys, 'spec_axis': spec_axis}
 
 
 def get_radecfreq(catalog, original):

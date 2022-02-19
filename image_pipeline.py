@@ -14,6 +14,7 @@ from modules.get_ancillary import *
 from modules.functions import get_radecfreq
 from src import make_images
 from src import make_spectra
+from src.combine_images import combine_images
 
 
 ###################################################################
@@ -41,9 +42,20 @@ parser.add_argument('-i', '--image_size', default=6,
                     help='Specify the minimum optical image size to retrieve in arcmin.  It will be adjusted if\n'
                          'the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
 
+parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float,
+                    help='Specify which SNRmin and SNRmax values should be used to set the lowest reliable HI contour'
+                         ' in the figures. The contour level is calculated as the median value in the mom0 image'
+                         ' of all pixels whose SNR value is within the given range. Default is [2,3].')
+
 parser.add_argument('-s', '--surveys', default=None,
-                    help='Specify the surveys to retrieve and on which to overlay HI contours. So far, DSS2 blue\n'
-                         'and PanSTARRS alway by default. This allows the option to add COSMO HST for CHILES: -k \'hst\'.')
+                    help='Specify additional SkyView surveys to retrieve from astroquery on which to overlay HI\n'
+                         ' contours. DSS2 Blue is always made by default. These additional non-SkyView options are\n'
+                         ' available: \'panstarrs\',\'hst\'.  \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
+
+parser.add_argument('-m', '--imagemagick', default=False,
+                    help='If imagemagick is installed on user\'s system, optionally combine main plots into single '
+                         'large file',
+                    action='store_true')
 
 ###################################################################
 
@@ -51,15 +63,19 @@ parser.add_argument('-s', '--surveys', default=None,
 args = parser.parse_args()
 suffix = args.suffix
 original = args.original
+imagemagick = args.imagemagick
 try:
     beam = [int(b) for b in args.beam.split(',')]
 except:
     beam = []
 opt_view = float(args.image_size) * u.arcmin
+surveys = ['DSS2 Blue']
 try:
-    surveys = [k for k in args.surveys.split(',')]
+    surveys += [k for k in args.surveys.split(',')]
 except:
-    surveys = []
+    pass
+# Remove duplicates if necessary (order doesn't matter right now; might later):
+surveys = tuple(set(surveys))
 
 print("\n*****************************************************************")
 print("\tBeginning SoFiA-image-pipeline (SIP).")
@@ -151,8 +167,12 @@ n_src = 0
 for source in catalog:
 
     source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
-    make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam, surveys=surveys)
+    make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
+                     surveys=list(surveys), snr_range=args.snr_range)
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
+
+    if imagemagick:
+        combine_images(source, src_basename)
 
     n_src += 1
 
