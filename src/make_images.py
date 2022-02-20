@@ -279,7 +279,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
 
 
 # Overlay HI contours on false color optical image
-def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
+def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
                    survey='panstarrs'):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey, suffix)
@@ -456,7 +456,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_height = (cube_params['bmaj'] / pstar_view).decompose()
             patch_width = (cube_params['bmin'] / pstar_view).decompose()
             patch_pstar = {'width': patch_width, 'height': patch_height}
-            make_panstarrs(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest,
+            make_color_im(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest,
                            suffix=suffix, survey='panstarrs')
 
     # Use dss2 image as the base for regridding the HI since it is relatively small (although set by the number of pixels...
@@ -483,7 +483,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     if 'decals' in surveys:
         surveys.remove('decals')
         decals_im, decals_head = get_decals(hi_pos_icrs, opt_view=opt_view)
-        make_panstarrs(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
+        make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
                        survey='decals')
 
     # If requested, plot the HI contours on any number of surveys available through SkyView.
