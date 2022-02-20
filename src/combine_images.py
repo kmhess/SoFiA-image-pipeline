@@ -1,7 +1,8 @@
 import os
 
 
-def combine_images(source, src_basename):
+# Note, although this has been generalized, it seems to work best with png's!
+def combine_images(source, src_basename, suffix='png'):
 
     # Specify the command to use imagemagick's convert (karma has a convert which may conflict)
     # convert_im = "/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert"
@@ -12,14 +13,13 @@ def combine_images(source, src_basename):
 
     # Use terminal commands to assemble figures with imagemagick: https://imagemagick.org/index.php
     print("\n\tAssembling figures with imagemagck for source {}: {}.".format(source['id'], source['name']))
-    new_png = "{}combo.png".format(infile)
-    os.system(
-        "{} {}mom0dss2blue.png {}mom0hi.png {}snr.png {}mom1.png +append temp.png".format(convert_im, infile, infile,
-                                                                                          infile, infile, infile))
-    os.system("{} {}spec.png -resize 125% temp2.png".format(convert_im, infile))
-    os.system("{} {}specfull.png -resize 125% temp3.png".format(convert_im, infile))
-    os.system("{} temp2.png temp3.png {}pv.png +append temp4.png".format(convert_im, infile, infile, infile))
-    os.system("{} temp.png temp4.png -append {}".format(convert_im, new_png))
-    os.system('rm -rf temp.png temp2.png temp3.png temp4.png')
+    new_file = "{}combo.{}".format(infile, suffix)
+    os.system("{0} {1}mom0dss2blue.{2} {1}mom0hi.{2} {1}snr.{2} {1}mom1.{2}"
+              " +append temp.{2}".format(convert_im, infile, suffix))
+    os.system("{0} {1}spec.{2} -resize 125% temp2.{2}".format(convert_im, infile, suffix))
+    os.system("{0} {1}specfull.{2} -resize 125% temp3.{2}".format(convert_im, infile, suffix))
+    os.system("{0} temp2.{2} temp3.{2} {1}pv.{2} +append temp4.{2}".format(convert_im, infile, suffix))
+    os.system("{0} temp.{2} temp4.{2} -append {1}".format(convert_im, new_file, suffix))
+    os.system('rm -rf temp*.{}'.format(suffix))
 
     return

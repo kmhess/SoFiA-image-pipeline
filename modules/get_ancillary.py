@@ -1,3 +1,8 @@
+import requests
+from PIL import Image
+from io import BytesIO
+from urllib.error import HTTPError
+
 from modules.panstarrs_fcns import *
 
 from astropy.io import fits
@@ -51,3 +56,21 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
     return color_im, fits_head
 
 
+def get_decals(hi_pos, opt_view=6*u.arcmin):
+
+    # Get DECaLS false color image and fits (for the WCS). Example URL for this script provided by John Wu.
+    pixscale = 0.262   # default(?) arcsec/pixel
+    dimen = int(opt_view.to(u.arcsec).value / pixscale)
+    url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
+          'pixscale={}&height={}&width={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen, dimen)
+
+    try:
+        fits_head = fits.getheader(url)
+        r = requests.get(url.replace("fits", "jpg").split('bands')[0])
+        color_im = Image.open(BytesIO(r.content))
+    except HTTPError:
+        print("\tWARNING: HTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS coverage?")
+        fits_head = None
+        color_im = None
+
+    return color_im, fits_head
