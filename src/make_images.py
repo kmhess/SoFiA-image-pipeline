@@ -279,12 +279,16 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
 
 
 # Overlay HI contours on false color optical image
-def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png'):
+def make_panstarrs(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
+                   survey='panstarrs'):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0pstr.{}'.format(source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey, suffix)
+
+    if survey == 'panstarrs': survey = 'PanSTARRS'
+    elif survey == 'decals': survey = 'DECaLS'
 
     if not os.path.isfile(outfile):
-        print("\tMaking PanSTARRS image overlaid with HI contours.")
+        print("\tMaking {} image overlaid with HI contours.".format(survey))
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
@@ -452,7 +456,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_height = (cube_params['bmaj'] / pstar_view).decompose()
             patch_width = (cube_params['bmin'] / pstar_view).decompose()
             patch_pstar = {'width': patch_width, 'height': patch_height}
-            make_panstarrs(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest, suffix=suffix)
+            make_panstarrs(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest,
+                           suffix=suffix, survey='panstarrs')
 
     # Use dss2 image as the base for regridding the HI since it is relatively small (although set by the number of pixels...
     # need to change this to take into account pixel scale to be rigorous.
@@ -473,6 +478,13 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
             make_mom0dss2(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst')
+
+    # If requested plot HI contours on DECaLS imaging
+    if 'decals' in surveys:
+        surveys.remove('decals')
+        decals_im, decals_head = get_decals(hi_pos_icrs, opt_view=opt_view)
+        make_panstarrs(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
+                       survey='decals')
 
     # If requested, plot the HI contours on any number of surveys available through SkyView.
     if len(surveys) > 0:
