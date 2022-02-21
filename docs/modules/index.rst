@@ -5,7 +5,7 @@ Pipeline helper modules
 
 .. toctree::
    :maxdepth: 2
-   :caption: tada
+   :caption: Helper modules
 
    functions
    get_ancillary

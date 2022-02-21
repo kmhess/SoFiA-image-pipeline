@@ -11,6 +11,7 @@ Welcome to SoFiA-image-pipeline's documentation!
    :caption: Contents:
 
    modules/index
+   src/index
 
 
 
