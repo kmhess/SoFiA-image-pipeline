@@ -47,7 +47,7 @@ parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float
                          ' in the figures. The contour level is calculated as the median value in the mom0 image'
                          ' of all pixels whose SNR value is within the given range. Default is [2,3].')
 
-parser.add_argument('-s', '--surveys', default=None,
+parser.add_argument('-s', '--surveys', default=None, nargs='*', type=str,
                     help='Specify additional SkyView surveys to retrieve from astroquery on which to overlay HI\n'
                          ' contours. DSS2 Blue is always made by default. These additional non-SkyView options are\n'
                          ' available: \'panstarrs\',\'hst\'.  \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
@@ -172,7 +172,7 @@ for source in catalog:
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     if imagemagick:
-        combine_images(source, src_basename)
+        combine_images(source, src_basename, suffix=suffix)
 
     n_src += 1
 
