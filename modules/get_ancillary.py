@@ -3,7 +3,7 @@ from PIL import Image
 from io import BytesIO
 from urllib.error import HTTPError
 
-from modules.panstarrs_fcns import *
+from modules.panstarrs_fcns import getcolorim, geturl
 
 from astropy.io import fits
 from astropy import units as u

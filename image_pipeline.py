@@ -8,9 +8,7 @@ from astropy.io import fits  # change to table.read?
 from astropy.table import Table
 from astropy import units as u
 import numpy as np
-from reproject import reproject_interp
 
-from modules.get_ancillary import *
 from modules.functions import get_radecfreq
 from src import make_images
 from src import make_spectra
