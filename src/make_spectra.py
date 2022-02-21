@@ -156,7 +156,7 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
                            yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         elif specunits == 'Jy':
           ax_spec.errorbar(optical_velocity, spec['f_sum'], elinewidth=0.75,
-                           yerr=source['rms'] * np.sqrt(spec['n_pix']), capsize=1)
+                           yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         ax_spec.set_title(source['name'])
         ax_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax_spec.set_ylabel("Integrated Flux [Jy]")
