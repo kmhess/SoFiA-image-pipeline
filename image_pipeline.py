@@ -51,9 +51,11 @@ parser.add_argument('-s', '--surveys', default=['DSS2 Blue'], nargs='*', type=st
                          ' \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
 
 parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
-                    help='Optionally combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.'
-                         ' If this option is given with no argument we simply assume that CONVERT is executed by the "convert"'
-                         ' command. Otherwise, the argument of this option gives the full path to the CONVERT executable.')
+                    help='Optionally combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'
+                         ' If this option is given with no argument we simply assume that CONVERT is executed by the "convert"\n'
+                         ' command. Otherwise, the argument of this option gives the full path to the CONVERT executable.\n'
+                         ' Only the first multiwavelength image specified in "surveys" argument is plotted next to the\n'
+                         ' spectral line data.')
 
 ###################################################################
 
