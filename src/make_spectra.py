@@ -142,21 +142,20 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
 
         # Get spec units (Jy or Jy/beam) to check whether the division by the beam area has been made
         ll = 0
-        while not ('f_sum'  in spec.meta['comments'][ll] and
-                   'chan'  in spec.meta['comments'][ll] and
+        while not ('f_sum' in spec.meta['comments'][ll] and 'chan' in spec.meta['comments'][ll] and
                    'n_pix' in spec.meta['comments'][ll]):
-          ll +=1
+            ll += 1
         specunits = (spec.meta['comments'][ll+1].split()[spec.meta['comments'][ll].split().index('f_sum')])
 
         fig = plt.figure(figsize=(8, 4))
         ax_spec = fig.add_subplot(111)
         ax_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
         if specunits == 'Jy/beam':
-          ax_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
-                           yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+            ax_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
+                             yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         elif specunits == 'Jy':
-          ax_spec.errorbar(optical_velocity, spec['f_sum'], elinewidth=0.75,
-                           yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+            ax_spec.errorbar(optical_velocity, spec['f_sum'], elinewidth=0.75,
+                             yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         ax_spec.set_title(source['name'])
         ax_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax_spec.set_ylabel("Integrated Flux [Jy]")
