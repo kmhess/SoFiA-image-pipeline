@@ -166,7 +166,7 @@ for source in catalog:
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     if imagemagick:
-        combine_images(source, src_basename, suffix=suffix)
+        combine_images(source, src_basename, suffix=suffix, surveys=list(surveys))
 
     n_src += 1
 
