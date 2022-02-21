@@ -26,7 +26,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 # Overlay HI contours on optical image
 
-def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
+def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
 
     survey_nospace = survey.replace(" ", "").lower()
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey_nospace, suffix)
@@ -367,7 +367,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
                      linewidth=0.75, transform=ax1.get_transform('world'))
             ax1.set_ylabel('{} {} velocity [m/s]'.format(cube_params['spec_sys'].capitalize(), convention,
-                                                        fontsize=18))
+                                                         fontsize=18))
 
         fig.savefig(outfile, bbox_inches='tight')
         pv.close()
@@ -437,7 +437,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # Create the first optical overlay figure:
     if dss2:
         surveys.remove('DSS2 Blue')
-        make_mom0dss2(source, src_basename, cube_params, patch, dss2, HIlowest, suffix=suffix)
+        make_overlay(source, src_basename, cube_params, patch, dss2, HIlowest, suffix=suffix, survey='DSS2 Blue')
         opt_head = dss2[0].header
         dss2.close()
 
@@ -456,7 +456,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_width = (cube_params['bmin'] / pstar_view).decompose()
             patch_pstar = {'width': patch_width, 'height': patch_height}
             make_color_im(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest,
-                           suffix=suffix, survey='panstarrs')
+                          suffix=suffix, survey='panstarrs')
 
     # Use dss2 image as the base for regridding the HI since it is relatively small (although set by the number of pixels...
     # need to change this to take into account pixel scale to be rigorous.
@@ -476,21 +476,23 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_height = (cube_params['bmaj'] / hst_opt_view).decompose()
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
-            make_mom0dss2(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst')
+            make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix,
+                             survey='hst')
 
     # If requested plot HI contours on DECaLS imaging
     if 'decals' in surveys:
         surveys.remove('decals')
         decals_im, decals_head = get_decals(hi_pos_icrs, opt_view=opt_view)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
-                       survey='decals')
+                      survey='decals')
 
     # If requested, plot the HI contours on any number of surveys available through SkyView.
     if len(surveys) > 0:
         for survey in surveys:
             try:
                 overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey)
-                make_mom0dss2(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix, survey=survey)
+                make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
+                             survey=survey)
             except ValueError:
                 print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
                       "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
