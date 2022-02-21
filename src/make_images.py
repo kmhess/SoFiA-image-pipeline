@@ -26,7 +26,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 ###################################################################
 
-# Overlay HI contours on optical image
+# Overlay HI contours on user image
 
 def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, suffix='png'):
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
@@ -63,8 +63,28 @@ def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, s
     return
 
 
-def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
+# Overlay HI contours on another image
 
+def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
+    """Overlay HI contours on top of an optical image
+
+    :param source: source object
+    :type source: Astropy data object?
+    :param src_basename: basename for the source for data files
+    :type src_basename: str
+    :param cube_params: parameters of the data cube
+    :type cube_params: dict
+    :param patch: observing patch parameters
+    :type patch: dict
+    :param opt: optical data
+    :type opt: dict
+    :param base_contour: base contour
+    :type base_contour: float
+    :param suffix: file type, defaults to 'png'
+    :type suffix: str, optional
+    :param survey: survey from which to use data, defaults to 'DSS2 Blue'
+    :type survey: str, optional
+    """
     survey_nospace = survey.replace(" ", "").lower()
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey_nospace, suffix)
 
@@ -404,7 +424,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
                      linewidth=0.75, transform=ax1.get_transform('world'))
             ax1.set_ylabel('{} {} velocity [m/s]'.format(cube_params['spec_sys'].capitalize(), convention,
-                                                        fontsize=18))
+                                                         fontsize=18))
 
         fig.savefig(outfile, bbox_inches='tight')
         pv.close()
@@ -425,6 +445,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     elif sofia == 1:
         cube_params = get_info(src_basename + '_{}.fits'.format(source['id']), beam)
 
+    opt_head = None
+
     # Calculate base contour
     try:
         with fits.open(src_basename + '_{}_snr.fits'.format(str(source['id']))) as hdulist_snr, fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi:
@@ -434,7 +456,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print("\tNo SNR and/or mom0 fits file. Perhaps you ran SoFiA without generating moments?")
         return
 
-    # Get the position of the source to retrieve an optical image
+    # Get the position of the source to retrieve an survey image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
                       equinox=cube_params['equinox'], frame=cube_params['frame'])
 
@@ -442,7 +464,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # so let's transform everything to ICRS ....Need to keep an eye on this (may have been a server issue).
     hi_pos_icrs = hi_pos.transform_to('icrs')
 
-    # Calculate the size of the optical image for the moment maps
+    # Calculate the size of the survey image for the moment maps
     Xc = source['x']
     Yc = source['y']
     Xmin = source['x_min']
@@ -526,7 +548,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # For CHILES: plot HI contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
-        surveys.remove('hst')
         hst_opt_view = 40 * u.arcsec
         if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
             hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
@@ -535,21 +556,42 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_height = (cube_params['bmaj'] / hst_opt_view).decompose()
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
-            make_mom0dss2(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst')
+            make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix,
+                         survey='hst')
+        if surveys[0] == 'hst':
+            opt_head = hst_opt[0].header
+            opt_view = hst_opt_view
+            patch = patch_hst
+        surveys.remove('hst')
+
+    # Create a false color optical panstarrs overlay, if requested, or if dss2 fails for some reason:
+    if ('panstarrs' in surveys):
+        pstar_im, pstar_head = get_panstarrs(hi_pos_icrs, opt_view=opt_view)
+        if pstar_im:
+            make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest,
+                          suffix=suffix, survey='panstarrs')
+        if surveys[0] == 'panstarrs':
+            opt_head = pstar_head
+        surveys.remove('panstarrs')
 
     # If requested plot HI contours on DECaLS imaging
     if 'decals' in surveys:
-        surveys.remove('decals')
         decals_im, decals_head = get_decals(hi_pos_icrs, opt_view=opt_view)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
-                       survey='decals')
+                      survey='decals')
+        if surveys[0] == 'decals':
+            opt_head = decals_head
+        surveys.remove('decals')
 
-    # If requested, plot the HI contours on any number of surveys available through SkyView.
+    # If requested, plot the HI contours on any number of survey images available through SkyView.
     if len(surveys) > 0:
         for survey in surveys:
             try:
                 overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey)
-                make_mom0dss2(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix, survey=survey)
+                make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
+                             survey=survey)
+                if surveys[0] == survey:
+                    opt_head = overlay_image[0].header
             except ValueError:
                 print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
                       "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
@@ -557,15 +599,14 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             except HTTPError:
                 print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
 
-    # Make the rest of the images if there is an optical image to regrid to.
-    # Could change this to make images no matter what...
-    if dss2 or pstar_im:
+    # Make the rest of the images if there is a survey image to regrid to.
+    if opt_head:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_view=opt_view, suffix=suffix,
                   sofia=2)
 
-    # Make pv if it was created (only in SoFiA-1); not dependent on optical image.
+    # Make pv if it was created (only in SoFiA-1); not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, suffix=suffix)
 
     plt.close('all')

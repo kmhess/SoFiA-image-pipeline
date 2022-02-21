@@ -3,7 +3,7 @@ from PIL import Image
 from io import BytesIO
 from urllib.error import HTTPError
 
-from modules.panstarrs_fcns import *
+from modules.panstarrs_fcns import getcolorim, geturl
 
 from astropy.io import fits
 from astropy import units as u
@@ -12,11 +12,21 @@ from astroquery.skyview import SkyView
 
 
 def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
+    """Retrieve the optical image from a certain pointing.
 
+    :param hi_pos: position in the HI data
+    :type hi_pos: astropy type? TODO Figure this out!
+    :param opt_view: size of the optical image, defaults to 6*u.arcmin
+    :type opt_view: astropy.units.arcmin, optional
+    :param survey: survey containing optical data, defaults to 'DSS2 Blue'
+    :type survey: str, optional
+    :return: optical image
+    :rtype: astropy HDUList
+    """
     # DSS2 Blue images have a 1 arc/pix pixel scale, but retrieving ~the pixel scale doesn't work.
     opt_pixels = int(opt_view.to(u.arcsec).value * 2)
 
-    # Get DSS2 Blue optical image:
+    # Get a survey image from SkyView:
     if (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
         path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS',
                                   width=opt_view, height=opt_view, survey=[survey], pixels=opt_pixels,
@@ -27,7 +37,7 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
                                   width=opt_view, height=opt_view, survey=[survey], pixels=opt_pixels,
                                   cache=False)
     if len(path) != 0:
-        print("\tOptical image retrieved from {}.".format(survey))
+        print("\tSurvey image retrieved from {}.".format(survey))
         result = path[0]
     else:
         print("\tWARNING: No {} image retrieved.  Bug, or server error?  Try again later?".format(survey))
@@ -37,7 +47,15 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
 
 
 def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
+    """Get PanSTARRS false color image and r-band fits (for the WCS).
 
+    :param hi_pos: position in the HI data
+    :type hi_pos: astropy type? TODO Figure this out!
+    :param opt_view: size of the optical image, defaults to 6*u.arcmin
+    :type opt_view: astropy.units.arcmin, optional
+    :return: color image and FITS header
+    :rtype: Tuple[color_im, FITS_header] TODO check exact types!
+    """
     #  Get PanSTARRS false color image and r-band fits (for the WCS).
     pstar_pixsc = 0.25
     path = geturl(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value / pstar_pixsc),

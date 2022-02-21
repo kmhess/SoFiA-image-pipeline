@@ -8,9 +8,7 @@ from astropy.io import fits  # change to table.read?
 from astropy.table import Table
 from astropy import units as u
 import numpy as np
-from reproject import reproject_interp
 
-from modules.get_ancillary import *
 from modules.functions import get_radecfreq
 from src import make_images
 from src import make_spectra
@@ -24,38 +22,40 @@ parser = ArgumentParser(description="Create images from a SoFiA catalog and cube
                         formatter_class=RawTextHelpFormatter)
 
 parser.add_argument('-c', '--catalog', required=True,
-                    help='Specify the input XML or ascii catalog name. This argument is mandatory. No default.')
+                    help='Required: Specify the input XML or ascii catalog name. No default.')
 
 parser.add_argument('-x', '--suffix', default='png',
-                    help='Specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
+                    help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
 parser.add_argument('-o', '--original', default=None,
-                    help='Specify the original fits data: used for plotting HI spectra *with* noise over \n'
-                         'the full frequency range of the cube. Otherwise, plot with noise over frequency \n'
-                         'range in the cubelet.  Uses 2D mask to integrate. (No default).')
+                    help='Optional: specify the original fits data: used for plotting HI spectra *with* noise over \n'
+                         ' the full frequency range of the cube. Otherwise, plot with noise over frequency range\n'
+                         ' in the cubelet.  Uses 2D mask to integrate. (No default).')
 
 parser.add_argument('-b', '--beam', default=None,
-                    help='Specify the beam dimensions (bmaj,bmin,bpa) in arcsec, arcsec, deg. If only 1 value is\n'
-                         'given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
+                    help='Optional: specify the beam dimensions (bmaj,bmin,bpa) in arcsec, arcsec, deg. If only 1 value\n'
+                         ' is given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
 
 parser.add_argument('-i', '--image_size', default=6,
-                    help='Specify the minimum optical image size to retrieve in arcmin.  It will be adjusted if\n'
-                         'the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
+                    help='Optional: specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
+                         ' the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
 
 parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float,
-                    help='Specify which SNRmin and SNRmax values should be used to set the lowest reliable HI contour'
-                         ' in the figures. The contour level is calculated as the median value in the mom0 image'
+                    help='Optional: specify which SNRmin and SNRmax values should be used to set the lowest reliable HI \n'
+                         ' contour in the figures. The contour level is calculated as the median value in the mom0 image\n'
                          ' of all pixels whose SNR value is within the given range. Default is [2,3].')
 
-parser.add_argument('-s', '--surveys', default=None, nargs='*', type=str,
-                    help='Specify additional SkyView surveys to retrieve from astroquery on which to overlay HI\n'
-                         ' contours. DSS2 Blue is always made by default. These additional non-SkyView options are\n'
-                         ' available: \'panstarrs\',\'hst\'.  \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
+parser.add_argument('-s', '--surveys', default=['DSS2 Blue'], nargs='*', type=str,
+                    help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
+                         ' These additional non-SkyView options are also available: \'decals\',\'panstarrs\',\'hst\'.\n'
+                         ' \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
 
 parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
-                    help='Optionally combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.'
-                         ' If this option is given with no argument we simply assume that CONVERT is executed by the "convert"'
-                         ' command. Otherwise, the argument of this option gives the full path to the CONVERT executable.')
+                    help='Optional: combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'
+                         ' If this option is given with no argument we simply assume that CONVERT is executed by the "convert"\n'
+                         ' command. Otherwise, the argument of this option gives the full path to the CONVERT executable.\n'
+                         ' Only the first multiwavelength image specified in "surveys" argument is plotted next to the\n'
+                         ' spectral line data.')
 
 parser.add_argument('-u', '--user-image', default=None,
                     help='Full path to the FITS image on which to overlay HI contours.')
@@ -74,13 +74,7 @@ try:
 except:
     beam = []
 opt_view = float(args.image_size) * u.arcmin
-surveys = ['DSS2 Blue']
-try:
-    surveys += [k for k in args.surveys.split(',')]
-except:
-    pass
-# Remove duplicates if necessary (order doesn't matter right now; might later):
-surveys = tuple(set(surveys))
+surveys = tuple(args.surveys)
 
 print("\n*****************************************************************")
 print("\tBeginning SoFiA-image-pipeline (SIP).")
@@ -178,7 +172,7 @@ for source in catalog:
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     if imagemagick:
-        combine_images(source, src_basename, imagemagick, suffix=suffix)
+        combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys))
 
     n_src += 1
 

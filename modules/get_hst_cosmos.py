@@ -5,7 +5,15 @@ import xmltodict
 
 
 def get_hst_cosmos(source, opt_view=40*u.arcsec):
+    """Retrieve HST Cosmos data.
 
+    :param source: source about which to retrieve HST data
+    :type source: astropy object? TODO check this!
+    :param opt_view: field of view, defaults to 40*u.arcsec
+    :type opt_view: astropy unit, optional
+    :return: HST data
+    :rtype: FITS file
+    """
     api_endpoint = "https://irsa.ipac.caltech.edu/cgi-bin/Cutouts/nph-cutouts"
 
     params = {'locstr': '{} {}'.format(source['ra'], source['dec']),

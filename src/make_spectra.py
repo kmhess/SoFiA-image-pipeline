@@ -1,4 +1,4 @@
-from datetime import datetime
+# from datetime import datetime
 import os
 
 from astropy.io import ascii, fits
@@ -6,9 +6,7 @@ from astropy import units as u
 import matplotlib.pyplot as plt
 import numpy as np
 
-from modules.functions import chan2freq, chan2vel
-from modules.functions import get_info
-from modules.functions import get_subcube
+from modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel
 
 
 HI_restfreq = 1420405751.77 * u.Hz
@@ -19,7 +17,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 
 # Save full spectrum to a txt file:
-def get_noise_spec(source, src_basename, original=None):
+def get_noise_spec(source, src_basename, cube_params, original=None):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
 
@@ -59,6 +57,10 @@ def get_noise_spec(source, src_basename, original=None):
                 frequency = spec_template['col2'] if spec_template else chan2freq(channels, fits_file)
                 ascii.write([channels, frequency, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
                             names=['chan', 'freq', 'f_sum', 'n_pix'])
+            elif 'FELO' in cube_params['spec_axis']:
+                velocities = spec_template['col2'] if spec_template else felo2vel(channels, fits_file)
+                ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
+                            names=['chan', 'velo', 'f_sum', 'n_pix'])
             else:
                 velocities = spec_template['col2'] if spec_template else chan2vel(channels, fits_file)
                 ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
@@ -179,7 +181,7 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
     # Can be a bit more precise here in the output options/specification.
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
     if original or (not os.path.isfile(outfile)):
-        get_noise_spec(source, src_basename, original)
+        get_noise_spec(source, src_basename, cube_params, original)
 
     # Make plot of spectrum with noise
     make_specfull(source, src_basename, cube_params, suffix=suffix, full=False)
@@ -192,5 +194,5 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
 
 
 if __name__ == '__main__':
-
-    main(source, src_basename, original=None, suffix='png')
+    pass
+    # main(source, src_basename, original=None, suffix='png')
