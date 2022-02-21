@@ -52,10 +52,10 @@ parser.add_argument('-s', '--surveys', default=None, nargs='*', type=str,
                          ' contours. DSS2 Blue is always made by default. These additional non-SkyView options are\n'
                          ' available: \'panstarrs\',\'hst\'.  \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
 
-parser.add_argument('-m', '--imagemagick', default=False,
-                    help='If imagemagick is installed on user\'s system, optionally combine main plots into single '
-                         'large file',
-                    action='store_true')
+parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
+                    help='Optionally combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.'
+                         ' If this option is given with no argument we simply assume that CONVERT is executed by the "convert"'
+                         ' command. Otherwise, the argument of this option gives the full path to the CONVERT executable.')
 
 ###################################################################
 
@@ -64,6 +64,7 @@ args = parser.parse_args()
 suffix = args.suffix
 original = args.original
 imagemagick = args.imagemagick
+
 try:
     beam = [int(b) for b in args.beam.split(',')]
 except:
@@ -172,7 +173,7 @@ for source in catalog:
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     if imagemagick:
-        combine_images(source, src_basename, suffix=suffix)
+        combine_images(source, src_basename, imagemagick, suffix=suffix)
 
     n_src += 1
 
