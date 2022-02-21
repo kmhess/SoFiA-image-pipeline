@@ -39,8 +39,6 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, s
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt[0].header)
-
         nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
 
@@ -55,7 +53,8 @@ def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, s
         else:
             ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
                        vmax=np.percentile(opt[0].data, 99.8), origin='lower')
-        ax1.contour(hi_reprojected, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10))
+        ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
+                    transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
                     transform=ax1.get_transform('fk5'))
         ax1.set_title(source['name'], fontsize=20)
