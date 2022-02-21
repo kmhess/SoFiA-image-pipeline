@@ -39,6 +39,19 @@ def chan2vel(channels, fits_name):
     return velocities
 
 def sbr2nhi(sbr, bunit, bmaj, bmin):
+    """Get the HI column density from sbr.
+
+    :param sbr: SBR
+    :type sbr: float
+    :param bunit: unit in which sbr is measured
+    :type bunit: str
+    :param bmaj: major axis of the beam
+    :type bmaj: float
+    :param bmin: minor axis of the bea,
+    :type bmin: float
+    :return: column density
+    :rtype: float
+    """
     if bunit == 'Jy/beam*m/s':
       nhi = 1.104e+21 * sbr / bmaj / bmin
     elif bunit == 'Jy/beam*Hz':
