@@ -1,3 +1,4 @@
+from astropy import constants as const
 from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
@@ -11,11 +12,23 @@ def chan2freq(channels, fits_name):
 
 
 def chan2vel(channels, fits_name):
-    print("\tWARNING: Assuming channels are uniform width in velocity (may not be the case)!")
+    print("\tWARNING: Assuming channels are uniform width in velocity.")
     header = fits.getheader(fits_name)
     # Need to deal with different types of headers and velocity scaling with or without frequency!!! (Also bary vs topo, etc)
     velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
     return velocities
+
+
+def felo2vel(channels, fits_name):
+    # Formula taken from here: https://www.astro.rug.nl/software/kapteyn/spectralbackground.html#aips-axis-type-felo
+    print("\tWARNING: Axis type FELO...this conversion may not be precise (may be off by ~10 km/s).")
+    c = const.c.to(u.m/u.s).value
+    header = fits.getheader(fits_name)
+    fr = header['RESTFREQ'] / (1 + header['CRVAL3'] / c)
+    df = -1 * header['RESTFREQ'] * header['CDELT3'] * c / ((c + header['CRVAL3']) * (c + header['CRVAL3']))
+    velocities = header['CRVAL3'] + c * header['RESTFREQ'] * (1 / (fr + (channels - header['CRPIX3']) * df) - 1 / fr)
+    return(velocities)
+
 
 def sbr2nhi(sbr, bunit, bmaj, bmin):
     if bunit == 'Jy/beam*m/s':
@@ -26,6 +39,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin):
       print("\tWARNING: Mom0 imag units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
       nhi = sbr
     return nhi
+
 
 def get_info(fits_name, beam=None):
 
