@@ -23,8 +23,8 @@ parser = ArgumentParser(description="Create images from a SoFiA catalog and cube
                                     "Only works with SoFiA-2 and wcs=True (for now).",
                         formatter_class=RawTextHelpFormatter)
 
-parser.add_argument('-c', '--catalog', default='test_data/UGC7012_cat.txt',
-                    help='Specify the input XML or ascii catalog name (default: %(default)s).')
+parser.add_argument('-c', '--catalog', required=True,
+                    help='Specify the input XML or ascii catalog name. This argument is mandatory. No default.')
 
 parser.add_argument('-x', '--suffix', default='png',
                     help='Specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
