@@ -57,6 +57,10 @@ parser.add_argument('-m', '--imagemagick', default=False,
                          'large file',
                     action='store_true')
 
+parser.add_argument('-u', '--user-image', default=None,
+                    help='Full path to the FITS image on which to overlay HI contours.')
+
+
 ###################################################################
 
 # Parse the arguments above
@@ -167,8 +171,9 @@ n_src = 0
 for source in catalog:
 
     source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
+    print("\n\t-Source {}: {}.".format(source['id'], source['name']))
     make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
-                     surveys=list(surveys), snr_range=args.snr_range)
+                     surveys=list(surveys), snr_range=args.snr_range, user_image=args.user_image)
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     if imagemagick:

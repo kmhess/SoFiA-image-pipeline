@@ -1,9 +1,11 @@
 import os
 
+from astropy.nddata import Cutout2D
 from astropy import constants as const
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
 from astropy import units as u
+import astropy.wcs
 from astropy.wcs import WCS
 from matplotlib import colors
 from matplotlib.patches import Ellipse
@@ -25,6 +27,41 @@ optical_HI = u.doppler_optical(HI_restfreq)
 ###################################################################
 
 # Overlay HI contours on optical image
+
+def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, suffix='png'):
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
+    if not os.path.isfile(outfile):
+        try:
+            print("\tMaking {} overlaid with HI contours.".format('usr'))
+            hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+        except FileNotFoundError:
+            print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
+            return
+        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
+        nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
+        fig = plt.figure(figsize=(8, 8))
+        ax1 = fig.add_subplot(111, projection=opt.wcs)
+        ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data, 10),
+                       vmax=np.percentile(opt.data, 99.8))
+        ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
+                    transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
+        ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
+                    transform=ax1.get_transform('fk5'))
+        ax1.set_title(source['name'], fontsize=20)
+        ax1.tick_params(axis='both', which='major', labelsize=18)
+        ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
+        ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
+        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes,
+                  color='white', fontsize=18)
+        ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
+                              transform=ax1.transAxes, edgecolor='white', linewidth=1))
+        fig.savefig(outfile, bbox_inches='tight')
+        hdulist_hi.close()
+    else:
+        print('\t{} already exists. Will not overwrite.'.format(outfile))
+
+    return
+
 
 def make_mom0dss2(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
 
@@ -378,9 +415,9 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, surveys=None, snr_range=[2,3]):
+def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, surveys=None, snr_range=[2,3], user_image=None):
 
-    print("\n\tStart making spatial images of the spectral line source {}: {}.".format(source['id'], source['name']))
+    print("\tStart making spatial images.")
 
     # Get beam information from the source cubelet
     if sofia == 2:
@@ -396,8 +433,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     except FileNotFoundError:
         print("\tNo SNR and/or mom0 fits file. Perhaps you ran SoFiA without generating moments?")
         return
-#    with fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi
-#    base_contour = np.median(hdulist_hi[0].data[(hdulist_snr[0].data > snr_range[0])*(hdulist_snr[0].data < snr_range[1])])
 
     # Get the position of the source to retrieve an optical image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
@@ -422,9 +457,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         opt_view = np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin
         print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view.value))
 
-    # Get optical images, based on the HI position and given image size.
-    dss2 = get_skyview(hi_pos_icrs, opt_view=opt_view, survey='DSS2 Blue')
-
     # Temporarily replace with ICRS ra/dec for plotting purposes in the rest (won't change catalog file.):
     source['ra'] = hi_pos_icrs.ra.deg
     source['dec'] = hi_pos_icrs.dec.deg
@@ -433,6 +465,34 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     patch_height = (cube_params['bmaj'] / opt_view).decompose()
     patch_width = (cube_params['bmin'] / opt_view).decompose()
     patch = {'width': patch_width, 'height': patch_height}
+
+    # Extract cutout from user image
+    # !!! Actually we do not need to read the entire image every single time. We want to read it just once. I leave this for later.
+    if user_image:
+        print("\tExtracting cutout from image {0:s}".format(user_image))
+        with fits.open(user_image) as usrim:
+          usrim_d = usrim[0].data
+          usrim_h = usrim[0].header
+          if 'cdelt1' in usrim_h and 'cdelt2' in usrim_h:
+              usrim_pix_x, usrim_pix_y = np.abs(usrim_h['cdelt1']), np.abs(usrim_h['cdelt2'])
+          elif 'cd1_1' in usrim_h and 'cd2_2' in usrim_h:
+              usrim_pix_x, usrim_pix_y = np.abs(usrim_h['cd1_1']), np.abs(usrim_h['cd2_2'])
+          else:
+              print("\tCould not determine pixel size of user image. Aborting.")
+              exit()
+          usrim_wcs = WCS(usrim_h)
+        print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
+        try:
+            usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
+        except:
+            print('\tWARNING: 2D cutout extraction failed. Source outside user image? Continuing with the next source.')
+            return
+        make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, suffix='png')
+    else:
+        print("\tNo user image given. Proceeding with the download of any requested archive images.")
+
+    # Get optical images, based on the HI position and given image size.
+    dss2 = get_skyview(hi_pos_icrs, opt_view=opt_view, survey='DSS2 Blue')
 
     # Create the first optical overlay figure:
     if dss2:
@@ -518,4 +578,4 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
 if __name__ == '__main__':
 
-    main(source, src_basename, opt_view=6*u.arcmin, suffix='png', snr_range=[2,3])
+    main(source, src_basename, opt_view=6*u.arcmin, suffix='png', snr_range=[2,3], user_image=None)

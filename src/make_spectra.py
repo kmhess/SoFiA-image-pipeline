@@ -167,7 +167,7 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
 
 def main(source, src_basename, original=None, suffix='png', beam=None):
 
-    print("\n\tStart making spectral profiles of the spectral line source {}: {}.".format(source['id'], source['name']))
+    print("\tStart making spectral profiles")
 
     # Get beam information from the source cubelet
     cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)

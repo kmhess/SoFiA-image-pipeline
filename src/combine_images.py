@@ -12,7 +12,7 @@ def combine_images(source, src_basename, suffix='png'):
     infile = src_basename.replace('cubelets', 'figures') + '_{}_'.format(source['id'])
 
     # Use terminal commands to assemble figures with imagemagick: https://imagemagick.org/index.php
-    print("\n\tAssembling figures with imagemagck for source {}: {}.".format(source['id'], source['name']))
+    print("\tAssembling figures with imagemagick")
     new_file = "{}combo.{}".format(infile, suffix)
     os.system("{0} {1}mom0dss2blue.{2} {1}mom0hi.{2} {1}snr.{2} {1}mom1.{2}"
               " +append temp.{2}".format(convert_im, infile, suffix))
