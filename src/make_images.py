@@ -24,7 +24,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 ###################################################################
 
-# Overlay HI contours on optical image
+# Overlay HI contours on another image
 
 def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
     """Overlay HI contours on top of an optical image
@@ -406,6 +406,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     elif sofia == 1:
         cube_params = get_info(src_basename + '_{}.fits'.format(source['id']), beam)
 
+    opt_head = None
+
     # Calculate base contour
     try:
         with fits.open(src_basename + '_{}_snr.fits'.format(str(source['id']))) as hdulist_snr, fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi:
@@ -417,7 +419,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 #    with fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi
 #    base_contour = np.median(hdulist_hi[0].data[(hdulist_snr[0].data > snr_range[0])*(hdulist_snr[0].data < snr_range[1])])
 
-    # Get the position of the source to retrieve an optical image
+    # Get the position of the source to retrieve an survey image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
                       equinox=cube_params['equinox'], frame=cube_params['frame'])
 
@@ -425,7 +427,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # so let's transform everything to ICRS ....Need to keep an eye on this (may have been a server issue).
     hi_pos_icrs = hi_pos.transform_to('icrs')
 
-    # Calculate the size of the optical image for the moment maps
+    # Calculate the size of the survey image for the moment maps
     Xc = source['x']
     Yc = source['y']
     Xmin = source['x_min']
@@ -440,9 +442,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         opt_view = np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin
         print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view.value))
 
-    # Get optical images, based on the HI position and given image size.
-    dss2 = get_skyview(hi_pos_icrs, opt_view=opt_view, survey='DSS2 Blue')
-
     # Temporarily replace with ICRS ra/dec for plotting purposes in the rest (won't change catalog file.):
     source['ra'] = hi_pos_icrs.ra.deg
     source['dec'] = hi_pos_icrs.dec.deg
@@ -452,40 +451,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     patch_width = (cube_params['bmin'] / opt_view).decompose()
     patch = {'width': patch_width, 'height': patch_height}
 
-    # Create the first optical overlay figure:
-    if dss2:
-        surveys.remove('DSS2 Blue')
-        make_overlay(source, src_basename, cube_params, patch, dss2, HIlowest, suffix=suffix, survey='DSS2 Blue')
-        opt_head = dss2[0].header
-        dss2.close()
-
-    # Create a false color optical panstarrs overlay, if requested, or if dss2 fails for some reason:
-    if ('panstarrs' in surveys) | (not dss2):
-        surveys.remove('panstarrs')
-        pstar_view = opt_view
-        if opt_view > 8 * u.arcmin:
-            pstar_view = 8 * u.arcmin
-            print("\tAdjusted viewing size greater than 8 arcmin.  This is the SIP imposed limit on PanSTARRS "
-                  "images (they are much bigger than DSS2).")
-        pstar_im, pstar_head = get_panstarrs (hi_pos_icrs, opt_view=pstar_view)
-        # In theory can have different sizes for the panstarrs and dss2 images, but then need to recalculate the patch.
-        if pstar_im:
-            patch_height = (cube_params['bmaj'] / pstar_view).decompose()
-            patch_width = (cube_params['bmin'] / pstar_view).decompose()
-            patch_pstar = {'width': patch_width, 'height': patch_height}
-            make_color_im(source, src_basename, cube_params, patch_pstar, pstar_im, pstar_head, HIlowest,
-                          suffix=suffix, survey='panstarrs')
-
-    # Use dss2 image as the base for regridding the HI since it is relatively small (although set by the number of pixels...
-    # need to change this to take into account pixel scale to be rigorous.
-    # If dss2 doesn't exist, use panstarrs image as the base for regridding.
-    if not dss2:
-        opt_head = pstar_head
-        patch = patch_pstar
-
     # For CHILES: plot HI contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
-        surveys.remove('hst')
         hst_opt_view = 40 * u.arcsec
         if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
             hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
@@ -495,22 +462,41 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
             make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix,
-                             survey='hst')
+                         survey='hst')
+        if surveys[0] == 'hst':
+            opt_head = hst_opt[0].header
+            opt_view = hst_opt_view
+            patch = patch_hst
+        surveys.remove('hst')
+
+    # Create a false color optical panstarrs overlay, if requested, or if dss2 fails for some reason:
+    if ('panstarrs' in surveys):
+        pstar_im, pstar_head = get_panstarrs(hi_pos_icrs, opt_view=opt_view)
+        if pstar_im:
+            make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest,
+                          suffix=suffix, survey='panstarrs')
+        if surveys[0] == 'panstarrs':
+            opt_head = pstar_head
+        surveys.remove('panstarrs')
 
     # If requested plot HI contours on DECaLS imaging
     if 'decals' in surveys:
-        surveys.remove('decals')
         decals_im, decals_head = get_decals(hi_pos_icrs, opt_view=opt_view)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
                       survey='decals')
+        if surveys[0] == 'decals':
+            opt_head = decals_head
+        surveys.remove('decals')
 
-    # If requested, plot the HI contours on any number of surveys available through SkyView.
+    # If requested, plot the HI contours on any number of survey images available through SkyView.
     if len(surveys) > 0:
         for survey in surveys:
             try:
                 overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey)
                 make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
                              survey=survey)
+                if surveys[0] == survey:
+                    opt_head = overlay_image[0].header
             except ValueError:
                 print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
                       "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
@@ -518,15 +504,14 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             except HTTPError:
                 print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
 
-    # Make the rest of the images if there is an optical image to regrid to.
-    # Could change this to make images no matter what...
-    if dss2 or pstar_im:
+    # Make the rest of the images if there is a survey image to regrid to.
+    if opt_head:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_view=opt_view, suffix=suffix,
                   sofia=2)
 
-    # Make pv if it was created (only in SoFiA-1); not dependent on optical image.
+    # Make pv if it was created (only in SoFiA-1); not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, suffix=suffix)
 
     plt.close('all')
