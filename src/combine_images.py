@@ -3,6 +3,15 @@ import os
 
 # Note, although this has been generalized, it seems to work best with png's!
 def combine_images(source, src_basename, suffix='png'):
+    """_summary_
+
+    :param source: source for which to combine images
+    :type source: Astropy source object?
+    :param src_basename: basename for the source image files
+    :type src_basename: str
+    :param suffix: filetype, defaults to 'png'
+    :type suffix: str, optional
+    """
 
     # Specify the command to use imagemagick's convert (karma has a convert which may conflict)
     # convert_im = "/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert"

@@ -27,7 +27,25 @@ optical_HI = u.doppler_optical(HI_restfreq)
 # Overlay HI contours on optical image
 
 def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
+    """Overlay HI contours on top of an optical image
 
+    :param source: source object
+    :type source: Astropy data object?
+    :param src_basename: basename for the source for data files
+    :type src_basename: str
+    :param cube_params: parameters of the data cube
+    :type cube_params: dict
+    :param patch: observing patch parameters
+    :type patch: dict
+    :param opt: optical data
+    :type opt: dict
+    :param base_contour: base contour
+    :type base_contour: float
+    :param suffix: file type, defaults to 'png'
+    :type suffix: str, optional
+    :param survey: survey from which to use data, defaults to 'DSS2 Blue'
+    :type survey: str, optional
+    """
     survey_nospace = survey.replace(" ", "").lower()
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey_nospace, suffix)
 
