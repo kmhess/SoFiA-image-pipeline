@@ -9,9 +9,8 @@ Welcome to SoFiA-image-pipeline's documentation!
 .. toctree::
    :maxdepth: 2
    :caption: Contents:
-   modules.rst
-   -------
-   Some helper files
+
+   modules/index
 
 
 
