@@ -8,3 +8,5 @@ Making and combining images and spectra
    :caption: Make and combine images
 
    combine_images
+   make_images
+   make_spectra
