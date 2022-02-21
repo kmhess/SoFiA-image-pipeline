@@ -484,10 +484,9 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
             usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
+            make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, suffix='png')
         except:
-            print('\tWARNING: 2D cutout extraction failed. Source outside user image? Continuing with the next source.')
-            return
-        make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, suffix='png')
+            print('\tWARNING: 2D cutout extraction failed. Source outside user image? Will try again with the next source.')
     else:
         print("\tNo user image given. Proceeding with the download of any requested archive images.")
 
