@@ -24,7 +24,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 ###################################################################
 
-# Overlay HI contours on optical image
+# Overlay HI contours on another image
 
 def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
 
@@ -401,7 +401,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 #    with fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi
 #    base_contour = np.median(hdulist_hi[0].data[(hdulist_snr[0].data > snr_range[0])*(hdulist_snr[0].data < snr_range[1])])
 
-    # Get the position of the source to retrieve an optical image
+    # Get the position of the source to retrieve an survey image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
                       equinox=cube_params['equinox'], frame=cube_params['frame'])
 
@@ -409,7 +409,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # so let's transform everything to ICRS ....Need to keep an eye on this (may have been a server issue).
     hi_pos_icrs = hi_pos.transform_to('icrs')
 
-    # Calculate the size of the optical image for the moment maps
+    # Calculate the size of the survey image for the moment maps
     Xc = source['x']
     Yc = source['y']
     Xmin = source['x_min']
@@ -470,7 +470,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             opt_head = decals_head
         surveys.remove('decals')
 
-    # If requested, plot the HI contours on any number of surveys available through SkyView.
+    # If requested, plot the HI contours on any number of survey images available through SkyView.
     if len(surveys) > 0:
         for survey in surveys:
             try:
@@ -486,14 +486,14 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             except HTTPError:
                 print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
 
-    # Make the rest of the images if there is an optical image to regrid to.
+    # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_view=opt_view, suffix=suffix,
                   sofia=2)
 
-    # Make pv if it was created (only in SoFiA-1); not dependent on optical image.
+    # Make pv if it was created (only in SoFiA-1); not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, suffix=suffix)
 
     plt.close('all')

@@ -39,7 +39,7 @@ parser.add_argument('-b', '--beam', default=None,
                          'given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
 
 parser.add_argument('-i', '--image_size', default=6,
-                    help='Specify the minimum optical image size to retrieve in arcmin.  It will be adjusted if\n'
+                    help='Specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
                          'the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
 
 parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float,

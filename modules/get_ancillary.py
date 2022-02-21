@@ -16,7 +16,7 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
     # DSS2 Blue images have a 1 arc/pix pixel scale, but retrieving ~the pixel scale doesn't work.
     opt_pixels = int(opt_view.to(u.arcsec).value * 2)
 
-    # Get DSS2 Blue optical image:
+    # Get a survey image from SkyView:
     if (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
         path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS',
                                   width=opt_view, height=opt_view, survey=[survey], pixels=opt_pixels,
@@ -27,7 +27,7 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
                                   width=opt_view, height=opt_view, survey=[survey], pixels=opt_pixels,
                                   cache=False)
     if len(path) != 0:
-        print("\tOptical image retrieved from {}.".format(survey))
+        print("\tSurvey image retrieved from {}.".format(survey))
         result = path[0]
     else:
         print("\tWARNING: No {} image retrieved.  Bug, or server error?  Try again later?".format(survey))
