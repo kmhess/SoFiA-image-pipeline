@@ -57,8 +57,11 @@ parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', cons
                          ' Only the first multiwavelength image specified in "surveys" argument is plotted next to the\n'
                          ' spectral line data.')
 
-parser.add_argument('-u', '--user-image', default=None,
-                    help='Full path to the FITS image on which to overlay HI contours.')
+parser.add_argument('-ui', '--user-image', default=None,
+                    help='Optional: Full path to the FITS image on which to overlay HI contours.')
+
+parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
+                    help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
 
 
 ###################################################################
@@ -168,7 +171,7 @@ for source in catalog:
     source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
     print("\n\t-Source {}: {}.".format(source['id'], source['name']))
     make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
-                     surveys=list(surveys), snr_range=args.snr_range, user_image=args.user_image)
+                     surveys=list(surveys), snr_range=args.snr_range, user_image=args.user_image, user_range=args.user_range)
     make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
     if imagemagick:

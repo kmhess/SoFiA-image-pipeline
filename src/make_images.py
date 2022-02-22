@@ -28,7 +28,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 # Overlay HI contours on user image
 
-def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, suffix='png'):
+def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
     if not os.path.isfile(outfile):
         try:
@@ -41,8 +41,8 @@ def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, s
         nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=opt.wcs)
-        ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data, 10),
-                       vmax=np.percentile(opt.data, 99.8))
+        ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data, perc[0]),
+                       vmax=np.percentile(opt.data, perc[1]))
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
@@ -437,7 +437,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, surveys=None, snr_range=[2,3], user_image=None):
+def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, surveys=None, snr_range=[2,3], user_image=None, user_range=[10.,99.]):
 
     print("\tStart making spatial images.")
 
@@ -510,7 +510,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
             usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
-            make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, suffix='png')
+            make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png')
         except:
             print('\tWARNING: 2D cutout extraction failed. Source outside user image? Will try again with the next source.')
     else:
