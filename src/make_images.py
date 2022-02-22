@@ -28,7 +28,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 # Overlay HI contours on user image
 
-def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, suffix='png'):
+def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, suffix='png'):
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
     if not os.path.isfile(outfile):
         try:
@@ -55,6 +55,8 @@ def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, s
                   color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
+        if swapx:
+            ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
     else:
@@ -502,11 +504,13 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
           else:
               print("\tCould not determine pixel size of user image. Aborting.")
               exit()
+          if usrim_pix_x > 0: swapx = True
+          else: swapx = False
           usrim_wcs = WCS(usrim_h)
         print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
             usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
-            make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, suffix='png')
+            make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, suffix='png')
         except:
             print('\tWARNING: 2D cutout extraction failed. Source outside user image? Will try again with the next source.')
     else:
