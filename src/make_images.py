@@ -425,8 +425,9 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             vel_sys = source['v_col']
             ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
                      linewidth=0.75, transform=ax1.get_transform('world'))
-            ax1.set_ylabel('{} {} velocity [m/s]'.format(cube_params['spec_sys'].capitalize(), convention,
-                                                         fontsize=18))
+            ax1.coords[1].set_format_unit(u.km / u.s)
+            ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention,
+                                                          fontsize=18))
 
         fig.savefig(outfile, bbox_inches='tight')
         pv.close()
