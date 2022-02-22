@@ -385,7 +385,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             print("\tMaking pv slice.")
             pv = fits.open(src_basename + '_{}_pv.fits'.format(str(source['id'])))
         except FileNotFoundError:
-            print("\tNo pv fits file.  Perhaps you ran SoFiA-2 which doesn't produce this yet?")
+            print("\tNo pv fits file. Perhaps you ran source finding with an old version of SoFiA-2?")
             return
 
         wcs_pv = WCS(pv[0].header)
