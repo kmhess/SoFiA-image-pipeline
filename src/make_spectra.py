@@ -74,61 +74,64 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 # Make full spectrum plot:
 def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
+    outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
 
-    if not os.path.isfile(outfile):
+    if not os.path.isfile(outfile2):
 
         print("\tMaking HI spectrum plot covering the full frequency range.")
         convention = 'Optical'
         if 'freq' in source.colnames:
-            spec = ascii.read(outfile[:-1*len(suffix)] + 'txt')
+            spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
             optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
             maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
             maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
         else:
             if 'vrad' in source.colnames: convention = 'Radio'
-            spec = ascii.read(outfile[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
+            spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
             optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
             maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s).value
             maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s).value
 
         if full == True:
-            fig = plt.figure(figsize=(15, 4))
+            fig2 = plt.figure(figsize=(15, 4))
         else:
-            fig = plt.figure(figsize=(8, 4))
+            fig2 = plt.figure(figsize=(8, 4))
 
-        ax_spec = fig.add_subplot(111)
-        ax_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
-        ax_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
+        ax2_spec = fig2.add_subplot(111)
+        ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
+        ax2_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
                          yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
-        ax_spec.set_title(source['name'])
-        ax_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
-        ax_spec.set_ylabel("Integrated Flux [Jy]")
-        ax_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
+        ax2_spec.set_title(source['name'])
+        ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
+        ax2_spec.set_ylabel("Integrated Flux [Jy]")
+        ax2_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
 
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
 
         # Plot limit of SoFiA mask
-        ymin, ymax = ax_spec.get_ylim()
-        ax_spec.plot([maskmin, maskmin], [0.95*ymin, 0.95*ymax], ':', color='gray')
-        ax_spec.plot([maskmax, maskmax], [0.95*ymin, 0.95*ymax], ':', color='gray')
+        ymin, ymax = ax2_spec.get_ylim()
+        ax2_spec.plot([maskmin, maskmin], [0.95*ymin, 0.95*ymax], ':', color='gray')
+        ax2_spec.plot([maskmax, maskmax], [0.95*ymin, 0.95*ymax], ':', color='gray')
 
         # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
         if (np.max(spectrumJy) > 2.) | (np.min(spectrumJy) < -1.):
-            ax_spec.set_ylim(np.max(spectrumJy[source['z_min']:source['z_max']+1]) * -2,
+            ax2_spec.set_ylim(np.max(spectrumJy[source['z_min']:source['z_max']+1]) * -2,
                              np.max(spectrumJy[source['z_min']:source['z_max']+1]) * 2)
 
-        fig.savefig(outfile, bbox_inches='tight')
+#        fig.savefig(outfile2, bbox_inches='tight')
 
-    return
+    else:
+        fig2, ax2_spec, outfile2 = None, None, None
+
+    return fig2, ax2_spec, outfile2
 
 
 # Make SoFiA masked spectrum plot (no noise):
 def make_spec(source, src_basename, cube_params, suffix='png'):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_spec.{}'.format(source['id'], suffix)
+    outfile1 = src_basename.replace('cubelets', 'figures') + '_{}_spec.{}'.format(source['id'], suffix)
 
-    if not os.path.isfile(outfile):
+    if not os.path.isfile(outfile1):
 
         print("\tMaking HI SoFiA masked spectrum plot.")
         convention = 'Optical'
@@ -149,22 +152,25 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
             ll += 1
         specunits = (spec.meta['comments'][ll+1].split()[spec.meta['comments'][ll].split().index('f_sum')])
 
-        fig = plt.figure(figsize=(8, 4))
-        ax_spec = fig.add_subplot(111)
-        ax_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
+        fig1 = plt.figure(figsize=(8, 4))
+        ax1_spec = fig1.add_subplot(111)
+        ax1_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
         if specunits == 'Jy/beam':
-            ax_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
+            ax1_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
                              yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         elif specunits == 'Jy':
-            ax_spec.errorbar(optical_velocity, spec['f_sum'], elinewidth=0.75,
+            ax1_spec.errorbar(optical_velocity, spec['f_sum'], elinewidth=0.75,
                              yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
-        ax_spec.set_title(source['name'])
-        ax_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
-        ax_spec.set_ylabel("Integrated Flux [Jy]")
-        ax_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
-        fig.savefig(outfile, bbox_inches='tight')
+        ax1_spec.set_title(source['name'])
+        ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
+        ax1_spec.set_ylabel("Integrated Flux [Jy]")
+        ax1_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
+#        fig1.savefig(outfile1, bbox_inches='tight')
 
-    return
+    else:
+        fig1, ax1_spec, outfile1 = None, None, None
+
+    return fig1, ax1_spec, outfile1
 
 
 def main(source, src_basename, original=None, suffix='png', beam=None):
@@ -175,7 +181,7 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
     cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
 
     # Make plot of SoFiA masked spectrum
-    make_spec(source, src_basename, cube_params, suffix=suffix)
+    fig1, ax1_spec, outfile1 = make_spec(source, src_basename, cube_params, suffix=suffix)
 
     # Make text file of spectrum with noise; use full frequency range of original cube if provided:
     # Can be a bit more precise here in the output options/specification.
@@ -184,8 +190,17 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
         get_noise_spec(source, src_basename, cube_params, original)
 
     # Make plot of spectrum with noise
-    make_specfull(source, src_basename, cube_params, suffix=suffix, full=False)
+    fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, suffix=suffix, full=False)
 
+    if outfile1 and outfile2:
+        ymin = min([ax1_spec.get_ylim()[0],ax2_spec.get_ylim()[0]])
+        ymax = max([ax1_spec.get_ylim()[1],ax2_spec.get_ylim()[1]])
+        ax1_spec.set_ylim([ymin,ymax])
+        ax2_spec.set_ylim([ymin,ymax])
+    if outfile1:
+        fig1.savefig(outfile1, bbox_inches='tight')
+    if outfile2:
+        fig2.savefig(outfile2, bbox_inches='tight')
     plt.close('all')
 
     print("\tDone making spectral profiles of the spectral line source {}: {}.".format(source['id'], source['name']))
