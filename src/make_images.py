@@ -429,6 +429,8 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention,
                                                           fontsize=18))
 
+        if pv[0].header['cdelt2'] < 0:
+            ax1.set_ylim(ax1.get_ylim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
         pv.close()
 
