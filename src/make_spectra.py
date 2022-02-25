@@ -83,10 +83,13 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
         if 'freq' in source.colnames:
             spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
             optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
-            maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
-            maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+            maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s,
+                                                                                equivalencies=optical_HI).value
+            maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
+                                                                                equivalencies=optical_HI).value
         else:
-            if 'vrad' in source.colnames: convention = 'Radio'
+            if 'vrad' in source.colnames:
+                convention = 'Radio'
             spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
             optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
             maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s).value
@@ -100,7 +103,7 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
         ax2_spec = fig2.add_subplot(111)
         ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
         ax2_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
-                         yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+                          yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         ax2_spec.set_title(source['name'])
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]")
@@ -116,9 +119,7 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
         # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
         if (np.max(spectrumJy) > 2.) | (np.min(spectrumJy) < -1.):
             ax2_spec.set_ylim(np.max(spectrumJy[source['z_min']:source['z_max']+1]) * -2,
-                             np.max(spectrumJy[source['z_min']:source['z_max']+1]) * 2)
-
-#        fig.savefig(outfile2, bbox_inches='tight')
+                              np.max(spectrumJy[source['z_min']:source['z_max']+1]) * 2)
 
     else:
         fig2, ax2_spec, outfile2 = None, None, None
@@ -140,7 +141,8 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
                               names=['chan', 'freq', 'f_sum', 'n_pix'])
             optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
         else:
-            if 'vrad' in source.colnames: convention = 'Radio'
+            if 'vrad' in source.colnames:
+                convention = 'Radio'
             spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                               names=['chan', 'velo', 'f_sum', 'n_pix'])
             optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
@@ -157,15 +159,14 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
         ax1_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
         if specunits == 'Jy/beam':
             ax1_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
-                             yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+                              yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         elif specunits == 'Jy':
             ax1_spec.errorbar(optical_velocity, spec['f_sum'], elinewidth=0.75,
-                             yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+                              yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         ax1_spec.set_title(source['name'])
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax1_spec.set_ylabel("Integrated Flux [Jy]")
         ax1_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
-#        fig1.savefig(outfile1, bbox_inches='tight')
 
     else:
         fig1, ax1_spec, outfile1 = None, None, None
@@ -193,10 +194,10 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
     fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, suffix=suffix, full=False)
 
     if outfile1 and outfile2:
-        ymin = min([ax1_spec.get_ylim()[0],ax2_spec.get_ylim()[0]])
-        ymax = max([ax1_spec.get_ylim()[1],ax2_spec.get_ylim()[1]])
-        ax1_spec.set_ylim([ymin,ymax])
-        ax2_spec.set_ylim([ymin,ymax])
+        ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
+        ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
+        ax1_spec.set_ylim([ymin, ymax])
+        ax2_spec.set_ylim([ymin, ymax])
     if outfile1:
         fig1.savefig(outfile1, bbox_inches='tight')
     if outfile2:
