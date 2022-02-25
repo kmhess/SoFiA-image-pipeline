@@ -133,6 +133,7 @@ def get_info(fits_name, beam=None):
     chan_width = chan_width * units
 
     # Try to determine the reference frame.  AIPS conventions use VELREF: http://parac.eu/AIPSMEM117.pdf
+    spec_sys = False
     try:
         spec_sys = header['SPECSYS']
         print("\tFound {} reference frame specified in SPECSYS in header.".format(spec_sys))
@@ -144,19 +145,25 @@ def get_info(fits_name, beam=None):
             if velref == 3: spec_sys = 'TOPOCENT'
             print("\tDerived {} reference frame from VELREF in header using AIPS convention.".format(spec_sys))
         except:
-            spec_sys = 'TOPOCENT'
-            print("\tNo SPECSYS or VELREF in header, assuming data in TOPOCENT reference frame.")
+            # print("\tNo SPECSYS or VELREF in header, assuming data in TOPOCENT reference frame.")
+            print("\tNo SPECSYS or VELREF in header to define reference frame, checking CTYPE3.")
+            pass
 
     # Try to determine the spectral coordinates
     spec_axis = header['CTYPE3']
-    print("\tFound spectral axis type {} in header.".format(spec_axis))
+    print("\tFound CTYPE3 spectral axis type {} in header.".format(spec_axis))
     if ("-" in spec_axis) and spec_sys:
         print("\tWARNING: dropping end of spectral axis type. Using SPECSYS/VELREF for reference frame.")
         spec_axis = spec_axis.split ("-")[0]
     elif ("-" in spec_axis) and (not spec_sys):
-        print("\tWARNING: attempting to use end of spectral axis type for reference frame.")
-        spec_axis = spec_axis.split("-")[0]
         spec_sys = spec_axis.split("-")[1]
+        spec_axis = spec_axis.split("-")[0]
+        if spec_sys == 'HEL': spec_sys = 'HELIOCEN'
+        print("\tWARNING: attempting to use end of CTYPE3 for reference frame: {}".format(spec_sys))
+
+    if not spec_sys:
+        print("\tNo SPECSYS, VELREF, or reference frame in CTYPE3, assuming data in TOPOCENT reference frame.")
+        spec_sys = 'TOPOCENT'
 
     # Try to determine the equinox of the observations
     try:
