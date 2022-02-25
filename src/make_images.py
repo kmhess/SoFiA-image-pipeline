@@ -37,8 +37,7 @@ def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, s
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
-        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
-        nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
+        nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=opt.wcs)
         ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data, perc[0]),
@@ -51,7 +50,7 @@ def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, s
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
         ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes,
+        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                   color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
@@ -98,8 +97,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
-        nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
+        nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value)
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt[0].header))
@@ -120,7 +118,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
         ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes,
+        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                   color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
@@ -150,8 +148,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
-        nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
+        nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value)
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
@@ -164,7 +161,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
         ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
+        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
@@ -198,7 +195,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         snr_reprojected, footprint = reproject_interp(hdulist_snr, opt_head)
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
+        nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value)
 
         wa_cmap = colors.ListedColormap(['w', 'royalblue', 'limegreen', 'yellow', 'orange', 'r'])
         boundaries = [0, 1, 2, 3, 4, 5, 6]
@@ -214,7 +211,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
         ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text(0.5, 0.05, "N_HI = {:.1f}e+19".format(nhi19), ha='center', va='center',
+        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center',
                  transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
@@ -350,8 +347,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
-        nhi19 = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value) / 1e+19
-        nhi_label = "N_HI = {:.1f}, {:.1f}, {:.0f}, {:.0f}e+19".format(nhi19 * 1, nhi19 * 2, nhi19 * 4, nhi19 * 8)
+        nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value)
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
@@ -364,7 +360,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         ax1.tick_params(axis='both', which='major', labelsize=18)
         ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
         ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes,
+        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='lightgray', linewidth=1))
@@ -429,6 +425,8 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention,
                                                           fontsize=18))
 
+        if pv[0].header['cdelt2'] < 0:
+            ax1.set_ylim(ax1.get_ylim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
         pv.close()
 
