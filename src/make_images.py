@@ -295,12 +295,13 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
         im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')  #vmin=velmin, vmax=velmax, origin='lower')
         # ax1.contour(hi_reprojected, linewidths=1, levels=[sensitivity, ], colors=['k', ])
-        if np.abs(velmax - velmin) > 200:
-            levels = [v_sys - 100, v_sys - 50, v_sys, v_sys + 50, v_sys + 100]
-            clevels = ['white', 'gray', 'black', 'gray', 'white']
-        else:
-            levels = [v_sys - 50, v_sys, v_sys + 50]
-            clevels = ['lightgray', 'black', 'lightgray']
+        vel_maxhalf = np.max(np.abs(velmax-v_sys), np.abs(v_sys-velmin))
+        for vunit in [5, 10, 20, 25, 50, 75, 100]:
+            n_contours = vel_maxhalf // vunit
+            if n_contours == 3:
+                break
+        levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
+        clevels = ['white', 'lightgray', 'darkgray', 'black', 'darkgray', 'lightgray', 'white']
         cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
         # Plot HI center of galaxy
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
