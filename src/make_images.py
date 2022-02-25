@@ -301,7 +301,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         else:
             levels = [v_sys - 50, v_sys, v_sys + 50]
             clevels = ['lightgray', 'black', 'lightgray']
-        ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
+        cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
         # Plot HI center of galaxy
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
                     transform=ax1.get_transform('fk5'))
@@ -320,7 +320,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
                               transform=ax1.transAxes, edgecolor='darkred', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        # cbar.set_label("Barycentric Optical Velocity [km/s]", fontsize=18)
+        cbar.add_lines(cf)
         cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
         fig.savefig(outfile, bbox_inches='tight')
