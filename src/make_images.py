@@ -271,8 +271,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
             # Calculate spectral quantities for plotting
             v_sys = (source['v_col'] * u.m / u.s).to(u.km / u.s).value
             # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
-            w50 = (source['w50'] * cube_params['chan_width']).to(u.km / u.s).value
-            w20 = (source['w20'] * cube_params['chan_width']).to(u.km / u.s).value
+            w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
+            w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
             velmin = chan2vel(source['z_min'], src_basename +
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value + 5
             velmax = chan2vel(source['z_max'], src_basename +
