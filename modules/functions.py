@@ -16,7 +16,9 @@ def chan2freq(channels, fits_name):
     :rtype: Iterable[float]
     """
     header = fits.getheader(fits_name)
-    frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
+    # Don't know how to deal with cubelets having diff CRPIX3 from orig data; catalog data is in ref to orig base 0
+    # frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.Hz
+    frequencies = (header['CDELT3'] * channels + header['CRVAL3']) * u.Hz
     return frequencies
 
 
@@ -35,8 +37,9 @@ def chan2vel(channels, fits_name):
     """
     print("\tWARNING: Assuming channels are uniform width in velocity.")
     header = fits.getheader(fits_name)
-    # Need to deal with different types of headers and velocity scaling with or without frequency!!! (Also bary vs topo, etc)
-    velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
+    # Don't know how to deal with cubelets having diff CRPIX3 from orig data; catalog data is in ref to orig base 0
+    # velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
+    velocities = (header['CDELT3'] * channels + header['CRVAL3']) * u.m / u.s
     return velocities
 
 
@@ -48,7 +51,7 @@ def felo2vel(channels, fits_name):
     fr = header['RESTFREQ'] / (1 + header['CRVAL3'] / c)
     df = -1 * header['RESTFREQ'] * header['CDELT3'] * c / ((c + header['CRVAL3']) * (c + header['CRVAL3']))
     velocities = header['CRVAL3'] + c * header['RESTFREQ'] * (1 / (fr + (channels - header['CRPIX3']) * df) - 1 / fr)
-    return(velocities)
+    return velocities
 
 
 def sbr2nhi(sbr, bunit, bmaj, bmin):
