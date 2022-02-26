@@ -295,9 +295,9 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')  #vmin=velmin, vmax=velmax, origin='lower')
         # ax1.contour(hi_reprojected, linewidths=1, levels=[sensitivity, ], colors=['k', ])
         vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
-        for vunit in [5, 10, 20, 25, 50, 75, 100, 150]:
+        for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
             n_contours = vel_maxhalf // vunit
-            if n_contours == 3:
+            if n_contours <= 4:
                 break
         levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
