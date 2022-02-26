@@ -261,8 +261,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
             elif sofia == 1:
                 freqmin = chan2freq(source['z_min'], src_basename + '_{}.fits'.format(source['id']))
                 freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id']))
-            velmax = freqmin.to(u.km / u.s, equivalencies=optical_HI).value + 5
-            velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value - 5
+            velmax = freqmin.to(u.km / u.s, equivalencies=optical_HI).value
+            velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value
         else:
             # Convert moment map from m/s into units of km/s.
             for i in range(mom1[0].data.shape[0]):
@@ -274,9 +274,9 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
             w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
             w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
             velmin = chan2vel(source['z_min'], src_basename +
-                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value + 5
+                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
             velmax = chan2vel(source['z_max'], src_basename +
-                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value - 5
+                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
             if cube_params['spec_axis'] == 'VRAD': convention = 'Radio'
 
         mom1_reprojected, footprint = reproject_interp(mom1, opt_head)
