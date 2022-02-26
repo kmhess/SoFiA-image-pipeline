@@ -16,7 +16,7 @@ def chan2freq(channels, fits_name):
     :rtype: Iterable[float]
     """
     header = fits.getheader(fits_name)
-    frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
+    frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.Hz
     return frequencies
 
 
