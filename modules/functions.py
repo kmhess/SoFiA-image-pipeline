@@ -19,7 +19,6 @@ def chan2freq(channels, fits_name):
     # Don't know how to deal with cubelets having diff CRPIX3 from orig data; catalog data is in ref to orig base 0
     # frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.Hz
     frequencies = (header['CDELT3'] * channels + header['CRVAL3']) * u.Hz
-    print(channels,frequencies,header['CRPIX3'],header['CRVAL3'],header['CDELT3'])
     return frequencies
 
 
@@ -41,7 +40,6 @@ def chan2vel(channels, fits_name):
     # Don't know how to deal with cubelets having diff CRPIX3 from orig data; catalog data is in ref to orig base 0
     # velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
     velocities = (header['CDELT3'] * channels + header['CRVAL3']) * u.m / u.s
-    print(channels,velocities,header['CRPIX3'],header['CRVAL3'],header['CDELT3'])
     return velocities
 
 
