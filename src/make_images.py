@@ -261,8 +261,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
             elif sofia == 1:
                 freqmin = chan2freq(source['z_min'], src_basename + '_{}.fits'.format(source['id']))
                 freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id']))
-            velmax = freqmin.to(u.km / u.s, equivalencies=optical_HI).value + 5
-            velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value - 5
+            velmax = freqmin.to(u.km / u.s, equivalencies=optical_HI).value
+            velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value
         else:
             # Convert moment map from m/s into units of km/s.
             for i in range(mom1[0].data.shape[0]):
@@ -271,12 +271,12 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
             # Calculate spectral quantities for plotting
             v_sys = (source['v_col'] * u.m / u.s).to(u.km / u.s).value
             # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
-            w50 = (source['w50'] * cube_params['chan_width']).to(u.km / u.s).value
-            w20 = (source['w20'] * cube_params['chan_width']).to(u.km / u.s).value
+            w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
+            w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
             velmin = chan2vel(source['z_min'], src_basename +
-                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value + 5
+                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
             velmax = chan2vel(source['z_max'], src_basename +
-                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value - 5
+                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
             if cube_params['spec_axis'] == 'VRAD': convention = 'Radio'
 
         mom1_reprojected, footprint = reproject_interp(mom1, opt_head)
@@ -287,7 +287,6 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
 
         mom1_reprojected[hi_reprojected < HIlowest] = np.nan
 
-        v_sys_label = "v_sys = {}   W_50 = {}  W_20 = {}".format(int(v_sys), int(w50), int(w20))
         hi_pos = SkyCoord(source['ra'], source['dec'], unit='deg')
         kinpa = source['kin_pa'] * u.deg
 
@@ -295,13 +294,15 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
         im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')  #vmin=velmin, vmax=velmax, origin='lower')
         # ax1.contour(hi_reprojected, linewidths=1, levels=[sensitivity, ], colors=['k', ])
-        if np.abs(velmax - velmin) > 200:
-            levels = [v_sys - 100, v_sys - 50, v_sys, v_sys + 50, v_sys + 100]
-            clevels = ['white', 'gray', 'black', 'gray', 'white']
-        else:
-            levels = [v_sys - 50, v_sys, v_sys + 50]
-            clevels = ['lightgray', 'black', 'lightgray']
-        ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
+        vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
+        for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
+            n_contours = vel_maxhalf // vunit
+            if n_contours <= 4:
+                break
+        levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
+        clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
+        cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
+        v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {}".format(int(v_sys), int(w50), int(w20))
         # Plot HI center of galaxy
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
                     transform=ax1.get_transform('icrs'))
@@ -317,11 +318,13 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes,
                  color='black', fontsize=18)
+        ax1.text(0.95, 0.5, "$\Delta v_{{contours}}$ = {} km/s".format(int(vunit)), ha='center', va='center', transform=ax1.transAxes,
+                 color='black', fontsize=18, rotation=90)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='darkred', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        # cbar.set_label("Barycentric Optical Velocity [km/s]", fontsize=18)
+        cbar.add_lines(cf)
         cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
         fig.savefig(outfile, bbox_inches='tight')
