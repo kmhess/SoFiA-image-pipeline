@@ -42,11 +42,10 @@ Tested with: \
 `Astropy 5.0.1 (and 4.2.1)` \
 `Astroquery 0.4.5 (and 0.4.1)` \
 `Numpy 1.20.2` \
-`Reproject 0.7.1`
+`Reproject 0.7.1` \
+`pvextractor 0.2`
 
-Only guaranteed to run with the SoFiA 2.4.1 (bba8c43) for now, but may work with earlier verions of SoFiA-2.  SoFiA-2 needs to have `parameter.wcs = True` for units in images to make sense. 
-
-Does not currently work with SoFiA-1 due to some discrepancies in output.  
+Only guaranteed to run with the SoFiA 2.4.1 (bba8c43).  SoFiA-2 needs to have `parameter.wcs = True` for units in images to make sense. To be on the safe side, also set `parameter.physical = True`
 
 
 Installation
