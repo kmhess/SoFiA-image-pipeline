@@ -421,7 +421,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
             freq_sys = source['freq']
             ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
                      linewidth=0.75, transform=ax1.get_transform('world'))
-            ax1.set_ylabel('Frequency [Hz]', fontsize=16)
+            ax1.set_ylabel('Frequency [MHz]', fontsize=16)
+            ax1.coords[1].set_format_unit(u.MHz)
             # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
             ax2 = ax1.twinx()
             vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
