@@ -245,9 +245,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         convention = 'Optical'
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
-            for i in range(mom1[0].data.shape[0]):
-                for j in range(mom1[0].data.shape[1]):
-                    mom1[0].data[i][j] = (mom1[0].data[i][j] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+            mom1[0].data = (mom1[0].data * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
             # Calculate spectral quantities for plotting
             v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=optical_HI).value
             # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
@@ -265,9 +263,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
             velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value
         else:
             # Convert moment map from m/s into units of km/s.
-            for i in range(mom1[0].data.shape[0]):
-                for j in range(mom1[0].data.shape[1]):
-                    mom1[0].data[i][j] = (mom1[0].data[i][j] * u.m / u.s).to(u.km / u.s).value
+            mom1[0].data = (mom1[0].data * u.m / u.s).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             v_sys = (source['v_col'] * u.m / u.s).to(u.km / u.s).value
             # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
