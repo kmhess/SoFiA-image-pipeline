@@ -384,7 +384,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
             print("\tNo pv fits file. Perhaps you ran source finding with an old version of SoFiA-2?")
             return
 
-        wcs_pv = WCS(pv[0].header)
+        wcs_pv = WCS(pv[0].header, fix=True, translate_units='shd')
         ang1, freq1 = wcs_pv.wcs_pix2world(0, 0, 0)
         ang2, freq2 = wcs_pv.wcs_pix2world(pv[0].header['NAXIS1'] - 1, pv[0].header['NAXIS2'] - 1, 0)
         pv_rms = np.nanstd(pv[0].data)
