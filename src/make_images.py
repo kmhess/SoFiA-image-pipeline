@@ -403,7 +403,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
             # Extract_pv has a header bug, reset the reference pixel:
             mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
             mask_pv_reprojected, footprint = reproject_interp((mask_pv.data, mask_pv.header), pv[0].header)
-            ax1.contour(mask_pv_reprojected, colors='red', levels=[0.5])
+            ax1.contour(mask_pv_reprojected, colors='red', levels=[0.01])
         else:
             print("\tNo mask cubelet.  Will continue without plotting mask boundaries on pv plot.")
         ax1.autoscale(False)
