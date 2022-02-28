@@ -456,7 +456,12 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Get beam information from the source cubelet
     if sofia == 2:
-        cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
+        try:
+            cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
+        except FileNotFoundError:
+            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+            print("\tERROR: No cubelet to match source {}.\n".format(source['id']))
+            exit()
     elif sofia == 1:
         cube_params = get_info(src_basename + '_{}.fits'.format(source['id']), beam)
 
