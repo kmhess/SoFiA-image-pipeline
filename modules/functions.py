@@ -1,8 +1,10 @@
+from astropy.coordinates import SkyCoord
 from astropy import constants as const
 from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
 import numpy as np
+from pvextractor import extract_pv_slice,PathFromCenter
 
 
 def chan2freq(channels, fits_name):
@@ -273,3 +275,12 @@ def get_subcube(source, original):
     hdu_orig.close()
 
     return subcube
+
+
+def create_pv(source, filename, opt_view=6*u.arcmin):
+
+    slice = PathFromCenter(center=SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg'),
+                           length=opt_view, angle=source['kin_pa']*u.deg, width=1*u.arcsec)
+    mask_pv = extract_pv_slice(filename, slice)
+
+    return mask_pv
