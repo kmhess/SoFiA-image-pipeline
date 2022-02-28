@@ -390,7 +390,7 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
         pv_rms = np.nanstd(pv[0].data)
 
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=WCS(pv[0].header))
+        ax1 = fig.add_subplot(111, projection=WCS(pv[0].header, fix=True, translate_units='shd'))
         ax1.imshow(pv[0].data, cmap='gray', aspect='auto')
         # if np.all (np.isnan (pv[0].data)): continue
         ax1.contour(pv[0].data, colors='black', levels=[-2 * pv_rms, 2 * pv_rms, 4 * pv_rms])
