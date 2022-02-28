@@ -17,6 +17,7 @@ from urllib.error import HTTPError
 
 from modules.functions import get_info
 from modules.functions import chan2freq, chan2vel, sbr2nhi
+from modules.functions import create_pv
 from modules.get_ancillary import *
 from modules.get_hst_cosmos import get_hst_cosmos
 
@@ -372,7 +373,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
 
 # Make pv plot for object
-def make_pv(source, src_basename, cube_params, suffix='png'):
+def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_pv.{}'.format(source['id'], suffix)
 
@@ -394,6 +395,17 @@ def make_pv(source, src_basename, cube_params, suffix='png'):
         ax1.imshow(pv[0].data, cmap='gray', aspect='auto')
         # if np.all (np.isnan (pv[0].data)): continue
         ax1.contour(pv[0].data, colors='black', levels=[-2 * pv_rms, 2 * pv_rms, 4 * pv_rms])
+        if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
+            print("\tReading in mask cubelet.")
+            mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view)
+            # Reproject needs to know unit, whereas WCS assumes it is degs
+            pv[0].header['CUNIT1'] = 'deg'
+            # Extract_pv has a header bug, reset the reference pixel:
+            mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
+            mask_pv_reprojected, footprint = reproject_interp((mask_pv.data, mask_pv.header), pv[0].header)
+            ax1.contour(mask_pv_reprojected, colors='red', levels=[0.5])
+        else:
+            print("\tNo mask cubelet.  Will continue without plotting mask boundaries on pv plot.")
         ax1.autoscale(False)
         ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
                  transform=ax1.get_transform('world'))
@@ -577,7 +589,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                   sofia=2)
 
     # Make pv if it was created (only in SoFiA-1); not dependent on having a survey image to regrid to.
-    make_pv(source, src_basename, cube_params, suffix=suffix)
+    make_pv(source, src_basename, cube_params, opt_view=opt_view, suffix=suffix)
 
     plt.close('all')
 
