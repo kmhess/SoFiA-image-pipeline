@@ -70,7 +70,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin):
     :return: column density
     :rtype: float
     """
-    if bunit == 'Jy/beam*m/s':
+    if (bunit == 'Jy/beam*m/s') or (bunit == 'Jy/beam*M/S'):
       nhi = 1.104e+21 * sbr / bmaj / bmin
     elif bunit == 'Jy/beam*Hz':
       nhi = 2.330e+20 * sbr / bmaj / bmin
@@ -281,6 +281,8 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
 
     slice = PathFromCenter(center=SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg'),
                            length=opt_view, angle=source['kin_pa']*u.deg, width=1*u.arcsec)
-    mask_pv = extract_pv_slice(filename, slice)
+    mask = fits.open(filename)
+    mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'))
+    mask.close()
 
     return mask_pv
