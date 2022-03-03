@@ -303,10 +303,10 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         # Plot HI center of galaxy
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
                     transform=ax1.get_transform('icrs'))
-        ax1.annotate("", xy=((hi_pos.ra - 0.45 * opt_view * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                               (hi_pos.dec - 0.45 * opt_view * np.cos(kinpa)).deg), xycoords=ax1.get_transform('icrs'),
-                     xytext=((hi_pos.ra + 0.45 * opt_view * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                             (hi_pos.dec + 0.45 * opt_view * np.cos(kinpa)).deg), textcoords=ax1.get_transform('icrs'),
+        ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
+                               (hi_pos.dec + 0.45 * opt_view * np.cos(kinpa)).deg), xycoords=ax1.get_transform('icrs'),
+                     xytext=((hi_pos.ra - 0.45 * opt_view * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
+                             (hi_pos.dec - 0.45 * opt_view * np.cos(kinpa)).deg), textcoords=ax1.get_transform('icrs'),
                      arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                      linestyle='--'))
         ax1.set_title(source['name'], fontsize=20)
