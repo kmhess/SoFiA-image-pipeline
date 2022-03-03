@@ -385,6 +385,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
             print("\tNo pv fits file. Perhaps you ran source finding with an old version of SoFiA-2?")
             return
 
+        # For plotting mask, reproject needs to know unit explicitly, whereas WCS assumes it is degs
+        pv[0].header['CUNIT1'] = 'deg'
+
         wcs_pv = WCS(pv[0].header, fix=True, translate_units='shd')
         ang1, freq1 = wcs_pv.wcs_pix2world(0, 0, 0)
         ang2, freq2 = wcs_pv.wcs_pix2world(pv[0].header['NAXIS1'] - 1, pv[0].header['NAXIS2'] - 1, 0)
@@ -398,8 +401,6 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
             print("\tReading in mask cubelet.")
             mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view)
-            # Reproject needs to know unit, whereas WCS assumes it is degs
-            pv[0].header['CUNIT1'] = 'deg'
             # Extract_pv has a header bug, reset the reference pixel:
             mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
             mask_pv_reprojected, footprint = reproject_interp((mask_pv.data, mask_pv.header), wcs_pv, pv[0].shape)
