@@ -398,16 +398,15 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
         ax1.imshow(pv[0].data, cmap='gray', aspect='auto')
         # if np.all (np.isnan (pv[0].data)): continue
         ax1.contour(pv[0].data, colors='black', levels=[-2 * pv_rms, 2 * pv_rms, 4 * pv_rms])
+        ax1.autoscale(False)
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
             print("\tReading in mask cubelet.")
             mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view)
             # Extract_pv has a header bug, reset the reference pixel:
             mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
-            mask_pv_reprojected, footprint = reproject_interp((mask_pv.data, mask_pv.header), wcs_pv, pv[0].shape)
-            ax1.contour(mask_pv_reprojected, colors='red', levels=[0.01])
+            ax1.contour(mask_pv.data, colors='red', levels=[0.01], transform=ax1.get_transform(WCS(mask_pv.header)))
         else:
             print("\tNo mask cubelet.  Will continue without plotting mask boundaries on pv plot.")
-        ax1.autoscale(False)
         ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
                  transform=ax1.get_transform('world'))
         ax1.set_title(source['name'], fontsize=16)
