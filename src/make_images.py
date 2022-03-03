@@ -427,7 +427,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
             ax2 = ax1.twinx()
             vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
             vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
-            ax2.set_ylim(vel2, vel1)
+            ax2.set_ylim(vel1, vel2)
             ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention))
         else:
             if cube_params['spec_axis'] == 'VRAD': convention = 'Radio'
