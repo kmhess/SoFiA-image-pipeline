@@ -9,6 +9,7 @@ from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
 from astroquery.skyview import SkyView
+import numpy as np
 
 
 def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
@@ -24,16 +25,16 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
     :rtype: astropy HDUList
     """
     # DSS2 Blue images have a 1 arc/pix pixel scale, but retrieving ~the pixel scale doesn't work.
-    opt_pixels = int(opt_view.to(u.arcsec).value * 2)
+    opt_pixels = (opt_view.to(u.arcsec).value * 2).astype(int)
 
     # Get a survey image from SkyView:
     if (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
         path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS',
-                                  width=opt_view, height=opt_view, survey=[survey], pixels=opt_pixels)
+                                  width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels)
     # Note that there seems to be a bug in SkyView that it sometimes won't retrieve non-J2000.0.  Keep an eye on this!
     else:
         path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates=hi_pos.equinox.value,
-                                  width=opt_view, height=opt_view, survey=[survey], pixels=opt_pixels)
+                                  width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels)
     if len(path) != 0:
         print("\tSurvey image retrieved from {}.".format(survey))
         result = path[0]
@@ -56,6 +57,9 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
     """
     #  Get PanSTARRS false color image and r-band fits (for the WCS).
     pstar_pixsc = 0.25
+    if len(opt_view) > 1:
+        print("\tWARNING: PanSTARRS only returns square images; taking largest dimension.")
+        opt_view = np.max(opt_view)
     path = geturl(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value / pstar_pixsc),
                   filters="r", format="fits")
 
@@ -76,9 +80,9 @@ def get_decals(hi_pos, opt_view=6*u.arcmin):
 
     # Get DECaLS false color image and fits (for the WCS). Example URL for this script provided by John Wu.
     pixscale = 0.262   # default(?) arcsec/pixel
-    dimen = int(opt_view.to(u.arcsec).value / pixscale)
+    dimen = (opt_view.to(u.arcsec).value / pixscale).astype(int)
     url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
-          'pixscale={}&height={}&width={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen, dimen)
+          'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
 
     try:
         fits_head = fits.getheader(url)
