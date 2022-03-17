@@ -1,0 +1,90 @@
+# Import Python libraries
+from argparse import ArgumentParser, RawTextHelpFormatter
+from urllib.error import HTTPError
+
+from astropy.coordinates import SkyCoord
+from astropy import units as u
+
+from modules.get_ancillary import *
+
+###################################################################
+
+parser = ArgumentParser(description="Create images from a SoFiA catalog and cubelets, or fits file. \n"
+                                    "Only works with SoFiA-2 and wcs=True (for now).",
+                        formatter_class=RawTextHelpFormatter)
+
+# parser.add_argument('-c', '--catalog', required=False,
+#                     help='Optional: Specify the input XML or ascii catalog name. No default.')
+
+# parser.add_argument('-x', '--suffix', default='png',
+#                     help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
+
+parser.add_argument('-ra', '--right_ascension', default=0.0, required=True,
+                    help='Optional: specify the central RA of the image to retrieve in DEGREES. '
+                         ' (default: %(default)s).')
+
+parser.add_argument('-dec', '--declination', default=45.0, required=True,
+                    help='Optional: specify the central DEC of the image to retrieve in DEGREES. '
+                         ' (default: %(default)s).')
+
+parser.add_argument('-i', '--image_size', default=[2.8, 2.3], nargs='+', type=float,#[2.8, 2.3],
+                    help='Optional: specify the minimum survey image size to retrieve in DEGREES.'
+                         ' (default: %(default)s).')
+
+parser.add_argument('-s', '--surveys', default=['DSS2 Blue'], nargs='*', type=str, required=False,
+                    help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
+                         ' These additional non-SkyView options are also available: \'decals\',\'panstarrs\',\'hst\'.\n'
+                         ' \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
+
+parser.add_argument('-o', '--outname', default=None, required=False,
+                    help='Optional: specify the prefix for the resulting file. Will be appended by survey name.')
+
+###################################################################
+
+# Parse the arguments above
+args = parser.parse_args()
+
+surveys = set(args.surveys)
+if args.outname:
+    outname = args.outname + '_'
+else:
+    outname = ''
+
+opt_view = args.image_size * u.deg
+if len(opt_view) > 2:
+    print("ERROR: -i image_size expects one or two arguments. Exiting.")
+    exit()
+
+# Can make this more flexible to include hmsdms entries.
+hi_pos = SkyCoord(ra=args.right_ascension, dec=args.declination, unit='deg')
+
+# If requested retrieve PanSTARRS false color imaging
+if ('panstarrs' in surveys):
+    pstar_im, pstar_head = get_panstarrs(hi_pos, opt_view=opt_view)
+    if pstar_im:
+        pstar_im.save(outname + 'panstarrs.jpg')
+        pstar_fits_hdr = fits.PrimaryHDU(header=pstar_head)
+        pstar_fits_hdr.writeto(outname + 'panstarrs_hdr.fits')
+    surveys.remove('panstarrs')
+
+# If requested retrieve DECaLS false color imaging
+if 'decals' in surveys:
+    decals_im, decals_head = get_decals(hi_pos, opt_view=opt_view)
+    if decals_im:
+        decals_im.save(outname + 'decals.jpg')
+        decals_fits_hdr = fits.PrimaryHDU(header=decals_head)
+        decals_fits_hdr.writeto(outname + 'decals_hdr.fits')
+    surveys.remove('decals')
+
+# If requested retrieve any number of survey images available through SkyView.
+if len(surveys) > 0:
+    for survey in surveys:
+        try:
+            overlay_image = get_skyview(hi_pos, opt_view=opt_view, survey=survey)
+        except ValueError:
+            print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
+                  "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
+                  "surveys.".format(survey))
+        except HTTPError:
+            print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
+        overlay_image.writeto(outname + survey + '.fits')
