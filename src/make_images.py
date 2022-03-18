@@ -303,10 +303,10 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         # Plot HI center of galaxy
         ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
                     transform=ax1.get_transform('icrs'))
-        ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                               (hi_pos.dec + 0.45 * opt_view * np.cos(kinpa)).deg), xycoords=ax1.get_transform('icrs'),
-                     xytext=((hi_pos.ra - 0.45 * opt_view * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                             (hi_pos.dec - 0.45 * opt_view * np.cos(kinpa)).deg), textcoords=ax1.get_transform('icrs'),
+        ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
+                               (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg), xycoords=ax1.get_transform('icrs'),
+                     xytext=((hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
+                             (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg), textcoords=ax1.get_transform('icrs'),
                      arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                      linestyle='--'))
         ax1.set_title(source['name'], fontsize=20)
@@ -348,6 +348,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
+        print(hdulist_hi[0].header['bunit'])
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value, cube_params['bmin'].value)
 
         fig = plt.figure(figsize=(8, 8))
@@ -401,7 +402,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
         ax1.autoscale(False)
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
             print("\tReading in mask cubelet.")
-            mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view)
+            mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view[0])
             # Extract_pv has a header bug, reset the reference pixel:
             mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
             ax1.contour(mask_pv.data, colors='red', levels=[0.01], transform=ax1.get_transform(WCS(mask_pv.header)))
