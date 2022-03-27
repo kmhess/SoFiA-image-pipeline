@@ -517,14 +517,15 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
           usrim_d = usrim[0].data
           usrim_h = usrim[0].header
           if 'cdelt1' in usrim_h and 'cdelt2' in usrim_h:
-              usrim_pix_x, usrim_pix_y = np.abs(usrim_h['cdelt1']), np.abs(usrim_h['cdelt2'])
+              usrim_pix_x, usrim_pix_y = usrim_h['cdelt1'], np.abs(usrim_h['cdelt2'])
           elif 'cd1_1' in usrim_h and 'cd2_2' in usrim_h:
-              usrim_pix_x, usrim_pix_y = np.abs(usrim_h['cd1_1']), np.abs(usrim_h['cd2_2'])
+              usrim_pix_x, usrim_pix_y = usrim_h['cd1_1'], np.abs(usrim_h['cd2_2'])
           else:
               print("\tCould not determine pixel size of user image. Aborting.")
               exit()
           if usrim_pix_x > 0: swapx = True
           else: swapx = False
+          usrim_pix_x = np.abs(usrim_pix_x)
           usrim_wcs = WCS(usrim_h)
         print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
