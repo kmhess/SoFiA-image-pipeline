@@ -29,7 +29,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 # Overlay HI contours on user image
 
-def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
+def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
     if not os.path.isfile(outfile):
         try:
@@ -531,13 +531,13 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
             usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
-            bbox = usrim_cut.bbox_original
+            #bbox_cut = usrim_cut.bbox_original
             #opt_head = usrim_h
-            #opt_head['naxis1'] = bbox[0][1] - bbox[0][0] + 1
-            #opt_head['naxis2'] = bbox[1][1] - bbox[1][0] + 1
-            #opt_head['crpix1'] -= bbox[0][0]
-            #opt_head['crpix2'] -= bbox[1][0]
-            make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png')
+            #opt_head['naxis1'] = bbox_cut[0][1] - bbox_cut[0][0] + 1
+            #opt_head['naxis2'] = bbox_cut[1][1] - bbox_cut[1][0] + 1
+            #opt_head['crpix1'] -= bbox_cut[0][0]
+            #opt_head['crpix2'] -= bbox_cut[1][0]
+            make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png')
         except:
             print('\tWARNING: 2D cutout extraction failed. Source outside user image? Will try again with the next source.')
     else:
@@ -597,7 +597,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                 print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
 
     # Make the rest of the images if there is a survey image to regrid to.
-    #print(opt_head)
     if opt_head:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)

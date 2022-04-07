@@ -28,7 +28,7 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
         os.system("{0} {1}mom0_usr.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
                   " +append temp.{2}".format(imgck, infile, suffix))
     else:
-        os.system("{0} {1}mom0{3}.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
+        os.system("{0} {1}mom0_{3}.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
                   " +append temp.{2}".format(imgck, infile, suffix, surveys[0].replace(" ", "").lower()))
     os.system("{0} {1}spec.{2} -resize 125% temp2.{2}".format(imgck, infile, suffix))
     os.system("{0} {1}specfull.{2} -resize 125% temp3.{2}".format(imgck, infile, suffix))
