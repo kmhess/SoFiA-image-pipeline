@@ -25,10 +25,10 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     print("\tAssembling figures with imagemagick")
     new_file = "{}combo.{}".format(infile, suffix)
     if user_image and os.path.exists('{0}mom0_usr.{1}'.format(infile, suffix)):
-        os.system("{0} {1}mom0_usr.{2} {1}mom0hi.{2} {1}snr.{2} {1}mom1.{2}"
+        os.system("{0} {1}mom0_usr.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
                   " +append temp.{2}".format(imgck, infile, suffix))
     else:
-        os.system("{0} {1}mom0{3}.{2} {1}mom0hi.{2} {1}snr.{2} {1}mom1.{2}"
+        os.system("{0} {1}mom0{3}.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
                   " +append temp.{2}".format(imgck, infile, suffix, surveys[0].replace(" ", "").lower()))
     os.system("{0} {1}spec.{2} -resize 125% temp2.{2}".format(imgck, infile, suffix))
     os.system("{0} {1}specfull.{2} -resize 125% temp3.{2}".format(imgck, infile, suffix))

@@ -25,7 +25,8 @@ convert_im = "/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert"
 for src in sources:
     print("  {}".format(src))
     new_png = "{}_combo.png".format(src)
-    os.system("{} {}_mom0.png {}_mom0hi.png {}_snr.png {}_mom1.png +append temp.png".format(convert_im, src, src, src, src, src))
+    survey = "dss2blue"
+    os.system("{} {}_mom0_{}.png {}_mom0.png {}_snr.png {}_mom1.png +append temp.png".format(convert_im, src, survey, src, src, src, src))
     os.system("{} {}_spec.png -resize 125% temp2.png".format(convert_im, src))
     os.system("{} {}_specfull.png -resize 125% temp3.png".format(convert_im, src))
     os.system("{} temp2.png temp3.png {}_pv.png +append temp4.png".format(convert_im, src, src, src))

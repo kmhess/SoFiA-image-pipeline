@@ -88,7 +88,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
     :type survey: str, optional
     """
     survey_nospace = survey.replace(" ", "").lower()
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey_nospace, suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], survey_nospace, suffix)
 
     if not os.path.isfile(outfile):
         try:
@@ -137,7 +137,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
 # Make HI grey scale image
 def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0hi.{}'.format(source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0.{}'.format(source['id'], suffix)
 
     if not os.path.isfile(outfile):
         try:
@@ -338,7 +338,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
 def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
                    survey='panstarrs'):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey, suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], survey, suffix)
 
     if survey == 'panstarrs': survey = 'PanSTARRS'
     elif survey == 'decals': survey = 'DECaLS'
