@@ -46,7 +46,7 @@ Tested with: \
 `Reproject 0.7.1` \
 `pvextractor 0.2`
 
-Only guaranteed to run with the SoFiA 2.4.1 (bba8c43).  SoFiA-2 needs to have `parameter.wcs = True` for units in images to make sense. To be on the safe side, also set `parameter.physical = True`
+Only guaranteed to run with the SoFiA 2.4.1 (bba8c43) or later.  SoFiA-2 needs to have `parameter.wcs = True` for units in images to make sense. To be on the safe side, also set `parameter.physical = True`. Also, if you run SoFiA-2 on a subregion, must have `parameter.offset = True`.
 
 
 Installation
