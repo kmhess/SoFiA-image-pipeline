@@ -29,7 +29,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 # Overlay HI contours on user image
 
-def make_mom0_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
+def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
 
@@ -92,7 +92,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
     :type survey: str, optional
     """
     survey_nospace = survey.replace(" ", "").lower()
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey_nospace, suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], survey_nospace, suffix)
 
     if not os.path.isfile(outfile):
         try:
@@ -141,7 +141,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
 # Make HI grey scale image
 def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0hi.{}'.format(source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0.{}'.format(source['id'], suffix)
 
     if not os.path.isfile(outfile):
         try:
@@ -342,7 +342,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
 def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
                   survey='panstarrs'):
 
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0{}.{}'.format(source['id'], survey, suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], survey, suffix)
 
     if survey == 'panstarrs': survey = 'PanSTARRS'
     elif survey == 'decals': survey = 'DECaLS'
@@ -505,8 +505,9 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     Ysize = np.array([((Ymax - Yc) * cube_params['cellsize']).to(u.arcmin).value,
                       ((Yc - Ymin) * cube_params['cellsize']).to(u.arcmin).value])
     if np.any(Xsize > opt_view.value / 2) | np.any(Ysize > opt_view.value / 2):
-        opt_view = np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin
-        print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view.value))
+        opt_view = np.max([Xsize, Ysize]) * 2 * 1.05
+        print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view))
+        opt_view = np.array([opt_view,]) * u.arcmin
 
     # Temporarily replace with ICRS ra/dec for plotting purposes in the rest (won't change catalog file.):
     source['ra'] = hi_pos_icrs.ra.deg
@@ -536,14 +537,18 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                 swapx = True
             else:
                 swapx = False
+            usrim_pix_x = np.abs(usrim_pix_x)
             usrim_wcs = WCS(usrim_h)
-        print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1} Dec = {2}.'.format(opt_view, hi_pos.ra,
-                                                                                                    hi_pos.dec))
+        print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
-            usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y,
-                                                   opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
-            make_mom0_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range,
-                          suffix='png')
+            usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
+            #bbox_cut = usrim_cut.bbox_original
+            #opt_head = usrim_h
+            #opt_head['naxis1'] = bbox_cut[0][1] - bbox_cut[0][0] + 1
+            #opt_head['naxis2'] = bbox_cut[1][1] - bbox_cut[1][0] + 1
+            #opt_head['crpix1'] -= bbox_cut[0][0]
+            #opt_head['crpix2'] -= bbox_cut[1][0]
+            make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png')
         except:
             print('\tWARNING: 2D cutout extraction failed. Source outside user image? Will try again with the next source.')
     else:
