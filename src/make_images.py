@@ -543,13 +543,12 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
             usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
-            #bbox_cut = usrim_cut.bbox_original
-            #opt_head = usrim_h
-            #opt_head['naxis1'] = bbox_cut[0][1] - bbox_cut[0][0] + 1
-            #opt_head['naxis2'] = bbox_cut[1][1] - bbox_cut[1][0] + 1
-            #opt_head['crpix1'] -= bbox_cut[0][0]
-            #opt_head['crpix2'] -= bbox_cut[1][0]
             make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png')
+            opt_head = usrim_cut.wcs.to_header()
+            # wcs.to_header() seems to have a bug where it doesn't include the axis information.
+            opt_head['NAXIS'] = 2
+            opt_head['NAXIS1'] = usrim_cut.wcs.array_shape[0]
+            opt_head['NAXIS2'] = usrim_cut.wcs.array_shape[1]
         except:
             print('\tWARNING: 2D cutout extraction failed. Source outside user image? Will try again with the next source.')
     else:
