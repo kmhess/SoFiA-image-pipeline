@@ -406,9 +406,10 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
             print("\tReading in mask cubelet.")
             mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view[0])
-            # Extract_pv has a header bug, reset the reference pixel:
-            mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
-            ax1.contour(mask_pv.data, colors='red', levels=[0.01], transform=ax1.get_transform(WCS(mask_pv.header)))
+            if mask_pv:
+                # Extract_pv has a header bug, reset the reference pixel:
+                mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
+                ax1.contour(mask_pv.data, colors='red', levels=[0.01], transform=ax1.get_transform(WCS(mask_pv.header)))
         else:
             print("\tNo mask cubelet.  Will continue without plotting mask boundaries on pv plot.")
         ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
