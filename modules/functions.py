@@ -282,7 +282,12 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
     slice = PathFromCenter(center=SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg'),
                            length=opt_view, angle=source['kin_pa']*u.deg, width=1*u.arcsec)
     mask = fits.open(filename)
-    mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'))
+    try:
+        mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'))
+    except AssertionError:
+        print("\tIssue with extracting pv slice of mask (dunno why). Continuing.")
+        mask_pv = None
+
     mask.close()
 
     return mask_pv
