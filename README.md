@@ -5,7 +5,7 @@ Introduction
 ------------
 SIP takes a SoFiA generated source catalog and produce images for publication or quick inspection.  Images include HI contours overlaid on multiwavelength images, HI moment maps, pv-diagrams, and spectra with and without noise.
 
-<Insert sample figure here>
+![](docs/sofia_test_output_5_combo.png)
 
 Requirements
 ------------
@@ -50,7 +50,7 @@ Examples:
 * Use ascii catalog file with output images in pdf format and specify original data set: \
 `python3 image_pipeline.py -c <path/to/catalog.txt> -x pdf -o <path/to/original_cube.fits>` 
 
-###Options
+### Options
 ```
 REQUIRED:
     -c     Catalog file.  Can be the ascii file ending in .txt or the XML file from SoFiA-2.
