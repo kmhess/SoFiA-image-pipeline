@@ -16,7 +16,7 @@ Python dependencies can be installed with: \
 
 Combining individual images with the `-m` option requires [ImageMagick](https://imagemagick.org) be installed.
 
-SIP was written with the outputs from SoFiA 2.4.1 (bba8c43) and later. Through troubleshooting, we have improved the output of both SIP and SoFiA-2, so for best performance, please use the latest version of each. 
+SIP was written with the outputs from SoFiA 2.4.1 (bba8c43) and later. Through troubleshooting, we have improved the output of both SIP and [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2), so for best performance, please use the latest version of each. 
 
 For best unit conversion performance, SoFiA-2 needs to have been run with the following parameters: \
 `parameter.wcs = True` \
@@ -38,7 +38,7 @@ We are working on a pip install option. More later.
 
 Usage
 -----
-SIP works under the assumption that the user has run SoFiA-2 which generated an xml and/or ascii catalog file, and fits moment maps and cubelets for each source.  SIP assumes that these filese are in the same directory structure as created by SoFiA-2. The output from SIP will be in a folder next to `*_cubelets/` called `*_figures/`.
+SIP works under the assumption that the user has run [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2) which generated an xml and/or ascii catalog file, and fits moment maps and cubelets for each source.  SIP assumes that these filese are in the same directory structure as created by SoFiA-2. The output from SIP will be in a folder next to `*_cubelets/` called `*_figures/`.
 
 Get help on the parameters: 
 * `python3 image_pipeline.py -h`
