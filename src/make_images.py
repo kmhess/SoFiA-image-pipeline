@@ -399,7 +399,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(pv[0].header, fix=True, translate_units='shd'))
-        ax1.imshow(pv[0].data, cmap='gray', aspect='auto')
+        pvd = pv[0].data
+        pvd_noise = 1.4826 * np.nanmedian(np.abs(pvd[pvd<0])) # estimate noise as MAD of negative pixels assuming median = 0
+        ax1.imshow(pvd, cmap='gray', aspect='auto', vmin = -3*pvd_noise, vmax = +3*pvd_noise)
         # if np.all (np.isnan (pv[0].data)): continue
         ax1.contour(pv[0].data, colors='black', levels=[-2 * pv_rms, 2 * pv_rms, 4 * pv_rms])
         ax1.autoscale(False)
