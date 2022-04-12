@@ -284,8 +284,8 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
     mask = fits.open(filename)
     try:
         mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'))
-    except AssertionError:
-        print("\tIssue with extracting pv slice of mask (dunno why). Continuing.")
+    except ValueError:
+        print("\tWARNING: Cannot extract pv slice of mask (dunno why). Continuing.")
         mask_pv = None
 
     mask.close()
