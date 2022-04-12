@@ -395,15 +395,13 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
         wcs_pv = WCS(pv[0].header, fix=True, translate_units='shd')
         ang1, freq1 = wcs_pv.wcs_pix2world(0, 0, 0)
         ang2, freq2 = wcs_pv.wcs_pix2world(pv[0].header['NAXIS1'] - 1, pv[0].header['NAXIS2'] - 1, 0)
-        pv_rms = np.nanstd(pv[0].data)
-
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(pv[0].header, fix=True, translate_units='shd'))
         pvd = pv[0].data
-        pvd_noise = 1.4826 * np.nanmedian(np.abs(pvd[pvd<0])) # estimate noise as MAD of negative pixels assuming median = 0
-        ax1.imshow(pvd, cmap='gray', aspect='auto', vmin = -3*pvd_noise, vmax = +3*pvd_noise)
+        pvd_rms = 1.4826 * np.nanmedian(np.abs(pvd[pvd<0])) # estimate noise as MAD of negative pixels assuming median = 0
+        ax1.imshow(pvd, cmap='gray', aspect='auto', vmin = -3*pvd_rms, vmax = +3*pvd_rms)
         # if np.all (np.isnan (pv[0].data)): continue
-        ax1.contour(pv[0].data, colors='black', levels=[-2 * pv_rms, 2 * pv_rms, 4 * pv_rms])
+        ax1.contour(pvd, colors=['w','k',], levels=np.concatenate(([-3,],3**np.arange(1,10)))*pvd_rms)
         ax1.autoscale(False)
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
             print("\tReading in mask cubelet.")
