@@ -398,10 +398,20 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(pv[0].header, fix=True, translate_units='shd'))
         pvd = pv[0].data
-        pvd_rms = 1.4826 * np.nanmedian(np.abs(pvd[pvd<0])) # estimate noise as MAD of negative pixels assuming median = 0
-        ax1.imshow(pvd, cmap='gray', aspect='auto', vmin = -3*pvd_rms, vmax = +3*pvd_rms)
+        pvd_rms = 1.4826 * np.nanmedian(np.abs(pvd[pvd < 0]))  # Estimate rms as MAD of negative pix assuming median = 0
+
+        # Append second color map for above the 3 sigma noise:
+        # https://matplotlib.org/3.5.0/tutorials/colors/colormapnorms.html#twoslopenorm-different-mapping-on-either-side-of-a-center
+        colors_noise = plt.cm.gray(np.linspace(0, 1, 256))
+        colors_galaxy = plt.cm.afmhot(np.linspace(1, 0.4, 256))
+        all_colors = np.vstack((colors_noise, colors_galaxy))
+        pvd_map = colors.LinearSegmentedColormap.from_list('pvd_map', all_colors)
+        divnorm = colors.TwoSlopeNorm(vmin=-3*pvd_rms, vcenter=+3*pvd_rms, vmax=15*pvd_rms)
+        # ax1.imshow(pvd, cmap='gray', aspect='auto', vmin=-3*pvd_rms, vmax=+3*pvd_rms)
+        ax1.imshow(pvd, cmap=pvd_map, aspect='auto', norm=divnorm)
+
         # if np.all (np.isnan (pv[0].data)): continue
-        ax1.contour(pvd, colors=['w','k',], levels=np.concatenate(([-3,],3**np.arange(1,10)))*pvd_rms)
+        ax1.contour(pvd, colors=['w', 'k', 'k', ], levels=np.concatenate(([-3, ], 3**np.arange(1, 10)))*pvd_rms)
         ax1.autoscale(False)
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
             print("\tReading in mask cubelet.")
