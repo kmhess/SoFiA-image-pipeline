@@ -605,7 +605,27 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                       "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
                       "surveys.".format(survey))
             except HTTPError:
-                print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
+                print("\tERROR: http error 404 returned from SkyView query for {} survey image. Trying with"
+                      " cache=False.".format(survey))
+                try:
+                    overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey, cache=False)
+                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
+                                 survey=survey)
+                    if surveys[0] == survey:
+                        opt_head = overlay_image[0].header
+                except:
+                    print("\t\tSecond attempt failed.  Try again later?")
+            except:
+                print("\tERROR: general error attempting return image from SkyView query for {} survey. Trying with"
+                      " cache=False.".format(survey))
+                try:
+                    overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey, cache=False)
+                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
+                                 survey=survey)
+                    if surveys[0] == survey:
+                        opt_head = overlay_image[0].header
+                except:
+                    print("\t\tSecond attempt failed.  Try again later?")
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
