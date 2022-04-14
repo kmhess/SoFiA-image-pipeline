@@ -30,7 +30,28 @@ optical_HI = u.doppler_optical(HI_restfreq)
 # Overlay HI contours on user image
 
 def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
+    """Overlay HI contours on top of a user provided image
 
+    :param source: source object
+    :type source: Astropy data object?
+    :param src_basename: basename for the source for data files
+    :type src_basename: str
+    :param cube_params: parameters of the data cube
+    :type cube_params: dict
+    :param patch: observing patch parameters
+    :type patch: dict
+    :param opt: optical data
+    :type opt: dict
+    :param base_contour: base contour
+    :type base_contour: float
+    :param swapx: invert the x-axis if cdelt is negative
+    :type swapx: bool
+    :param perc: percentage range of data for plotting user image
+    :type perc: list, float
+    :param suffix: file type, defaults to 'png'
+    :type suffix: str, optional
+    :return:
+    """
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
 
     if not os.path.isfile(outfile):
@@ -140,7 +161,24 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
 
 # Make HI grey scale image
 def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
+    """Overlay HI contours on the HI gray scale image.
 
+    :param source: source object
+    :type source: Astropy table
+    :param src_basename: directory name
+    :type src_basename: str
+    :param cube_params: The characteristics of the beam and coordinate system of the image.
+    :type cube_params: dict
+    :param patch: size of the beam ellipse for plotting
+    :type patch: dict
+    :param opt_head: Header for the color image
+    :type opt_head: FITS header
+    :param base_contour: lowest HI contour
+    :type base_contour: float
+    :param suffix: image file type
+    :type suffix: str
+    :return:
+    """
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0.{}'.format(source['id'], suffix)
 
     if not os.path.isfile(outfile):
@@ -185,7 +223,24 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
 # Make HI significance image
 def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
+    """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
+    :param source: source object
+    :type source: Astropy table
+    :param src_basename: directory name
+    :type src_basename: str
+    :param cube_params: The characteristics of the beam and coordinate system of the image.
+    :type cube_params: dict
+    :param patch: size of the beam ellipse for plotting
+    :type patch: dict
+    :param opt_head: Header for the color image
+    :type opt_head: FITS header
+    :param base_contour: lowest HI contour
+    :type base_contour: float
+    :param suffix: image file type
+    :type suffix: str
+    :return:
+    """
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_snr.{}'.format(source['id'], suffix)
 
     if not os.path.isfile(outfile):
@@ -234,7 +289,28 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 # Make velocity map for object
 def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_view=6*u.arcmin, suffix='png', sofia=2):
+    """
 
+    :param source: source object
+    :type source: Astropy table
+    :param src_basename: directory name
+    :type src_basename: str
+    :param cube_params: The characteristics of the beam and coordinate system of the image.
+    :type cube_params: dict
+    :param patch: size of the beam ellipse for plotting
+    :type patch: dict
+    :param opt_head: Header for the color image
+    :type opt_head: FITS header
+    :param HIlowest: lowest HI contour
+    :type HIlowest: float
+    :param opt_view: requested size of the image for regriding
+    :type opt_view: quantity
+    :param suffix: image file type
+    :type suffix: str
+    :param sofia: major sofia version number
+    :type sofia: int
+    :return:
+    """
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom1.{}'.format(source['id'], suffix)
 
     if not os.path.isfile(outfile):
@@ -341,7 +417,28 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
 # Overlay HI contours on false color optical image
 def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
                   survey='panstarrs'):
+    """Overlay HI contours on a false color image.
 
+    :param source: source object
+    :type source: Astropy table
+    :param src_basename: directory name
+    :type src_basename: str
+    :param cube_params: The characteristics of the beam and coordinate system of the image.
+    :type cube_params: dict
+    :param patch: size of the beam ellipse for plotting
+    :type patch: dict
+    :param color_im: color image
+    :type color_im: NDarray?
+    :param opt_head: Header for the color image
+    :type opt_head: FITS header
+    :param base_contour: lowest HI contour
+    :type base_contour: float
+    :param suffix: image file type
+    :type suffix: str
+    :param survey: survey name to retrieve color image
+    :type survey: str
+    :return:
+    """
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], survey, suffix)
 
     if survey == 'panstarrs': survey = 'PanSTARRS'
@@ -378,7 +475,20 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
 # Make pv plot for object
 def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'):
+    """Plot the position-velocity slice for the source.
 
+    :param source: source object
+    :type source: Astropy table
+    :param src_basename: directory name
+    :type src_basename: str
+    :param cube_params: The characteristics of the beam and coordinate system of the image.
+    :type cube_params: dict
+    :param opt_view: requested size of the image for regriding
+    :type opt_view: quantity
+    :param suffix: image file type
+    :type suffix: str
+    :return:
+    """
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_pv.{}'.format(source['id'], suffix)
 
     if not os.path.isfile(outfile):
@@ -656,4 +766,4 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
 if __name__ == '__main__':
 
-    main(source, src_basename, opt_view=6*u.arcmin, suffix='png', snr_range=[2,3], user_image=None)
+    main(source, src_basename, opt_view=6*u.arcmin, suffix='png', snr_range=[2, 3], user_image=None)

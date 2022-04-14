@@ -16,7 +16,7 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
     """Retrieve the optical image from a certain pointing.
 
     :param hi_pos: position in the HI data
-    :type hi_pos: astropy type? TODO Figure this out!
+    :type hi_pos: astropy SkyCoord object
     :param opt_view: size of the optical image, defaults to 6*u.arcmin
     :type opt_view: astropy.units.arcmin, optional
     :param survey: survey containing optical data, defaults to 'DSS2 Blue'
@@ -49,7 +49,7 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
     """Get PanSTARRS false color image and r-band fits (for the WCS).
 
     :param hi_pos: position in the HI data
-    :type hi_pos: astropy type? TODO Figure this out!
+    :type hi_pos: astropy SkyCoord object
     :param opt_view: size of the optical image, defaults to 6*u.arcmin
     :type opt_view: astropy.units.arcmin, optional
     :return: color image and FITS header
@@ -77,7 +77,15 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
 
 
 def get_decals(hi_pos, opt_view=6*u.arcmin):
+    """Get DECaLS false color image and g-band fits (for the WCS).
 
+    :param hi_pos: position in the HI data
+    :type hi_pos: astropy SkyCoord object
+    :param opt_view: size of the optical image, defaults to 6*u.arcmin
+    :type opt_view: astropy.units.arcmin, optional
+    :return: color image and FITS header
+    :rtype: Tuple[color_im, FITS_header] TODO check exact types!
+    """
     # Get DECaLS false color image and fits (for the WCS). Example URL for this script provided by John Wu.
     pixscale = 0.262   # default(?) arcsec/pixel
     dimen = (opt_view.to(u.arcsec).value / pixscale).astype(int)

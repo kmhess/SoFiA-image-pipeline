@@ -46,6 +46,17 @@ def chan2vel(channels, fits_name):
 
 
 def felo2vel(channels, fits_name):
+    """Converts channels to velocities for a cube with non-linear channels.
+
+    N.B.: This conversion differs from the output of SoFiA-2 which uses wcslib and therefore may not be strictly correct.
+
+    :param channels:
+    :type channels: Iterable[int]
+    :param fits_name:
+    :type fits_name: str
+    :return: calculated velocities
+    :rtype: Iterable[float]
+    """
     # Formula taken from here: https://www.astro.rug.nl/software/kapteyn/spectralbackground.html#aips-axis-type-felo
     print("\tWARNING: Axis type FELO...this conversion may not be precise (may be off by ~10 km/s).")
     c = const.c.to(u.m/u.s).value
@@ -93,7 +104,7 @@ def get_info(fits_name, beam=None):
         {[major_axis, minor_axis, position_angle]|[major_axis, minor_axis]|
         [position_angle]}
     :type beam: Iterable[float], optional
-    :return: The characteristics of the beam
+    :return: The characteristics of the beam and coordinate system of the image.
     :rtype: dict
     """
 
@@ -202,7 +213,7 @@ def get_info(fits_name, beam=None):
 def get_radecfreq(catalog, original):
     """Get the right ascension, declination, and frequeny of a catalog object.
 
-    :param catalog: catalog objet header
+    :param catalog: catalog object header
     :type catalog: astropy.Header? TODO check in function calls
     :param original: name of the original file
     :type original: str
@@ -228,11 +239,11 @@ def get_subcube(source, original):
     """Retrieve a subcube from a datacube
 
     :param source: source object
-    :type source: Astropy Header? TODO check!
+    :type source: Astropy table
     :param original: original data file
     :type original: str
     :return: subcube of data
-    :rtype: NDArray? Or Astropy dataformat? TODO check
+    :rtype: NDArray
     """
 
     hdu_orig = fits.open(original)
@@ -278,6 +289,17 @@ def get_subcube(source, original):
 
 
 def create_pv(source, filename, opt_view=6*u.arcmin):
+    """
+
+    :param source: source object
+    :type source: Astropy table
+    :param filename: name of FITS file
+    :type filename: str
+    :param opt_view: requested size of the image for regriding
+    :type opt_view: quantity
+    :return: position-velocity slice of the mask cube
+    :rtype: FITS HDU
+    """
 
     slice = PathFromCenter(center=SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg'),
                            length=opt_view, angle=source['kin_pa']*u.deg, width=1*u.arcsec)
