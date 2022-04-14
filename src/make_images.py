@@ -538,9 +538,9 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             usrim_d = usrim[0].data
             usrim_h = usrim[0].header
             if ('cdelt1' in usrim_h) and ('cdelt2' in usrim_h):
-                usrim_pix_x, usrim_pix_y = np.abs(usrim_h['cdelt1']), np.abs(usrim_h['cdelt2'])
+                usrim_pix_x, usrim_pix_y = usrim_h['cdelt1'], np.abs(usrim_h['cdelt2'])
             elif ('cd1_1' in usrim_h) and ('cd2_2' in usrim_h):
-                usrim_pix_x, usrim_pix_y = np.abs(usrim_h['cd1_1']), np.abs(usrim_h['cd2_2'])
+                usrim_pix_x, usrim_pix_y = usrim_h['cd1_1'], np.abs(usrim_h['cd2_2'])
             else:
                 print("\tCould not determine pixel size of user image. Aborting.")
                 exit()
