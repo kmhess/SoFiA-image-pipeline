@@ -128,9 +128,8 @@ In addition we are aware of the following issues:
 
 Version history
 ---------------
-* SIP 0.1.0
-    * Release TBD
-    * Still under development 
+* SIP 1.0.0
+    * Released N April 2022
     
 Copyright and licence
 ---------------------
