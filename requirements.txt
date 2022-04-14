@@ -1,7 +1,7 @@
 astropy==5.0.1
 astroquery==0.4.5
 matplotlib==3.4.1
-numpy==1.20.2
+numpy==1.21.0
 Pillow==9.1.0
 pvextractor==0.2
 reproject==0.7.1
