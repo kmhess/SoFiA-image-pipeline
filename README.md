@@ -1,5 +1,6 @@
 SoFiA Image Pipeline (SIP)
 =====
+[![DOI](https://zenodo.org/badge/455147174.svg)](https://zenodo.org/badge/latestdoi/455147174)
 
 Introduction
 ------------
