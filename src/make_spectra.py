@@ -110,6 +110,11 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
         ax2_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
 
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
+        galspec_max = np.nanmax(spectrumJy[np.where(spec['chan'] == source['z_min'])[0][0]:
+                                           np.where(spec['chan'] == source['z_max'])[0][0]+1])
+        # Minimum within mask could be positive or negative, but to consider values around 0.
+        galspec_min = -1 * np.abs(np.nanmin(spectrumJy[np.where(spec['chan'] == source['z_min'])[0][0]:
+                                                       np.where(spec['chan'] == source['z_max'])[0][0]+1])).value
 
         # Plot limit of SoFiA mask
         ymin, ymax = ax2_spec.get_ylim()
@@ -117,9 +122,13 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
         ax2_spec.plot([maskmax, maskmax], [0.95*ymin, 0.95*ymax], ':', color='gray')
 
         # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
-        if (np.max(spectrumJy) > 2.) | (np.min(spectrumJy) < -1.):
-            ax2_spec.set_ylim(np.max(spectrumJy[source['z_min']:source['z_max']+1]) * -2,
-                              np.max(spectrumJy[source['z_min']:source['z_max']+1]) * 2)
+        ax_margin_percent = 0.15
+        if (ymax > 2.*galspec_max) | (ymin < np.nanmin([2.*galspec_min, -5.*np.nanstd(spectrumJy).value])):
+            print("\tWARNING: Suspect there is a lot of noise in the full spectrum?  Trying to adjust"
+                  " y-axis to source.")
+            ax_margin = (1 + ax_margin_percent) * np.array(galspec_max, np.nanmin([galspec_min,
+                                                                                   -5*np.nanstd(spectrumJy).value]))
+            ax2_spec.set_ylim(ax_margin)
 
     else:
         fig2, ax2_spec, outfile2 = None, None, None
