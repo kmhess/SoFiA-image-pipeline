@@ -1,5 +1,6 @@
 # Import Python libraries
 from argparse import ArgumentParser, RawTextHelpFormatter
+import os
 from urllib.error import HTTPError
 
 from astropy.coordinates import SkyCoord
@@ -9,15 +10,8 @@ from modules.get_ancillary import *
 
 ###################################################################
 
-parser = ArgumentParser(description="Create images from a SoFiA catalog and cubelets, or fits file. \n"
-                                    "Only works with SoFiA-2 and wcs=True (for now).",
+parser = ArgumentParser(description="Save fits files from requested surveys to disk for later plotting (for example).",
                         formatter_class=RawTextHelpFormatter)
-
-# parser.add_argument('-c', '--catalog', required=False,
-#                     help='Optional: Specify the input XML or ascii catalog name. No default.')
-
-# parser.add_argument('-x', '--suffix', default='png',
-#                     help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
 parser.add_argument('-ra', '--right_ascension', default=0.0, required=True,
                     help='Optional: specify the central RA of the image to retrieve in DEGREES. '
@@ -45,6 +39,7 @@ parser.add_argument('-o', '--outname', default=None, required=False,
 args = parser.parse_args()
 
 surveys = set(args.surveys)
+survey_string = ''
 if args.outname:
     outname = args.outname + '_'
 else:
@@ -60,31 +55,52 @@ hi_pos = SkyCoord(ra=args.right_ascension, dec=args.declination, unit='deg')
 
 # If requested retrieve PanSTARRS false color imaging
 if ('panstarrs' in surveys):
-    pstar_im, pstar_head = get_panstarrs(hi_pos, opt_view=opt_view)
-    if pstar_im:
-        pstar_im.save(outname + 'panstarrs.jpg')
-        pstar_fits_hdr = fits.PrimaryHDU(header=pstar_head)
-        pstar_fits_hdr.writeto(outname + 'panstarrs_hdr.fits')
-    surveys.remove('panstarrs')
+    if not os.path.isfile(outname + 'panstarrs.jpg'):
+        pstar_im, pstar_head = get_panstarrs(hi_pos, opt_view=opt_view)
+        if pstar_im:
+            pstar_im.save(outname + 'panstarrs.jpg')
+            pstar_fits_hdr = fits.PrimaryHDU(header=pstar_head)
+            pstar_fits_hdr.writeto(outname + 'panstarrs_hdr.fits')
+            survey_string += ' PanSTARRS'
+        surveys.remove('panstarrs')
+    else:
+        print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
+              " with `-o` flag. Continuing to next requested survey".format(outname + 'panstarrs.jpg'))
 
 # If requested retrieve DECaLS false color imaging
 if 'decals' in surveys:
-    decals_im, decals_head = get_decals(hi_pos, opt_view=opt_view)
-    if decals_im:
-        decals_im.save(outname + 'decals.jpg')
-        decals_fits_hdr = fits.PrimaryHDU(header=decals_head)
-        decals_fits_hdr.writeto(outname + 'decals_hdr.fits')
-    surveys.remove('decals')
+    if not os.path.isfile(outname + 'decals.jpg'):
+        decals_im, decals_head = get_decals(hi_pos, opt_view=opt_view)
+        if decals_im:
+            decals_im.save(outname + 'decals.jpg')
+            decals_fits_hdr = fits.PrimaryHDU(header=decals_head)
+            decals_fits_hdr.writeto(outname + 'decals_hdr.fits')
+            survey_string += ' DECaLS'
+        surveys.remove('decals')
+    else:
+        print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
+              " with `-o` flag. Continuing to next requested survey".format(outname + 'decals.jpg'))
 
 # If requested retrieve any number of survey images available through SkyView.
 if len(surveys) > 0:
     for survey in surveys:
-        try:
-            overlay_image = get_skyview(hi_pos, opt_view=opt_view, survey=survey)
-        except ValueError:
-            print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
-                  "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
-                  "surveys.".format(survey))
-        except HTTPError:
-            print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
-        overlay_image.writeto(outname + survey + '.fits')
+        if not os.path.isfile(outname + survey + '.fits'):
+            try:
+                overlay_image = get_skyview(hi_pos, opt_view=opt_view, survey=survey)
+            except ValueError:
+                print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
+                      "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
+                      "surveys.".format(survey))
+            except HTTPError:
+                print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
+            overlay_image.writeto(outname + survey + '.fits')
+            survey_string += ' {}'.format(survey)
+        else:
+            print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
+                  " with `-o` flag. Continuing to next requested survey".format(outname + survey + '.fits'))
+
+if len(survey_string) > 0:
+    print("\n\tDONE! Saved survey images to disk for{}.".format(survey_string))
+else:
+    print("\n\tDONE! No survey images saved to disk.  Adjust input and try again?")
+print("*****************************************************************\n")
