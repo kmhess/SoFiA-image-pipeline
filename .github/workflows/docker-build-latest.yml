@@ -13,5 +13,5 @@ jobs:
             password: ${{ secrets.DOCKERHUB_TOKEN }}
       - run: |
           echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin docker.io
-          docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofia-image-pipeline:latest
-          docker push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofia-image-pipeline:latest
+          docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/image_pipeline:latest
+          docker push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/image_pipeline:latest

@@ -4,4 +4,5 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY s2p_setup.py .
+COPY src/ .
+ENTRYPOINT ["python3", "image_pipeline.py"]
