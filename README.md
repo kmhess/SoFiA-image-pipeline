@@ -54,7 +54,7 @@ Examples:
 * Request HI contours on multiple survey images, separated by a space, and make a combined image for each source: \
 `python3 image_pipeline.py -c <path/to/catalog.txt> -s panstarrs 'GALEX Far UV' -m`
 
-* Using the latest official Docker image
+* Using the latest official Docker image: \
 `docker run -it -v <cwd>/<folder>:/app/<folder> sofia-pipeline/image_pipeline:latest -c <folder>/<catalog.xml>`
 
 ### Options
