@@ -43,7 +43,7 @@ pipeline.threads           =  24
 
 # Input
 
-input.data                 =  /Users/hess/SoFiA-image-pipeline/test_data/UGC7012.FITS
+input.data                 =  UGC7012.FITS
 input.region               =  
 input.gain                 =  
 input.noise                =  

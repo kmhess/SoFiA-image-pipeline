@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 # Import Python libraries
 from argparse import ArgumentParser, RawTextHelpFormatter
 import os

@@ -1,0 +1,17 @@
+name: Docker build latest
+
+on: [push]
+
+jobs:
+  docker-build-and-push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Build the Docker image
+        uses: actions/checkout@v2
+        with:
+            username: ${{ secrets.DOCKERHUB_USERNAME }}
+            password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - run: |
+          echo "${{ secrets.DOCKERHUB_TOKEN }}" | docker login -u "${{ secrets.DOCKERHUB_USERNAME }}" --password-stdin docker.io
+          docker build . --file Dockerfile --tag docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofia-image-pipeline:latest
+          docker push docker.io/${{ secrets.DOCKERHUB_USERNAME }}/sofia-image-pipeline:latest
