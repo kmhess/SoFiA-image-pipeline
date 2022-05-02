@@ -43,17 +43,17 @@ Usage
 SIP works under the assumption that the user has run [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2) which generated an xml and/or ascii catalog file, and fits moment maps and cubelets for each source.  SIP assumes that these filese are in the same directory structure as created by SoFiA-2 where the catalog file and `*_cubelet/` folder are in the same directory.  The output from SIP will be in a newly created folder next to `*_cubelets/` called `*_figures/`.
 
 Get help on the parameters: 
-* `python3 image_pipeline.py -h`
+* `python3 src/image_pipeline.py -h`
 
 Examples:
 * Use the xml catalog file to output images in default png format: \
-`python3 image_pipeline.py -c <path/to/catalog.xml>`
+`python3 src/image_pipeline.py -c <path/to/catalog.xml>`
 
 * Use ascii catalog file with output images in pdf format and specify original data set to plot full noise spectrum: \
-`python3 image_pipeline.py -c <path/to/catalog.txt> -x pdf -o <path/to/original_cube.fits>` 
+`python3 src/image_pipeline.py -c <path/to/catalog.txt> -x pdf -o <path/to/original_cube.fits>` 
 
 * Request HI contours on multiple survey images, separated by a space, and make a combined image for each source: \
-`python3 image_pipeline.py -c <path/to/catalog.txt> -s panstarrs 'GALEX Far UV' -m`
+`python3 src/image_pipeline.py -c <path/to/catalog.txt> -s panstarrs 'GALEX Far UV' -m`
 
 * Using the latest official Docker image: \
 `docker run -it -v <cwd>/<folder>:/app/<folder> sofiapipeline/image_pipeline:latest -c <folder>/<catalog.xml>`
