@@ -1,6 +1,7 @@
 SoFiA Image Pipeline (SIP)
 =====
 [![DOI](https://zenodo.org/badge/455147174.svg)](https://zenodo.org/badge/latestdoi/455147174)
+[![Docker build latest](https://github.com/axshen/SoFiA-image-pipeline/actions/workflows/docker-build-latest.yml/badge.svg)](https://github.com/axshen/SoFiA-image-pipeline/actions/workflows/docker-build-latest.yml)
 
 Introduction
 ------------
@@ -55,7 +56,7 @@ Examples:
 `python3 image_pipeline.py -c <path/to/catalog.txt> -s panstarrs 'GALEX Far UV' -m`
 
 * Using the latest official Docker image: \
-`docker run -it -v <cwd>/<folder>:/app/<folder> sofia-pipeline/image_pipeline:latest -c <folder>/<catalog.xml>`
+`docker run -it -v <cwd>/<folder>:/app/<folder> sofiapipeline/image_pipeline:latest -c <folder>/<catalog.xml>`
 
 ### Options
 ```
