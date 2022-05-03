@@ -1,8 +1,5 @@
 from setuptools import setup
 
-with open('requirements.txt') as f:
-    required = f.read().splitlines()
-
 setup(
     name='sofia_image_pipeline',
     version='0.0.1',
@@ -14,7 +11,18 @@ setup(
         "src",
         "src.modules",
     ],
-    install_requires=required,
+    install_requires=[
+        "astropy == 5.0.1",
+        "astroquery == 0.4.5",
+        "matplotlib == 3.4.1",
+        "numpy == 1.21.0",
+        "Pillow == 9.1.0",
+        "pvextractor == 0.2",
+        "reproject == 0.7.1",
+        "requests == 2.25.1",
+        "sphinx_rtd_theme == 1.0.0",
+        "xmltodict == 0.12.0"
+    ],
     classifiers=[
         'Development Status :: 2 - Pre-Alpha',
         'Programming Language :: Python :: 3',
