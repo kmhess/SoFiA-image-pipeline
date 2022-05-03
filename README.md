@@ -1,6 +1,7 @@
 SoFiA Image Pipeline (SIP)
 =====
 [![DOI](https://zenodo.org/badge/455147174.svg)](https://zenodo.org/badge/latestdoi/455147174)
+[![Docker build latest](https://github.com/axshen/SoFiA-image-pipeline/actions/workflows/docker-build-latest.yml/badge.svg)](https://github.com/axshen/SoFiA-image-pipeline/actions/workflows/docker-build-latest.yml)
 
 Introduction
 ------------
@@ -12,49 +13,65 @@ Requirements
 ------------
 This code has been developed and tested with Python 3.9.7.
 
-Python dependencies can be installed with: \
-`pip install -r requirements.txt`
-
 Combining individual images with the `-m` option requires [ImageMagick](https://imagemagick.org) be installed.
 
 SIP was written with the outputs from SoFiA 2.4.1 (bba8c43) and later. Through troubleshooting, we have improved the output of both SIP and [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2), so for best performance, please use the latest version of each. 
 
-For the best SIP unit conversion performance, SoFiA-2 needs to have been run with the following parameters: \
-`parameter.wcs = True` \
-`parameter.physical = True` \
-`parameter.offset = True`
+For the best SIP unit conversion performance, SoFiA-2 needs to have been run with the following parameters: 
 
+```
+parameter.wcs = True
+parameter.physical = True
+parameter.offset = True
+```
 
 Installation
 ------------
 
-#### Method 1:
-Fork to your own repository and do a git clone.
+### Development
 
+You can install SIP locally by cloning the repository and running
 
-#### Method 2:
-We are working on a pip install option. More later. 
+```
+python3 setup.py develop
+```
+
+### PyPI
+
+We are working on a pip install option. More later.
+
 <!--- `pip3 install` --->
 
-
 Usage
------
+------------
 SIP works under the assumption that the user has run [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2) which generated an xml and/or ascii catalog file, and fits moment maps and cubelets for each source.  SIP assumes that these filese are in the same directory structure as created by SoFiA-2 where the catalog file and `*_cubelet/` folder are in the same directory.  The output from SIP will be in a newly created folder next to `*_cubelets/` called `*_figures/`.
 
-Get help on the parameters: 
-* `python3 image_pipeline.py -h`
+```
+$ sofia_image_pipeline
 
-Examples:
-* Use the xml catalog file to output images in default png format: \
-`python3 image_pipeline.py -c <path/to/catalog.xml>`
+usage: sofia_image_pipeline [-h] -c CATALOG [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS [SURVEYS ...]]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]
+sofia_image_pipeline: error: the following arguments are required: -c/--catalog
+```
 
-* Use ascii catalog file with output images in pdf format and specify original data set to plot full noise spectrum: \
-`python3 image_pipeline.py -c <path/to/catalog.txt> -x pdf -o <path/to/original_cube.fits>` 
+### Help
 
-* Request HI contours on multiple survey images, separated by a space, and make a combined image for each source: \
-`python3 image_pipeline.py -c <path/to/catalog.txt> -s panstarrs 'GALEX Far UV' -m`
+To get help on the parameters: 
+
+```
+sofia_image_pipeline -h
+```
+
+### Docker
+
+We provide a Docker image for use in containerised applications. This image can be found [here](https://hub.docker.com/r/sofiapipeline/image_pipeline).
+To use the latest official Docker image:
+
+```
+docker run -it -v <cwd>/<folder>:/app/<folder> sofiapipeline/image_pipeline:latest -c <folder>/<catalog.xml>
+```
 
 ### Options
+
 ```
 REQUIRED:
     -c     Catalog file. Can be the ascii file ending in .txt or the XML file from SoFiA-2.
@@ -69,6 +86,26 @@ OPTIONAL:
     -m     Make a combined image using ImageMagick.  If a path is provided after this option, it is assumed to be the path to the `convert` executable of ImageMagick. 
     -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
     -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
+```
+
+### Examples
+
+* Use the xml catalog file to output images in default png format:
+
+```
+sofia_image_pipeline -c <path/to/catalog.xml>
+```
+
+* Use ascii catalog file with output images in pdf format and specify original data set to plot full noise spectrum: 
+
+```
+sofia_image_pipeline -c <path/to/catalog.txt> -x pdf -o <path/to/original_cube.fits>
+```
+
+* Request HI contours on multiple survey images, separated by a space, and make a combined image for each source:
+
+```
+sofia_image_pipeline -c <path/to/catalog.txt> -s panstarrs 'GALEX Far UV' -m
 ```
 
 Test data cube
