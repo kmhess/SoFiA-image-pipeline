@@ -15,11 +15,11 @@ import numpy as np
 from reproject import reproject_interp
 from urllib.error import HTTPError
 
-from modules.functions import get_info
-from modules.functions import chan2freq, chan2vel, sbr2nhi
-from modules.functions import create_pv
-from modules.get_ancillary import *
-from modules.get_hst_cosmos import get_hst_cosmos
+from src.modules.functions import get_info
+from src.modules.functions import chan2freq, chan2vel, sbr2nhi
+from src.modules.functions import create_pv
+from src.modules.get_ancillary import *
+from src.modules.get_hst_cosmos import get_hst_cosmos
 
 HI_restfreq = 1420405751.77 * u.Hz
 optical_HI = u.doppler_optical(HI_restfreq)

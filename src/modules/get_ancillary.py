@@ -3,13 +3,13 @@ from PIL import Image
 from io import BytesIO
 from urllib.error import HTTPError
 
-from modules.panstarrs_fcns import getcolorim, geturl
-
 from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
 from astroquery.skyview import SkyView
 import numpy as np
+
+from src.modules.panstarrs_fcns import getcolorim, geturl
 
 
 def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
