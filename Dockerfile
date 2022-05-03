@@ -4,5 +4,6 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-COPY src/ .
-ENTRYPOINT ["python3", "image_pipeline.py"]
+COPY . .
+RUN python3 setup.py install
+ENTRYPOINT ["sofia_image_pipeline"]
