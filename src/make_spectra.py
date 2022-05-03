@@ -6,7 +6,7 @@ from astropy import units as u
 import matplotlib.pyplot as plt
 import numpy as np
 
-from modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel
+from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel
 
 
 HI_restfreq = 1420405751.77 * u.Hz

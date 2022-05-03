@@ -12,15 +12,14 @@ from astropy.table import Table
 from astropy import units as u
 import numpy as np
 
-from modules.functions import get_radecfreq
-import make_images
-import make_spectra
-from combine_images import combine_images
+from src import make_images, make_spectra
+from src.modules.functions import get_radecfreq
+from src.combine_images import combine_images
 
 
 ###################################################################
 
-def main(argv):
+def main():
     parser = ArgumentParser(description="Create images from a SoFiA catalog and cubelets, or fits file. \n"
                                         "Only works with SoFiA-2 and wcs=True (for now).",
                             formatter_class=RawTextHelpFormatter)
@@ -71,7 +70,7 @@ def main(argv):
     ###################################################################
 
     # Parse the arguments above
-    args = parser.parse_args(argv)
+    args = parser.parse_args()
     suffix = args.suffix
     original = args.original
     imagemagick = args.imagemagick
@@ -190,4 +189,4 @@ def main(argv):
 
 
 if __name__ == '__main__':
-    main(sys.argv[1:])
+    main()

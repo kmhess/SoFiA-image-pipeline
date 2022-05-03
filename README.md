@@ -13,18 +13,23 @@ Requirements
 ------------
 This code has been developed and tested with Python 3.9.7.
 
-Python dependencies can be installed with: \
-`pip install -r requirements.txt`
+Python dependencies can be installed with: 
+
+```
+pip install -r requirements.txt
+```
 
 Combining individual images with the `-m` option requires [ImageMagick](https://imagemagick.org) be installed.
 
 SIP was written with the outputs from SoFiA 2.4.1 (bba8c43) and later. Through troubleshooting, we have improved the output of both SIP and [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2), so for best performance, please use the latest version of each. 
 
-For the best SIP unit conversion performance, SoFiA-2 needs to have been run with the following parameters: \
-`parameter.wcs = True` \
-`parameter.physical = True` \
-`parameter.offset = True`
+For the best SIP unit conversion performance, SoFiA-2 needs to have been run with the following parameters: 
 
+```
+parameter.wcs = True
+parameter.physical = True
+parameter.offset = True
+```
 
 Installation
 ------------
@@ -36,7 +41,6 @@ Fork to your own repository and do a git clone.
 #### Method 2:
 We are working on a pip install option. More later. 
 <!--- `pip3 install` --->
-
 
 Usage
 -----

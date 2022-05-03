@@ -8,7 +8,7 @@ from urllib.error import HTTPError
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 
-from modules.get_ancillary import *
+from src.modules.get_ancillary import *
 
 ###################################################################
 
