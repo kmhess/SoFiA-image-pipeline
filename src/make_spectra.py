@@ -88,7 +88,8 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
             maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
                                                                                 equivalencies=optical_HI).value
         else:
-            if 'vrad' in source.colnames:
+            # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
+            if 'v_rad' in source.colnames:
                 convention = 'Radio'
             spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
             optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
@@ -150,7 +151,8 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
                               names=['chan', 'freq', 'f_sum', 'n_pix'])
             optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
         else:
-            if 'vrad' in source.colnames:
+            # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
+            if 'v_rad' in source.colnames:
                 convention = 'Radio'
             spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                               names=['chan', 'velo', 'f_sum', 'n_pix'])
