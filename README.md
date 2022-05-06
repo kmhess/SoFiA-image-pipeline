@@ -49,7 +49,7 @@ SIP works under the assumption that the user has run [SoFiA-2](https://github.co
 ```
 $ sofia_image_pipeline
 
-usage: sofia_image_pipeline [-h] -c CATALOG [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS [SURVEYS ...]]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]
+usage: sofia_image_pipeline [-h] -c CATALOG [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH ] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS [SURVEYS ...]]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]
 sofia_image_pipeline: error: the following arguments are required: -c/--catalog
 ```
 
@@ -80,6 +80,7 @@ OPTIONAL:
     -x     Output image file type. Any file type accepted by plt.savefig() is in theory valid.  Default is 'png'.
     -o     Path to the original data file on which source finding was conducted. This allows the spectrum with noise to be plotted over the full spectral range of the original cube.  
     -b     Synthesized beam dimensions. If the primary header of the FITS files do not contain the beam information, this can be provided by the user. Accepts 1 to 3 values in order (bmaj, bmin, bpa).
+    -cw    Channel width. This is only necessary if a source cubelet is not available, for example if user only has a mom0.  Channel width must then be provided in the native units of the original data cube (typically Hz or m/s.)
     -i     Minimum image size (ARCMIN). Images will be square. If an HI source exceeds the requested size, a larger image to fit the HI contours will be generated. Default is 6 arcmin.
     -snr   Specify the SNR range within which to plot the lowest HI contour. Requires 2 values. Default is [2.0, 3.0].
     -s     List of surveys on which to overlay HI contours. Only the first entry will be used in the combined image if `-m` option is used. Default is 'DSS2 Blue'.
