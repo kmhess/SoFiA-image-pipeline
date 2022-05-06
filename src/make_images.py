@@ -576,8 +576,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, surveys=None, snr_range=[2, 3],
-         user_image=None, user_range=[10., 99.]):
+def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, chan_width=None, surveys=None,
+         snr_range=[2, 3], user_image=None, user_range=[10., 99.]):
 
     print("\tStart making spatial images.")
 
@@ -599,7 +599,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     opt_head = None
 
-    # Calculate base contour
+    # Calculate base contour from the SNR map and requested SNR range
     try:
         with fits.open(src_basename + '_{}_snr.fits'.format(str(source['id']))) as hdulist_snr, \
                 fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi:
@@ -607,17 +607,26 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                                                     (hdulist_snr[0].data < snr_range[1])])
         print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
                                                                                                           HIlowest))
+    # If no SNR map use the channel width of the original data (provided by user if necessary) for lowest HI contour.
     except FileNotFoundError:
         if os.path.isfile(src_basename + '_{}_mom0.fits'.format(str(source['id']))):
-            print("\tNo SNR fits file found. Will determine lowest contour based on rms in catalog and"
-                  " min(user provided SNR).")
-            HIlowest = source['rms'] * np.nanmin(snr_range)
+            print("\tNo SNR fits file found. Will determine lowest contour based on rms in catalog,"
+                  " min(user provided SNR), and user provided channel width.")
+            # Probably never uses the first instance of if statement (this would be weird to save in mom0 map)
+            if cube_params['chan_width']:
+                HIlowest = source['rms'] * np.nanmin(snr_range) * cube_params['chan_width']
+            # Assumes user gives chan_width in correct units of original data but SIP knows units from mom0 header!
+            elif chan_width:
+                HIlowest = source['rms'] * np.nanmin(snr_range) * chan_width
+            else:
+                print("\tWARNING: No user provided channel width. Check figures! Either provide channel width,"
+                      " or rms in mom0 map units.")
+                HIlowest = source['rms'] * np.nanmin(snr_range)
             print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units)."
                   " ".format(np.nanmin(snr_range), HIlowest))
         else:
             print("\tERROR: No mom0 to match source {}.\n".format(source['id']))
-            exit()
-        # return
+            return
 
     # Get the position of the source to retrieve an survey image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
