@@ -39,7 +39,7 @@ def main():
                         help='Optional: specify the beam dimensions (bmaj,bmin,bpa) in arcsec, arcsec, deg. If only 1 value\n'
                             ' is given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
 
-    parser.add_argument('-cw', '--chan_width', default=None, nargs=1, type=float,
+    parser.add_argument('-cw', '--chan_width', default=[None], nargs=1, type=float,
                         help='Optional: specify the channel width in native units of the original data (e.g. Hz or m/s).'
                              ' (No default).')
 
