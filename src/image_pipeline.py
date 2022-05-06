@@ -39,6 +39,10 @@ def main():
                         help='Optional: specify the beam dimensions (bmaj,bmin,bpa) in arcsec, arcsec, deg. If only 1 value\n'
                             ' is given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
 
+    parser.add_argument('-cw', '--chan_width', default=None, nargs=1, type=float,
+                        help='Optional: specify the channel width in native units of the original data (e.g. Hz or m/s).'
+                             ' (No default).')
+
     parser.add_argument('-i', '--image_size', default=[6], nargs=1, type=float,
                         help='Optional: specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
                             ' the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
@@ -175,7 +179,8 @@ def main():
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
         print("\n\t-Source {}: {}.".format(source['id'], source['name']))
         make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
-                        surveys=list(surveys), snr_range=args.snr_range, user_image=args.user_image, user_range=args.user_range)
+                         chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
+                         user_image=args.user_image, user_range=args.user_range)
         make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
         if imagemagick:
