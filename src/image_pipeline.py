@@ -124,15 +124,15 @@ def main():
         print("\tERROR: Catalog must be in xml or ascii format.\n")
         exit()
 
-
     # Check what's in the catalog; calculate ra, dec if necessary:
-    if ('ra' not in catalog.colnames) and (not original):
-        print("\tERROR: Looks like catalog doesn't contain 'ra' and 'dec' columns. Re-run SoFiA with \n" \
+    if (('ra' not in catalog.colnames) and ('l' not in catalog.colnames)) and (not original):
+        print("\tERROR: Looks like catalog doesn't contain 'ra' and 'dec' or 'l' and 'b' columns. Re-run SoFiA with \n" \
             "\t\t'parameter.wcs = True' or you must include the path to the original fits file to derive \n" \
             "\t\tra, dec from the pixel values in the catalog.")
         print("*****************************************************************\n")
         exit()
     elif ('ra' not in catalog.colnames) and (original):
+        # This may be deprecated given that we insistence on running parameter.wcs, physical, offset = True
         print("\tWARNING: Looks like catalog doesn't contain 'ra' and 'dec' columns. But can derive them with \n" \
             "\t\tthe pixel positions in the catalog provided.")
         print("\tWARNING: This probably means you ran SoFiA with 'parameter.wcs = False' which means the units \n" \
@@ -141,6 +141,9 @@ def main():
         catalog['ra'] = ra
         catalog['dec'] = dec
         catalog['freq'] = freq
+    # Add dummy columns to catalog for plotting source centers generalized to ICRS or Galactic later:
+    catalog['pos_x'] = None
+    catalog['pos_y'] = None
 
     # Rename the spectral column if cube was in velocity. For now treat all velocity axes the same (dumb temporary fix)
     if 'v_app' in catalog.colnames:
