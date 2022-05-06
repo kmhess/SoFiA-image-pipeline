@@ -141,30 +141,36 @@ def get_info(fits_name, beam=None):
 
     pix_per_beam = bmaj / cellsize * bmin / cellsize * np.pi / (4 * np.log(2))
 
-    # Try to determine the equinox of the observations
-    try:
-        equinox = header['EQUINOX']
-        if equinox < 1984.0:
-            equinox = 'B' + str(equinox)
-            frame = 'fk4'
-        else:
-            equinox = 'J' + str(equinox)
-            frame = 'fk5'
-        print("\tFound {} equinox in header.".format(equinox))
-    except KeyError:
+    # Try catching cubes in Galactic coordinates first
+    if 'GLON' in header['CTYPE1']:
+        print("\tFound data is in Galactic spatial frame.")
+        equinox = None
+        frame = 'galactic'
+    # If not Galacticc, try to determine the equinox of the observations
+    else:
         try:
-            equinox = header['EPOCH']
+            equinox = header['EQUINOX']
             if equinox < 1984.0:
-                equinox = 'B' + str (equinox)
+                equinox = 'B' + str(equinox)
                 frame = 'fk4'
             else:
-                equinox = 'J' + str (equinox)
+                equinox = 'J' + str(equinox)
                 frame = 'fk5'
-            print("\tWARNING: Using deprecated EPOCH in header for equinox: {}.".format(equinox))
+            print("\tFound {} equinox in header.".format(equinox))
         except KeyError:
-            print("\tWARNING: No equinox information in header; assuming ICRS frame.")
-            equinox = None
-            frame = 'icrs'
+            try:
+                equinox = header['EPOCH']
+                if equinox < 1984.0:
+                    equinox = 'B' + str (equinox)
+                    frame = 'fk4'
+                else:
+                    equinox = 'J' + str (equinox)
+                    frame = 'fk5'
+                print("\tWARNING: Using deprecated EPOCH in header for equinox: {}.".format(equinox))
+            except KeyError:
+                print("\tWARNING: No equinox information in header; assuming ICRS frame.")
+                equinox = None
+                frame = 'icrs'
 
     # Try to determine the reference frame.  AIPS conventions use VELREF: http://parac.eu/AIPSMEM117.pdf
     spec_sys = False
@@ -319,3 +325,32 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
     mask.close()
 
     return mask_pv
+
+
+def plot_labels(source, ax, x_color='k'):
+    """Plot labels on spatial plots depending on the coordinate frame.
+
+    :param source: source object
+    :type source: Astropy table
+    :param ax: matplotlib axes instance
+    :type ax: axes object
+    :param x_color: color of galaxy position marker
+    :type x_color: str
+    :return:
+    """
+
+    if 'l' in source.colnames:
+        x_coord, y_coord = 'glon', 'glat'
+        # x_label, y_label = 'Galactic Longitude [deg]', 'Galactic Latitude [deg]'
+        x_label, y_label = '$\it{{l}}$ [deg]', '$\it{{b}}$ [deg]'
+    else:
+        x_coord, y_coord = 'ra', 'dec'
+        x_label, y_label = 'RA (ICRS)', 'Dec (ICRS)'
+
+    ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75, transform=ax.get_transform('world'))
+    ax.set_title(source['name'], fontsize=20)
+    ax.tick_params(axis='both', which='major', labelsize=18)
+    ax.coords[x_coord].set_axislabel (x_label, fontsize=20)
+    ax.coords[y_coord].set_axislabel (y_label, fontsize=20)
+
+    return
