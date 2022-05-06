@@ -587,8 +587,13 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            print("\tERROR: No cubelet to match source {}.\n".format(source['id']))
-            exit()
+            print("\tWARNING: No cubelet to match source {}."
+                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
+            try:
+                cube_params = get_info(src_basename + '_{}_mom0.fits'.format(source['id']), beam)
+            except FileNotFoundError:
+                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+                exit()
     elif sofia == 1:
         cube_params = get_info(src_basename + '_{}.fits'.format(source['id']), beam)
 
@@ -603,8 +608,16 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
                                                                                                           HIlowest))
     except FileNotFoundError:
-        print("\tNo SNR and/or mom0 fits file. Perhaps you ran SoFiA without generating moments?")
-        return
+        if os.path.isfile(src_basename + '_{}_mom0.fits'.format(str(source['id']))):
+            print("\tNo SNR fits file found. Will determine lowest contour based on rms in catalog and"
+                  " min(user provided SNR).")
+            HIlowest = source['rms'] * np.nanmin(snr_range)
+            print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units)."
+                  " ".format(np.nanmin(snr_range), HIlowest))
+        else:
+            print("\tERROR: No mom0 to match source {}.\n".format(source['id']))
+            exit()
+        # return
 
     # Get the position of the source to retrieve an survey image
     hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
