@@ -141,46 +141,6 @@ def get_info(fits_name, beam=None):
 
     pix_per_beam = bmaj / cellsize * bmin / cellsize * np.pi / (4 * np.log(2))
 
-    chan_width = header['CDELT3']
-    if 'FREQ' in header['CTYPE3']:
-        units = u.Hz
-    else:
-        units = u.m / u.s
-    chan_width = chan_width * units
-
-    # Try to determine the reference frame.  AIPS conventions use VELREF: http://parac.eu/AIPSMEM117.pdf
-    spec_sys = False
-    try:
-        spec_sys = header['SPECSYS']
-        print("\tFound {} reference frame specified in SPECSYS in header.".format(spec_sys))
-    except:
-        try:
-            velref = header['VELREF']
-            if velref == 1: spec_sys = 'LSR'
-            if velref == 2: spec_sys = 'HELIOCEN'
-            if velref == 3: spec_sys = 'TOPOCENT'
-            print("\tDerived {} reference frame from VELREF in header using AIPS convention.".format(spec_sys))
-        except:
-            # print("\tNo SPECSYS or VELREF in header, assuming data in TOPOCENT reference frame.")
-            print("\tNo SPECSYS or VELREF in header to define reference frame, checking CTYPE3.")
-            pass
-
-    # Try to determine the spectral coordinates
-    spec_axis = header['CTYPE3']
-    print("\tFound CTYPE3 spectral axis type {} in header.".format(spec_axis))
-    if ("-" in spec_axis) and spec_sys:
-        print("\tWARNING: dropping end of spectral axis type. Using SPECSYS/VELREF for reference frame.")
-        spec_axis = spec_axis.split ("-")[0]
-    elif ("-" in spec_axis) and (not spec_sys):
-        spec_sys = spec_axis.split("-")[1]
-        spec_axis = spec_axis.split("-")[0]
-        if spec_sys == 'HEL': spec_sys = 'HELIOCEN'
-        print("\tWARNING: attempting to use end of CTYPE3 for reference frame: {}".format(spec_sys))
-
-    if not spec_sys:
-        print("\tNo SPECSYS, VELREF, or reference frame in CTYPE3, assuming data in TOPOCENT reference frame.")
-        spec_sys = 'TOPOCENT'
-
     # Try to determine the equinox of the observations
     try:
         equinox = header['EQUINOX']
@@ -205,6 +165,52 @@ def get_info(fits_name, beam=None):
             print("\tWARNING: No equinox information in header; assuming ICRS frame.")
             equinox = None
             frame = 'icrs'
+
+    # Try to determine the reference frame.  AIPS conventions use VELREF: http://parac.eu/AIPSMEM117.pdf
+    spec_sys = False
+    try:
+        spec_sys = header['SPECSYS']
+        print("\tFound {} reference frame specified in SPECSYS in header.".format(spec_sys))
+    except:
+        try:
+            velref = header['VELREF']
+            if velref == 1: spec_sys = 'LSR'
+            if velref == 2: spec_sys = 'HELIOCEN'
+            if velref == 3: spec_sys = 'TOPOCENT'
+            print("\tDerived {} reference frame from VELREF in header using AIPS convention.".format(spec_sys))
+        except:
+            # Comment this message out for now...program checks later.
+            # print("\tNo SPECSYS or VELREF in header to define reference frame, checking CTYPE3.")
+            pass
+
+    # Try to determine the spectral properties
+    if fits_name[-9:] != 'cube.fits':
+        print("\tWARNING: Retrieving info from a moment map or other 2D image?")
+        chan_width = None
+        spec_axis = None
+
+    else:
+        spec_axis = header['CTYPE3']
+        chan_width = header['CDELT3']
+        if 'FREQ' in spec_axis:
+            units = u.Hz
+        else:
+            units = u.m / u.s
+        chan_width = chan_width * units
+
+        print("\tFound CTYPE3 spectral axis type {} in header.".format(spec_axis))
+        if ("-" in spec_axis) and spec_sys:
+            print("\tWARNING: dropping end of spectral axis type. Using SPECSYS/VELREF for reference frame.")
+            spec_axis = spec_axis.split ("-")[0]
+        elif ("-" in spec_axis) and (not spec_sys):
+            spec_sys = spec_axis.split("-")[1]
+            spec_axis = spec_axis.split("-")[0]
+            if spec_sys == 'HEL': spec_sys = 'HELIOCEN'
+            print("\tWARNING: attempting to use end of CTYPE3 for reference frame: {}".format(spec_sys))
+
+    if not spec_sys:
+        print("\tNo SPECSYS, VELREF, or reference frame in CTYPE3, assuming data in TOPOCENT reference frame.")
+        spec_sys = 'TOPOCENT'
 
     return {'bmaj': bmaj, 'bmin': bmin, 'bpa': bpa, 'pix_per_beam': pix_per_beam, 'chan_width': chan_width,
             'equinox': equinox, 'frame': frame, 'cellsize': cellsize, 'spec_sys': spec_sys, 'spec_axis': spec_axis}

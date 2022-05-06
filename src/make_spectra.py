@@ -23,21 +23,25 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 
     if not os.path.isfile(outfile):
 
-        if not original:
-            print("\tWARNING: Original data cube not provided: making spectrum of subcube with noise.")
-            fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
-            cube = fits.getdata(fits_file)
-            mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
-            spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                                       names=['chan', 'col2', 'f_sum', 'n_pix'])
-            channels = spec_template['chan']
-        else:
-            print("\tOriginal data cube provided: making full spectrum image with noise.")
-            fits_file = original
-            cube = get_subcube(source, original)
-            mask = get_subcube(source, original[:-5] + '_mask.fits')
-            spec_template = None
-            channels = np.asarray(range(cube.shape[0]))
+        try:
+            if not original:
+                print("\tWARNING: Original data cube not provided: making spectrum of subcube with noise.")
+                fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
+                cube = fits.getdata(fits_file)
+                mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
+                spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
+                                           names=['chan', 'col2', 'f_sum', 'n_pix'])
+                channels = spec_template['chan']
+            else:
+                print("\tOriginal data cube provided: making full spectrum image with noise.")
+                fits_file = original
+                cube = get_subcube(source, original)
+                mask = get_subcube(source, original[:-5] + '_mask.fits')
+                spec_template = None
+                channels = np.asarray(range(cube.shape[0]))
+        except:
+            print("\tNo cube file provided, so can't generate a *_specfull.txt with noise.")
+            return
 
         mask2d = np.sum(mask, axis=0)
         spectrum = np.nansum(cube[:, mask2d != 0], axis=1)
@@ -78,23 +82,28 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
 
     if not os.path.isfile(outfile2):
 
-        print("\tMaking HI spectrum plot covering the full frequency range.")
-        convention = 'Optical'
-        if 'freq' in source.colnames:
-            spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
-            optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
-            maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s,
-                                                                                equivalencies=optical_HI).value
-            maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
-                                                                                equivalencies=optical_HI).value
-        else:
-            # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
-            if 'v_rad' in source.colnames:
-                convention = 'Radio'
-            spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
-            optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
-            maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s).value
-            maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s).value
+        try:
+            print("\tMaking HI spectrum plot covering the full frequency range.")
+            convention = 'Optical'
+            if 'freq' in source.colnames:
+                spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
+                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+                maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s,
+                                                                                    equivalencies=optical_HI).value
+                maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
+                                                                                    equivalencies=optical_HI).value
+            else:
+                # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
+                if 'v_rad' in source.colnames:
+                    convention = 'Radio'
+                spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
+                optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
+                maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s).value
+                maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s).value
+        except FileNotFoundError:
+            print("\tNo existing _specfull.txt file. Perhaps there is no cube to generate one, or need to specify original.")
+            fig2, ax2_spec, outfile2 = None, None, None
+            return fig2, ax2_spec, outfile2
 
         if full == True:
             fig2 = plt.figure(figsize=(15, 4))
@@ -144,19 +153,24 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
 
     if not os.path.isfile(outfile1):
 
-        print("\tMaking HI SoFiA masked spectrum plot.")
-        convention = 'Optical'
-        if 'freq' in source.colnames:
-            spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                              names=['chan', 'freq', 'f_sum', 'n_pix'])
-            optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
-        else:
-            # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
-            if 'v_rad' in source.colnames:
-                convention = 'Radio'
-            spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                              names=['chan', 'velo', 'f_sum', 'n_pix'])
-            optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
+        try:
+            print("\tMaking HI SoFiA masked spectrum plot.")
+            convention = 'Optical'
+            if 'freq' in source.colnames:
+                spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
+                                  names=['chan', 'freq', 'f_sum', 'n_pix'])
+                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+            else:
+                # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
+                if 'v_rad' in source.colnames:
+                    convention = 'Radio'
+                spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
+                                  names=['chan', 'velo', 'f_sum', 'n_pix'])
+                optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
+        except FileNotFoundError:
+            print("\tNo *_spec.txt file.  Perhaps you ran SoFiA without generating moments?")
+            fig1, ax1_spec, outfile1 = None, None, None
+            return fig1, ax1_spec, outfile1
 
         # Get spec units (Jy or Jy/beam) to check whether the division by the beam area has been made
         ll = 0
@@ -190,7 +204,15 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
     print("\tStart making spectral profiles")
 
     # Get beam information from the source cubelet
-    cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
+    try:
+        cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
+    except FileNotFoundError:
+        try:
+            cube_params = get_info(src_basename + '_{}_mom0.fits'.format(source['id']), beam)
+        except FileNotFoundError:
+            print("\tERROR: No cubelet or mom0 to match source {}."
+                  " Can't determine coordinate system to plot spectrum.\n".format(source['id']))
+            return
 
     # Make plot of SoFiA masked spectrum
     fig1, ax1_spec, outfile1 = make_spec(source, src_basename, cube_params, suffix=suffix)
