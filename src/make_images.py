@@ -18,6 +18,7 @@ from urllib.error import HTTPError
 from src.modules.functions import get_info
 from src.modules.functions import chan2freq, chan2vel, sbr2nhi
 from src.modules.functions import create_pv
+from src.modules.functions import plot_labels
 from src.modules.get_ancillary import *
 from src.modules.get_hst_cosmos import get_hst_cosmos
 
@@ -66,16 +67,11 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
                                              cube_params['bmin'].value)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=opt.wcs)
+        plot_labels(source, ax1)
         ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data, perc[0]),
                    vmax=np.percentile(opt.data, perc[1]))
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
-        ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
-                    transform=ax1.get_transform('fk5'))
-        ax1.set_title(source['name'], fontsize=20)
-        ax1.tick_params(axis='both', which='major', labelsize=18)
-        ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
-        ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -127,6 +123,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
                                              cube_params['bmin'].value)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt[0].header))
+        plot_labels(source, ax1)
         if survey == 'hst':
             # ax1.imshow(opt[0].data, origin='lower', cmap='twilight', norm=LogNorm(vmax=5))
             # ax1.imshow(opt[0].data, origin='lower', cmap='Greys', norm=LogNorm(vmin=-0.003, vmax=30))
@@ -138,14 +135,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
                        vmax=np.percentile(opt[0].data, 99.8), origin='lower')
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
-        ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
-                    transform=ax1.get_transform('fk5'))
-        ax1.set_title(source['name'], fontsize=20)
-        ax1.tick_params(axis='both', which='major', labelsize=18)
-        ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
-        ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
-                 color='white', fontsize=18)
+        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
 
@@ -195,15 +185,10 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
                                              cube_params['bmin'].value)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
+        plot_labels(source, ax1, x_color='white')
         im = ax1.imshow(hi_reprojected, cmap='gray_r', origin='lower')
         ax1.set(facecolor="white")  # Doesn't work with the color im
         ax1.contour(hi_reprojected, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10))
-        ax1.scatter(source['ra'], source['dec'], marker='x', c='white', linewidth=0.75,
-                    transform=ax1.get_transform('fk5'))
-        ax1.set_title(source['name'], fontsize=20)
-        ax1.tick_params(axis='both', which='major', labelsize=18)
-        ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
-        ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
@@ -262,17 +247,11 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
+        plot_labels(source, ax1)
         ax1.set(facecolor="white")  # Doesn't work with the color im
         im = ax1.imshow(snr_reprojected, cmap=wa_cmap, origin='lower', norm=norm)
         ax1.contour(hi_reprojected, linewidths=2, levels=[base_contour, ], colors=['k', ])
-        ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
-                    transform=ax1.get_transform('fk5'))
-        ax1.set_title(source['name'], fontsize=20)
-        ax1.tick_params(axis='both', which='major', labelsize=18)
-        ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
-        ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center',
-                 transform=ax1.transAxes, fontsize=18)
+        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
@@ -365,11 +344,12 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
 
         mom1_reprojected[hi_reprojected < HIlowest] = np.nan
 
-        hi_pos = SkyCoord(source['ra'], source['dec'], unit='deg')
+        hi_pos = SkyCoord(source['pos_x'], source['pos_y'], unit='deg')
         kinpa = source['kin_pa'] * u.deg
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
+        plot_labels(source, ax1)
         im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')
         vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
         for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
@@ -380,21 +360,14 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
         v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
-        # Plot HI center of galaxy
-        ax1.scatter(source['ra'], source['dec'], marker='x', c='black', linewidth=0.75,
-                    transform=ax1.get_transform('icrs'))
+        # Plot kin_pa from HI center of galaxy
         ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
                              (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg), xycoords=ax1.get_transform('icrs'),
                      xytext=((hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
                              (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg), textcoords=ax1.get_transform('icrs'),
                      arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                      linestyle='--'))
-        ax1.set_title(source['name'], fontsize=20)
-        ax1.tick_params(axis='both', which='major', labelsize=18)
-        ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
-        ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
-        ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes,
-                 color='black', fontsize=18)
+        ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
         ax1.text(0.95, 0.5, "$\Delta v_{{contours}}$ = {} km/s".format(int(vunit)), ha='center', va='center',
                  transform=ax1.transAxes, color='black', fontsize=18, rotation=90)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -455,13 +428,8 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
         # ax1.set_facecolor("darkgray")   # Doesn't work with the color im
         ax1.imshow(color_im, origin='lower')
+        plot_labels(source, ax1, x_color='white')
         ax1.contour(hi_reprojected, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10))
-        ax1.scatter(source['ra'], source['dec'], marker='x', c='white', linewidth=0.75,
-                    transform=ax1.get_transform('fk5'))
-        ax1.set_title(source['name'], fontsize=20)
-        ax1.tick_params(axis='both', which='major', labelsize=18)
-        ax1.coords['ra'].set_axislabel('RA (ICRS)', fontsize=20)
-        ax1.coords['dec'].set_axislabel('Dec (ICRS)', fontsize=20)
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -628,13 +596,19 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             print("\tERROR: No mom0 to match source {}.\n".format(source['id']))
             return
 
-    # Get the position of the source to retrieve an survey image
-    hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg',
-                      equinox=cube_params['equinox'], frame=cube_params['frame'])
-
-    # SkyView (and maybe other queries??) won't retrieve non-ICRS or non-J2000 coordinates every time,
-    # so let's transform everything to ICRS ....Need to keep an eye on this (may have been a server issue).
-    hi_pos_icrs = hi_pos.transform_to('icrs')
+    # Get the position of the source to retrieve a survey image
+    # Temporarily replace source coords w/ ICRS ra,dec or Gal l,b for plotting in the rest (won't change catalog file).
+    if 'ra' in source.colnames:
+        hi_pos = SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg', equinox=cube_params['equinox'],
+                          frame=cube_params['frame'])
+        hi_pos_common = hi_pos.transform_to('icrs')
+        source['pos_x'] = hi_pos_common.ra.deg
+        source['pos_y'] = hi_pos_common.dec.deg
+    if 'l' in source.colnames:
+        hi_pos_gal = SkyCoord(l=source['l'], b=source['b'], unit='deg', frame=cube_params['frame'])
+        hi_pos_common = hi_pos_gal
+        source['pos_x'] = [hi_pos_common.l.deg]
+        source['pos_y'] = [hi_pos_common.b.deg]
 
     # Calculate the size of the survey image for the moment maps
     Xc = source['x']
@@ -651,10 +625,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         opt_view = np.max([Xsize, Ysize]) * 2 * 1.05
         print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view))
         opt_view = np.array([opt_view,]) * u.arcmin
-
-    # Temporarily replace with ICRS ra/dec for plotting purposes in the rest (won't change catalog file.):
-    source['ra'] = hi_pos_icrs.ra.deg
-    source['dec'] = hi_pos_icrs.dec.deg
 
     # Calculate the size of the beam (plotted as a fraction of the image size)
     patch_height = (cube_params['bmaj'] / opt_view).decompose()
@@ -715,29 +685,35 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         surveys.remove('hst')
 
     # Create a false color optical panstarrs overlay, if requested, or if dss2 fails for some reason:
-    if 'panstarrs' in surveys:
-        pstar_im, pstar_head = get_panstarrs(hi_pos_icrs, opt_view=opt_view)
+    if ('panstarrs' in surveys) and (hi_pos_common.frame.name != 'galactic'):
+        pstar_im, pstar_head = get_panstarrs(hi_pos_common, opt_view=opt_view)
         if pstar_im:
             make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest,
                           suffix=suffix, survey='panstarrs')
         if surveys[0] == 'panstarrs':
             opt_head = pstar_head
         surveys.remove('panstarrs')
+    elif ('panstarrs' in surveys) and (hi_pos_common.frame.name == 'galactic'):
+        print("\t'panstarrs' image retrieval not supported for catalog in Galactic coordinates.")
+        surveys.remove('panstarrs')
 
     # If requested plot HI contours on DECaLS imaging
-    if 'decals' in surveys:
-        decals_im, decals_head = get_decals(hi_pos_icrs, opt_view=opt_view)
+    if ('decals' in surveys) and (hi_pos_common.frame.name != 'galactic'):
+        decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
                       survey='decals')
         if surveys[0] == 'decals':
             opt_head = decals_head
+        surveys.remove('decals')
+    elif ('decals' in surveys) and (hi_pos_common.frame.name == 'galactic'):
+        print("\t'decals' image retrieval not supported for catalog in Galactic coordinates.")
         surveys.remove('decals')
 
     # If requested, plot the HI contours on any number of survey images available through SkyView.
     if len(surveys) > 0:
         for survey in surveys:
             try:
-                overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey)
+                overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
                 make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
                              survey=survey)
                 if surveys[0] == survey:
@@ -750,24 +726,24 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                 print("\tERROR: http error 404 returned from SkyView query for {} survey image. Trying with"
                       " cache=False.".format(survey))
                 try:
-                    overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey, cache=False)
+                    overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
                     make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
                                  survey=survey)
                     if surveys[0] == survey:
                         opt_head = overlay_image[0].header
                 except:
-                    print("\t\tSecond attempt failed.  Try again later?")
+                    print("\t\tSecond attempt failed. Either survey doesn't cover this area, or server failed.  Try again later?")
             except:
                 print("\tERROR: general error attempting return image from SkyView query for {} survey. Trying with"
                       " cache=False.".format(survey))
                 try:
-                    overlay_image = get_skyview(hi_pos_icrs, opt_view=opt_view, survey=survey, cache=False)
+                    overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
                     make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
                                  survey=survey)
                     if surveys[0] == survey:
                         opt_head = overlay_image[0].header
                 except:
-                    print("\t\tSecond attempt failed.  Try again later?")
+                    print("\t\tSecond attempt failed. Try again later?")
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
