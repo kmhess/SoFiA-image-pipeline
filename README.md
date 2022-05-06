@@ -44,7 +44,7 @@ We are working on a pip install option. More later.
 
 Usage
 ------------
-SIP works under the assumption that the user has run [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2) which generated an xml and/or ascii catalog file, and fits moment maps and cubelets for each source.  SIP assumes that these filese are in the same directory structure as created by SoFiA-2 where the catalog file and `*_cubelet/` folder are in the same directory.  The output from SIP will be in a newly created folder next to `*_cubelets/` called `*_figures/`.
+SIP works under the assumption that the user has run [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2) which generated an xml and/or ascii catalog file, and fits moment maps and cubelets for each source.  SIP assumes that these files are in the same directory structure as created by SoFiA-2 where the catalog file and `*_cubelets/` folder are in the same directory.  The output from SIP will be in a newly created folder next to `*_cubelets/` called `*_figures/`.
 
 ```
 $ sofia_image_pipeline
@@ -131,9 +131,9 @@ SkyView.survey_dict
 
 * Downloading survey images from `astroquery.SkyView` is the greatest limiting factor in the speed of SIP.  To avoid this, for catalogs with a high source density, you may consider downloading one large image to disk before running SIP.  For this purpose, we have included `overview_fig.py`. For example:
 ```
-python3 overview_fig.py -h
-python3 overview_fig.py -ra 174.465 -dec 21.9743 -i 0.5 -s 'Survey Name' -o my_image
-python3 image_pipeline.py -c <path/to/catalog.xml> -ui <my_image_SurveyName.fits>
+python3 src/overview_fig.py -h
+python3 src/overview_fig.py -ra 174.465 -dec 21.9743 -i 0.5 -s 'Survey Name' -o my_image
+sofia_image_pipeline -c <path/to/catalog.xml> -ui <my_image_SurveyName.fits>
 ```
 
 * SIP always outputs individual figures for each SoFiA FITS file.  If you did not produce a combined summary image with the `-m` option, you can still create it without re-running SIP if you have ImageMagick installed.  Here is example python code using a for loop over the sources to execute terminal commands.
