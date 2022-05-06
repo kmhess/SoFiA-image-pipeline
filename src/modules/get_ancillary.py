@@ -28,7 +28,10 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
     opt_pixels = (opt_view.to(u.arcsec).value * 2).astype(int)
 
     # Get a survey image from SkyView:
-    if (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
+    if hi_pos.frame.name == 'galactic':
+        path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='galactic',
+                                  width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels)
+    elif (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
         path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS',
                                   width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels)
     # Note that there seems to be a bug in SkyView that it sometimes won't retrieve non-J2000.0.  Keep an eye on this!
