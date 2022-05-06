@@ -151,7 +151,7 @@ def get_info(fits_name, beam=None):
             equinox = 'J' + str(equinox)
             frame = 'fk5'
         print("\tFound {} equinox in header.".format(equinox))
-    except:
+    except KeyError:
         try:
             equinox = header['EPOCH']
             if equinox < 1984.0:
@@ -161,7 +161,7 @@ def get_info(fits_name, beam=None):
                 equinox = 'J' + str (equinox)
                 frame = 'fk5'
             print("\tWARNING: Using deprecated EPOCH in header for equinox: {}.".format(equinox))
-        except:
+        except KeyError:
             print("\tWARNING: No equinox information in header; assuming ICRS frame.")
             equinox = None
             frame = 'icrs'
