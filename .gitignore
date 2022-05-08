@@ -3,6 +3,8 @@
 *_cubelets
 *_figures
 *.fits
+*.par
+*.eps
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
