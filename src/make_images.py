@@ -489,7 +489,11 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
         ax1.imshow(pvd, cmap=pvd_map, aspect='auto', norm=divnorm)
 
         # if np.all (np.isnan (pv[0].data)): continue
-        ax1.contour(pvd, colors=['w', 'k', 'k', ], levels=np.concatenate(([-3, ], 3**np.arange(1, 10)))*pvd_rms)
+        # Plot positive contours
+        ax1.contour(pvd, colors=['k', ], levels=3**np.arange(1, 10)*pvd_rms)
+        # Plot negative contours
+        ax1.contour(pvd, colors=['w', ], levels=-1 * 3**np.arange(10, 0, -1) * pvd_rms, linestyles=['dashed', ])
+
         ax1.autoscale(False)
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
             print("\tReading in mask cubelet.")
