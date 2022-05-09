@@ -133,7 +133,12 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
         else:
             ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
                        vmax=np.percentile(opt[0].data, 99.8), origin='lower')
+        # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
+                    transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
+        # Plot negative contours
+        ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
+                    levels=-1 * base_contour * 2 ** np.arange(10, 0, -1),
                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -188,7 +193,11 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         plot_labels(source, ax1, x_color='white')
         im = ax1.imshow(hi_reprojected, cmap='gray_r', origin='lower')
         ax1.set(facecolor="white")  # Doesn't work with the color im
+        # Plot positive contours
         ax1.contour(hi_reprojected, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10))
+        # Plot negative contours
+        ax1.contour(hi_reprojected, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
+                    levels=-1 * base_contour * 2 ** np.arange(10, 0, -1))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
