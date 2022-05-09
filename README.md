@@ -28,19 +28,21 @@ parameter.offset = True
 Installation
 ------------
 
+### PyPI
+
+You can install the latest SIP released on [PyPI](https://pypi.org/project/sofia-image-pipeline/) by running pip install:
+
+```
+pip install sofia-image-pipeline
+```
+
 ### Development
 
-You can install SIP locally by cloning the repository and running
+You can install the latest GitHub version of SIP locally by cloning the repository and running:
 
 ```
 python3 setup.py develop
 ```
-
-### PyPI
-
-We are working on a pip install option. More later.
-
-<!--- `pip3 install` --->
 
 Usage
 ------------
