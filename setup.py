@@ -24,7 +24,6 @@ setup(
         "xmltodict == 0.12.0"
     ],
     classifiers=[
-        'Development Status :: 2 - Pre-Alpha',
         'Programming Language :: Python :: 3',
     ],
     entry_points={
