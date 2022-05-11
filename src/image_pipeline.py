@@ -27,6 +27,9 @@ def main():
     parser.add_argument('-c', '--catalog', required=True,
                         help='Required: Specify the input XML or ascii catalog name. No default.')
 
+    parser.add_argument('-id', '--source-id', default=[], nargs='*', type=int,
+                        help='Space-separated list of sources to include in the plotting. Default all sources')
+
     parser.add_argument('-x', '--suffix', default='png',
                         help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
@@ -92,6 +95,8 @@ def main():
     if (suffix == 'eps') | (suffix == 'ps'):
         print("\tWARNING: {} may have issues with transparency or making spectra.".format(suffix))
 
+    if len(args.source_id):
+        print("\tWill only process selected sources: {}".format(args.source_id))
 
     # Read in the catalog file:
     catalog_file = args.catalog
@@ -189,16 +194,18 @@ def main():
     for source in catalog:
 
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
-        print("\n\t-Source {}: {}.".format(source['id'], source['name']))
-        make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
-                         chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                         user_image=args.user_image, user_range=args.user_range)
-        make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
+        
+        if not len(args.source_id) or source['id'] in args.source_id:
+            print("\n\t-Source {}: {}.".format(source['id'], source['name']))
+            make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
+                             chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
+                             user_image=args.user_image, user_range=args.user_range)
+            make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
-        if imagemagick:
-            combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), user_image=args.user_image)
+            if imagemagick:
+                combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), user_image=args.user_image)
 
-        n_src += 1
+            n_src += 1
 
 
     print("\n\tDONE! Made images for {} sources.".format(n_src))
