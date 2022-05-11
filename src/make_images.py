@@ -30,6 +30,7 @@ optical_HI = u.doppler_optical(HI_restfreq)
 
 # Overlay HI contours on user image
 
+
 def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
     """Overlay HI contours on top of a user provided image
 
@@ -689,6 +690,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # For CHILES: plot HI contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
+        swapx = False
         hst_opt_view = 40 * u.arcsec
         if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
             hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
@@ -697,7 +699,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_height = (cube_params['bmaj'] / hst_opt_view).decompose()
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
-            make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix,
+            make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, swapx, suffix=suffix,
                          survey='hst')
         if surveys[0] == 'hst':
             opt_head = hst_opt[0].header
@@ -736,7 +738,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         for survey in surveys:
             try:
                 overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
-                make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
+                make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, swapx, suffix=suffix,
                              survey=survey)
                 if surveys[0] == survey:
                     opt_head = overlay_image[0].header
@@ -749,7 +751,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                       " cache=False.".format(survey))
                 try:
                     overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
-                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
+                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, swapx, suffix=suffix,
                                  survey=survey)
                     if surveys[0] == survey:
                         opt_head = overlay_image[0].header
@@ -760,7 +762,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                       " cache=False.".format(survey))
                 try:
                     overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
-                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
+                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, swapx, suffix=suffix,
                                  survey=survey)
                     if surveys[0] == survey:
                         opt_head = overlay_image[0].header
