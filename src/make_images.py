@@ -345,6 +345,11 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
             if cube_params['spec_axis'] == 'VRAD':
                 convention = 'Radio'
 
+        if velmin == velmax:
+            singlechansource = True
+        else:
+            singlechansource = False
+
         mom1_reprojected, footprint = reproject_interp(mom1, opt_head)
 
         # Only plot values above the lowest calculated HI value:
@@ -359,7 +364,11 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=WCS(opt_head))
         plot_labels(source, ax1)
-        im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')
+        if not singlechansource:
+            im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')
+        else:
+            im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower',
+                 vmin=0.999*np.nanmin(mom1_reprojected), vmax=1.001*np.nanmax(mom1_reprojected))
         vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
         for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
             n_contours = vel_maxhalf // vunit
@@ -367,7 +376,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
                 break
         levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
-        cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
+        if not singlechansource:
+            cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
         v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
         # Plot kin_pa from HI center of galaxy
         ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
@@ -377,13 +387,15 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
                      arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                      linestyle='--'))
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
-        ax1.text(0.95, 0.5, "$\Delta v_{{contours}}$ = {} km/s".format(int(vunit)), ha='center', va='center',
+        if not singlechansource:
+            ax1.text(0.95, 0.5, "$\Delta v_{{contours}}$ = {} km/s".format(int(vunit)), ha='center', va='center',
                  transform=ax1.transAxes, color='black', fontsize=18, rotation=90)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='darkred', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        cbar.add_lines(cf)
+        if not singlechansource:
+            cbar.add_lines(cf)
         cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
         fig.savefig(outfile, bbox_inches='tight')
