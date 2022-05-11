@@ -88,7 +88,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
 # Overlay HI contours on another image
 
-def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
+def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, swapx, suffix='png', survey='DSS2 Blue'):
     """Overlay HI contours on top of an optical image
 
     :param source: source object
@@ -136,14 +136,16 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
         # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
-        # Plot negative contours
-        ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
-                    levels=-1 * base_contour * 2 ** np.arange(10, 0, -1),
-                    transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
+#         # Plot negative contours
+#         ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
+#                     levels=-1 * base_contour * 2 ** np.arange(10, 0, -1),
+#                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
 
+        if swapx:
+            ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         hdulist_hi.close()
@@ -155,7 +157,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
 
 
 # Make HI grey scale image
-def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
+def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png'):
     """Overlay HI contours on the HI gray scale image.
 
     :param source: source object
@@ -184,20 +186,20 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
+        hi_cut = Cutout2D(hdulist_hi[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt2'])], wcs=WCS(hdulist_hi[0].header), mode='partial')
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=WCS(opt_head))
+        ax1 = fig.add_subplot(111, projection=hi_cut.wcs)
         plot_labels(source, ax1, x_color='white')
-        im = ax1.imshow(hi_reprojected, cmap='gray_r', origin='lower')
+        im = ax1.imshow(hi_cut.data, cmap='gray_r', origin='lower')
         ax1.set(facecolor="white")  # Doesn't work with the color im
         # Plot positive contours
-        ax1.contour(hi_reprojected, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10))
-        # Plot negative contours
-        ax1.contour(hi_reprojected, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
-                    levels=-1 * base_contour * 2 ** np.arange(10, 0, -1))
+        ax1.contour(hi_cut.data, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10))
+#         # Plot negative contours
+#         ax1.contour(hi_cut.data, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
+#                     levels=-1 * base_contour * 2 ** np.arange(10, 0, -1))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
@@ -205,6 +207,8 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=18)
 
+#         if swapx:
+#             ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         hdulist_hi.close()
@@ -216,7 +220,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
 
 # Make HI significance image
-def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
+def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png'):
     """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
     :param source: source object
@@ -246,8 +250,9 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
             return
 
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
-        snr_reprojected, footprint = reproject_interp(hdulist_snr, opt_head)
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
+
+        snr_cut = Cutout2D(hdulist_snr[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(hdulist_snr[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(hdulist_snr[0].header['cdelt2'])], wcs=WCS(hdulist_snr[0].header), mode='partial')
+        hi_cut = Cutout2D(hdulist_hi[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt2'])], wcs=WCS(hdulist_hi[0].header), mode='partial')
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
@@ -255,17 +260,19 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         boundaries = [0, 1, 2, 3, 4, 5, 6]
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=WCS(opt_head))
+        ax1 = fig.add_subplot(111, projection=hi_cut.wcs)
         plot_labels(source, ax1)
         ax1.set(facecolor="white")  # Doesn't work with the color im
-        im = ax1.imshow(snr_reprojected, cmap=wa_cmap, origin='lower', norm=norm)
-        ax1.contour(hi_reprojected, linewidths=2, levels=[base_contour, ], colors=['k', ])
+        im = ax1.imshow(snr_cut.data, cmap=wa_cmap, origin='lower', norm=norm)
+        ax1.contour(hi_cut.data, linewidths=2, levels=[base_contour, ], colors=['k', ])
         ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Pixel SNR", fontsize=18)
+#         if swapx:
+#             ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
 
@@ -276,7 +283,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 
 # Make velocity map for object
-def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_view=6*u.arcmin, suffix='png', sofia=2):
+def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png', sofia=2):
     """
 
     :param source: source object
@@ -289,8 +296,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
     :type patch: dict
     :param opt_head: Header for the color image
     :type opt_head: FITS header
-    :param HIlowest: lowest HI contour
-    :type HIlowest: float
+    :param base_contour: lowest HI contour
+    :type base_contour: float
     :param opt_view: requested size of the image for regriding
     :type opt_view: quantity
     :param suffix: image file type
@@ -345,21 +352,19 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
             if cube_params['spec_axis'] == 'VRAD':
                 convention = 'Radio'
 
-        mom1_reprojected, footprint = reproject_interp(mom1, opt_head)
-
+        mom1_cut = Cutout2D(mom1[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(mom1[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(mom1[0].header['cdelt2'])], wcs=WCS(mom1[0].header), mode='partial')
         # Only plot values above the lowest calculated HI value:
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
-
-        mom1_reprojected[hi_reprojected < HIlowest] = np.nan
+        hi_cut = Cutout2D(hdulist_hi[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt2'])], wcs=WCS(hdulist_hi[0].header), mode='partial')
+        mom1_cut.data[hi_cut.data < base_contour] = np.nan
 
         hi_pos = SkyCoord(source['pos_x'], source['pos_y'], unit='deg')
         kinpa = source['kin_pa'] * u.deg
 
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=WCS(opt_head))
+        ax1 = fig.add_subplot(111, projection=hi_cut.wcs)
         plot_labels(source, ax1)
-        im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')
+        im = ax1.imshow(mom1_cut.data, cmap='RdBu_r', origin='lower')
         vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
         for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
             n_contours = vel_maxhalf // vunit
@@ -367,7 +372,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
                 break
         levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
-        cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
+        cf = ax1.contour(mom1_cut.data, colors=clevels, levels=levels, linewidths=0.6)
         v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
         # Plot kin_pa from HI center of galaxy
         ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
@@ -386,6 +391,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_
         cbar.add_lines(cf)
         cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
+#         if swapx:
+#             ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         mom1.close()
@@ -470,7 +477,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
 
     if not os.path.isfile(outfile):
         try:
-            print("\tMaking pv slice.")
+            print("\tMaking pv diagram.")
             pv = fits.open(src_basename + '_{}_pv.fits'.format(str(source['id'])))
         except FileNotFoundError:
             print("\tNo pv fits file. Perhaps you ran source finding with an old version of SoFiA-2?")
@@ -505,14 +512,15 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
 
         ax1.autoscale(False)
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
-            print("\tReading in mask cubelet.")
+            print("\tAttempting to overlay mask on pv diagram ...")
             mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view[0])
             if mask_pv:
                 # Extract_pv has a header bug, reset the reference pixel:
                 mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
                 ax1.contour(mask_pv.data, colors='red', levels=[0.01], transform=ax1.get_transform(WCS(mask_pv.header)))
+            print("\t... done.")
         else:
-            print("\tNo mask cubelet.  Will continue without plotting mask boundaries on pv plot.")
+            print("\tNo mask cubelet found to overlay mask on pv diagram.")
         ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
                  transform=ax1.get_transform('world'))
         ax1.set_title(source['name'], fontsize=16)
@@ -697,7 +705,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch = patch_hst
         surveys.remove('hst')
 
-    # Create a false color optical panstarrs overlay, if requested, or if dss2 fails for some reason:
+    # Create a false color optical panstarrs overlay, if requested:
     if ('panstarrs' in surveys) and (hi_pos_common.frame.name != 'galactic'):
         pstar_im, pstar_head = get_panstarrs(hi_pos_common, opt_view=opt_view)
         if pstar_im:
@@ -724,6 +732,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # If requested, plot the HI contours on any number of survey images available through SkyView.
     if len(surveys) > 0:
+        swapx = False
         for survey in surveys:
             try:
                 overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
@@ -760,10 +769,9 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
-        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
-        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
-        make_mom1(source, src_basename, cube_params, patch, opt_head, HIlowest, opt_view=opt_view, suffix=suffix,
-                  sofia=2)
+        make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
+        make_snr(source,  hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
+        make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix, sofia=2)
 
     # Make pv if it was created (only in SoFiA-1); not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, opt_view=opt_view, suffix=suffix)
