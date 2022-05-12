@@ -194,7 +194,7 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='bilinear')
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
@@ -260,8 +260,8 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
 
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
 
-        snr_reprojected, footprint = reproject_interp(hdulist_snr, opt_head, order='nearest-neighbor')
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
+        snr_reprojected, footprint = reproject_interp(hdulist_snr, opt_head, order='bilinear')
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='bilinear')
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
@@ -366,10 +366,10 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         else:
             singlechansource = False
 
-        mom1_reprojected, footprint = reproject_interp(mom1, opt_head, order='nearest-neighbor')
+        mom1_reprojected, footprint = reproject_interp(mom1, opt_head, order='bilinear')
         # Only plot values above the lowest calculated HI value:
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='bilinear')
         mom1_reprojected[hi_reprojected < base_contour] = np.nan
 
         hi_pos = SkyCoord(source['pos_x'], source['pos_y'], unit='deg')
@@ -457,7 +457,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     if not os.path.isfile(outfile):
         print("\tMaking HI contour overlay on {} image.".format(survey))
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='bilinear')
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
