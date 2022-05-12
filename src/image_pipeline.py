@@ -73,7 +73,6 @@ def main():
     parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
                         help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
 
-
     ###################################################################
 
     # Parse the arguments above
@@ -170,9 +169,6 @@ def main():
         print("ERROR: Column name for spectral axis not recognized.\n")
         exit()
 
-    # Allow for some source selection?
-
-
     # Set up some directories
     cubelet_dir = catalog_file.split("_cat.")[0] + '_cubelets/'
     if not os.path.isdir(cubelet_dir):
@@ -187,14 +183,13 @@ def main():
 
     src_basename = cubelet_dir + catalog_file.split("/")[-1].split("_cat.")[0]
 
-
     # Make all the images on a source-by-source basis.  In future, could parallelize this.
     n_src = 0
 
     for source in catalog:
 
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
-        
+
         if not len(args.source_id) or source['id'] in args.source_id:
             print("\n\t-Source {}: {}.".format(source['id'], source['name']))
             make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
@@ -206,7 +201,6 @@ def main():
                 combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), user_image=args.user_image)
 
             n_src += 1
-
 
     print("\n\tDONE! Made images for {} sources.".format(n_src))
     print("*****************************************************************\n")
