@@ -237,7 +237,7 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
         fig2.savefig(outfile2, bbox_inches='tight')
     plt.close('all')
 
-    print("\tDone making spectral profiles of the spectral line source {}: {}.".format(source['id'], source['name']))
+    print("\tDone making spectral profiles.")
 
     return
 

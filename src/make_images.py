@@ -58,7 +58,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
     if not os.path.isfile(outfile):
         try:
-            print("\tMaking {} overlaid with HI contours.".format('usr'))
+            print("\tMaking HI contour overlay on {} image.".format('usr'))
             hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -69,10 +69,16 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=opt.wcs)
         plot_labels(source, ax1)
-        ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data, perc[0]),
-                   vmax=np.percentile(opt.data, perc[1]))
+        ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data[~np.isnan(opt.data)], perc[0]),
+                   vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]))
+        # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
+        # Plot negative contours
+        if np.nanmin(hdulist_hi[0].data) < -base_contour:
+            ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
+                        levels=-base_contour * 2 ** np.arange(10, -1, -1),
+                        transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -114,7 +120,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
 
     if not os.path.isfile(outfile):
         try:
-            print("\tMaking {} overlaid with HI contours.".format(survey))
+            print("\tMaking HI contour overlay on {} image.".format(survey))
             hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -137,10 +143,11 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
         # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
-#         # Plot negative contours
-#         ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
-#                     levels=-1 * base_contour * 2 ** np.arange(10, 0, -1),
-#                     transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
+        # Plot negative contours
+        if np.nanmin(hdulist_hi[0].data) < -base_contour:
+            ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
+                        levels=-base_contour * 2 ** np.arange(10, -1, -1),
+                        transform=ax1.get_transform(WCS(hdulist_hi[0].header)))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
@@ -181,7 +188,7 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
 
     if not os.path.isfile(outfile):
         try:
-            print("\tMaking HI grey scale map.")
+            print("\tMaking HI contour overlay on grey-scale HI image.")
             hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -198,9 +205,10 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         ax1.set(facecolor="white")  # Doesn't work with the color im
         # Plot positive contours
         ax1.contour(hi_cut.data, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10))
-#         # Plot negative contours
-#         ax1.contour(hi_cut.data, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
-#                     levels=-1 * base_contour * 2 ** np.arange(10, 0, -1))
+        # Plot negative contours
+        if np.nanmin(hi_cut.data) < -base_contour:
+            ax1.contour(hi_cut.data, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
+                        levels=-base_contour * 2 ** np.arange(10, -1, -1))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
@@ -244,7 +252,7 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
 
     if not os.path.isfile(outfile):
         try:
-            print("\tMaking pixel SNR map.")
+            print("\tMaking SNR image.")
             hdulist_snr = fits.open(src_basename + '_{}_snr.fits'.format(str(source['id'])))
         except FileNotFoundError:
             print("\tNo SNR fits file. Perhaps you ran SoFiA without generating moments?")
@@ -312,7 +320,7 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
     if not os.path.isfile(outfile):
 
         try:
-            print("\tMaking velocity map.")
+            print("\tMaking velocity field.")
             mom1 = fits.open(src_basename + '_{}_mom1.fits'.format(source['id']))
         except FileNotFoundError:
             print("\tNo mom1 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -447,7 +455,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     elif survey == 'decals': survey = 'DECaLS'
 
     if not os.path.isfile(outfile):
-        print("\tMaking {} image overlaid with HI contours.".format(survey))
+        print("\tMaking HI contour overlay on {} image.".format(survey))
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
 
@@ -519,13 +527,15 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
 
         # if np.all (np.isnan (pv[0].data)): continue
         # Plot positive contours
-        ax1.contour(pvd, colors=['k', ], levels=3**np.arange(1, 10)*pvd_rms)
+        if np.nanmin(pvd) > 3*pvd_rms:
+            ax1.contour(pvd, colors=['k', ], levels=3**np.arange(1, 10)*pvd_rms)
         # Plot negative contours
-        ax1.contour(pvd, colors=['w', ], levels=-1 * 3**np.arange(10, 0, -1) * pvd_rms, linestyles=['dashed', ])
+        if np.nanmin(pvd) < -3*pvd_rms:
+            ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 3**np.arange(10, 0, -1), linestyles=['dashed', ])
 
         ax1.autoscale(False)
         if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
-            print("\tAttempting to overlay mask on pv diagram ...")
+            print("\tAttempting to overlay mask boundaries on pv diagram ...")
             mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view[0])
             if mask_pv:
                 # Extract_pv has a header bug, reset the reference pixel:
@@ -669,7 +679,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # !!! Actually we do not need to read the entire image every single time. We want to read it just once.
     # I leave this for later.
     if user_image:
-        print("\tExtracting cutout from image {0:s}".format(user_image))
+        print("\tLoading usr image {0:s}".format(user_image))
         with fits.open(user_image) as usrim:
             usrim_d = usrim[0].data
             usrim_h = usrim[0].header
@@ -686,9 +696,10 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                 swapx = False
             usrim_pix_x = np.abs(usrim_pix_x)
             usrim_wcs = WCS(usrim_h)
-        print('\tImage loaded. Extracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
+        print('\tImage loaded.')
+        print('\tExtracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
-            usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs)
+            usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs, mode='partial')
             make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png')
             opt_head = usrim_cut.wcs.to_header()
             # wcs.to_header() seems to have a bug where it doesn't include the axis information.
@@ -792,7 +803,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     plt.close('all')
 
-    print("\tDone making spatial images of the spectral line source {}: {}.".format(source['id'], source['name']))
+    print("\tDone making spatial images.")
 
     return True
 
