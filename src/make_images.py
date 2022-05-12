@@ -370,7 +370,7 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         # Only plot values above the lowest calculated HI value:
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
-        mom1_reprojected[hi_reprojected < HIlowest] = np.nan
+        mom1_reprojected[hi_reprojected < base_contour] = np.nan
 
         hi_pos = SkyCoord(source['pos_x'], source['pos_y'], unit='deg')
         kinpa = source['kin_pa'] * u.deg
