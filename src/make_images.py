@@ -527,7 +527,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
 
         # if np.all (np.isnan (pv[0].data)): continue
         # Plot positive contours
-        if np.nanmin(pvd) > 3*pvd_rms:
+        if np.nanmax(pvd) > 3*pvd_rms:
             ax1.contour(pvd, colors=['k', ], levels=3**np.arange(1, 10)*pvd_rms)
         # Plot negative contours
         if np.nanmin(pvd) < -3*pvd_rms:
