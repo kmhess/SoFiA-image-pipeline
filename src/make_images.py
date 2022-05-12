@@ -194,20 +194,20 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        hi_cut = Cutout2D(hdulist_hi[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt2'])], wcs=WCS(hdulist_hi[0].header), mode='partial')
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=hi_cut.wcs)
+        ax1 = fig.add_subplot(111, projection=WCS(opt_head))
         plot_labels(source, ax1, x_color='white')
-        im = ax1.imshow(hi_cut.data, cmap='gray_r', origin='lower')
+        im = ax1.imshow(hi_reprojected, cmap='gray_r', origin='lower')
         ax1.set(facecolor="white")  # Doesn't work with the color im
         # Plot positive contours
-        ax1.contour(hi_cut.data, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10))
+        ax1.contour(hi_reprojected, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10))
         # Plot negative contours
-        if np.nanmin(hi_cut.data) < -base_contour:
-            ax1.contour(hi_cut.data, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
+        if np.nanmin(hi_reprojected) < -base_contour:
+            ax1.contour(hi_reprojected, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
                         levels=-base_contour * 2 ** np.arange(10, -1, -1))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -260,8 +260,8 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
 
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
 
-        snr_cut = Cutout2D(hdulist_snr[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(hdulist_snr[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(hdulist_snr[0].header['cdelt2'])], wcs=WCS(hdulist_snr[0].header), mode='partial')
-        hi_cut = Cutout2D(hdulist_hi[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt2'])], wcs=WCS(hdulist_hi[0].header), mode='partial')
+        snr_reprojected, footprint = reproject_interp(hdulist_snr, opt_head, order='nearest-neighbor')
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
@@ -269,11 +269,11 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
         boundaries = [0, 1, 2, 3, 4, 5, 6]
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=hi_cut.wcs)
+        ax1 = fig.add_subplot(111, projection=WCS(opt_head))
         plot_labels(source, ax1)
         ax1.set(facecolor="white")  # Doesn't work with the color im
-        im = ax1.imshow(snr_cut.data, cmap=wa_cmap, origin='lower', norm=norm)
-        ax1.contour(hi_cut.data, linewidths=2, levels=[base_contour, ], colors=['k', ])
+        im = ax1.imshow(snr_reprojected, cmap=wa_cmap, origin='lower', norm=norm)
+        ax1.contour(hi_reprojected, linewidths=2, levels=[base_contour, ], colors=['k', ])
         ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
@@ -366,23 +366,23 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         else:
             singlechansource = False
 
-        mom1_cut = Cutout2D(mom1[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(mom1[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(mom1[0].header['cdelt2'])], wcs=WCS(mom1[0].header), mode='partial')
+        mom1_reprojected, footprint = reproject_interp(mom1, opt_head, order='nearest-neighbor')
         # Only plot values above the lowest calculated HI value:
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
-        hi_cut = Cutout2D(hdulist_hi[0].data, hi_pos_common, [opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt1']), opt_view.to(u.deg).value/np.abs(hdulist_hi[0].header['cdelt2'])], wcs=WCS(hdulist_hi[0].header), mode='partial')
-        mom1_cut.data[hi_cut.data < base_contour] = np.nan
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
+        mom1_reprojected[hi_reprojected < HIlowest] = np.nan
 
         hi_pos = SkyCoord(source['pos_x'], source['pos_y'], unit='deg')
         kinpa = source['kin_pa'] * u.deg
 
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=hi_cut.wcs)
+        ax1 = fig.add_subplot(111, projection=WCS(opt_head))
         plot_labels(source, ax1)
         if not singlechansource:
-            im = ax1.imshow(mom1_cut.data, cmap='RdBu_r', origin='lower')
+            im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower')
         else:
-            im = ax1.imshow(mom1_cut.data, cmap='RdBu_r', origin='lower',
-                 vmin=0.999*np.nanmin(mom1_cut.data), vmax=1.001*np.nanmax(mom1_cut.data))
+            im = ax1.imshow(mom1_reprojected, cmap='RdBu_r', origin='lower',
+                 vmin=0.999*np.nanmin(mom1_reprojected), vmax=1.001*np.nanmax(mom1_reprojected))
         vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
         for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
             n_contours = vel_maxhalf // vunit
@@ -391,7 +391,7 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom1_cut.data, colors=clevels, levels=levels, linewidths=0.6)
+            cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
         v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
         # Plot kin_pa from HI center of galaxy
         ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
@@ -457,7 +457,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     if not os.path.isfile(outfile):
         print("\tMaking HI contour overlay on {} image.".format(survey))
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
-        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head)
+        hi_reprojected, footprint = reproject_interp(hdulist_hi, opt_head, order='nearest-neighbor')
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
