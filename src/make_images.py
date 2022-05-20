@@ -592,6 +592,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
          snr_range=[2, 3], user_image=None, user_range=[10., 99.]):
 
     print("\tStart making spatial images.")
+    swapx = False
 
     # Get beam information from the source cubelet
     if sofia == 2:
@@ -713,7 +714,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # For CHILES: plot HI contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
-        swapx = False
         hst_opt_view = 40 * u.arcsec
         if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
             hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
@@ -757,7 +757,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # If requested, plot the HI contours on any number of survey images available through SkyView.
     if len(surveys) > 0:
-        swapx = False
         for survey in surveys:
             try:
                 overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
