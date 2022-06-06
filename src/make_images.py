@@ -393,13 +393,21 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         if not singlechansource:
             cf = ax1.contour(mom1_reprojected, colors=clevels, levels=levels, linewidths=0.6)
         v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
-        # Plot kin_pa from HI center of galaxy
-        ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                             (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg), xycoords=ax1.get_transform('icrs'),
-                     xytext=((hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                             (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg), textcoords=ax1.get_transform('icrs'),
-                     arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
-                                     linestyle='--'))
+
+        # Plot kin_pa from HI center of galaxy; calculate end points of line
+        p1x, p1y = (hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
+                   (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg
+        p2x, p2y = (hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
+                   (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg
+        # My one test data set in Galactic coords fails on savefig because of something weird happening in annotate.
+        if 'l' in source.colnames:
+            ax1.plot([p1x, p2x], [p1y, p2y], linestyle='--', color='k', transform=ax1.get_transform('world'))
+        else:
+            ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
+                         xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
+                         arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
+                                         linestyle='--'))
+
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
         if not singlechansource:
             ax1.text(0.95, 0.5, "$\Delta v_{{contours}}$ = {} km/s".format(int(vunit)), ha='center', va='center',
