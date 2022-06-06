@@ -442,8 +442,8 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         if not singlechansource:
             im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(hiwcs))
         else:
-            im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower',
-                 vmin=0.999*np.nanmin(mom1_d), vmax=1.001*np.nanmax(mom1_d), transform=ax1.get_transform(hiwcs))
+            im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(hiwcs),
+                            vmin=0.999*np.nanmin(mom1_d), vmax=1.001*np.nanmax(mom1_d))
         vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
         for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
             n_contours = vel_maxhalf // vunit
@@ -452,13 +452,13 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=0.6)
+            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=0.6, transform=ax1.get_transform(hiwcs))
         v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
         # Plot kin_pa from HI center of galaxy
         ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                             (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg), xycoords=ax1.get_transform('icrs'),
+                             (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg), xycoords=ax1.get_transform('world'),
                      xytext=((hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                             (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg), textcoords=ax1.get_transform('icrs'),
+                             (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg), textcoords=ax1.get_transform('world'),
                      arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                      linestyle='--'))
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
