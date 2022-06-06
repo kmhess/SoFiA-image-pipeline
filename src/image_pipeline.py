@@ -55,10 +55,11 @@ def main():
                             ' contour in the figures. The contour level is calculated as the median value in the mom0 image\n'
                             ' of all pixels whose SNR value is within the given range. Default is [2,3].')
 
-    parser.add_argument('-s', '--surveys', default=['DSS2 Blue'], nargs='*', type=str,
+    parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
                         help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
                             ' These additional non-SkyView options are also available: \'decals\',\'panstarrs\',\'hst\'.\n'
-                            ' \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
+                            ' \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue" if no user\n' 
+                            ' provided image.')
 
     parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
                         help='Optional: combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'
@@ -86,10 +87,14 @@ def main():
     except:
         beam = []
     opt_view = args.image_size * u.arcmin
-    surveys = tuple(args.surveys)
 
     print("\n*****************************************************************")
     print("\tBeginning SoFiA-image-pipeline (SIP).")
+
+    if (len(args.surveys) == 0) and (not args.user_image):
+        args.surveys = ['DSS2 Blue']
+        print("\tNo user specified image and no survey specified: will default to {}.".format(args.surveys[0]))
+    surveys = tuple(args.surveys)
 
     if (suffix == 'eps') | (suffix == 'ps'):
         print("\tWARNING: {} may have issues with transparency or making spectra.".format(suffix))
