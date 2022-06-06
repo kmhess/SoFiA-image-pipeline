@@ -313,7 +313,7 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
     :rtype: FITS HDU
     """
 
-    slice = PathFromCenter(center=SkyCoord(ra=source['ra'], dec=source['dec'], unit='deg'),
+    slice = PathFromCenter(center=SkyCoord(ra=source['pos_x'], dec=source['pos_y'], unit='deg'),
                            length=opt_view, angle=source['kin_pa']*u.deg, width=1*u.arcsec)
     mask = fits.open(filename)
     try:
