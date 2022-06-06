@@ -162,7 +162,6 @@ Known Issues
 See the github repo for known bugs and desired enhancements.  We aim to fix serious bugs as quickly as possible.
 
 In addition we are aware of the following issues:
-* NEW 6/6/22: Figures generated from cubes with `CTYPE3=VRAD` have inconsistent velocities between mom1 and spectra and the wrong "optical" labels.
 * Saving figures with .ps or .eps format has issues with transparency and background colors appearing black.
 * `overview_fig.py` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `image_pipeline.py`
 * The mask (red line) on pv-diagram plots may not be perfectly aligned from left-to-right.  Please use this line only as a rough indication of the mask position.  Refer to actual data for the truth.  Any suggestions for how to improve this are welcome.
