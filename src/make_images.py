@@ -334,7 +334,8 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Pixel SNR", fontsize=18)
 
-        ax1.grid(True, ls=':', lw=0.8, color='gray')
+        # Debugging grid
+        # ax1.grid(True, ls=':', lw=0.8, color='gray')
         owcs = WCS(opt_head)
         Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
         lims = hiwcs.wcs_world2pix(Wlims, 0)
@@ -472,7 +473,8 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
             cbar.add_lines(cf)
         cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
-        ax1.grid(True, ls=':', lw=0.8, color='gray')
+        # Debugging grid
+        # ax1.grid(True, ls=':', lw=0.8, color='gray')
         owcs = WCS(opt_head)
         Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
         lims = hiwcs.wcs_world2pix(Wlims, 0)
