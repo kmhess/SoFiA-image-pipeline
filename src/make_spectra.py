@@ -40,7 +40,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
                 spec_template = None
                 channels = np.asarray(range(cube.shape[0]))
         except:
-            print("\tNo cube file provided, so can't generate a *_specfull.txt with noise.")
+            print("\tNo cube file provided, or original file name differs from catalog file name so can't generate a *_specfull.txt with noise.")
             return
 
         mask2d = np.sum(mask, axis=0)

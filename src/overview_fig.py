@@ -95,7 +95,7 @@ if len(surveys) > 0:
                       "surveys.".format(survey))
             except HTTPError:
                 print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
-            overlay_image.writeto(outname + survey + '.fits')
+            overlay_image.writeto(outname + survey.replace(' ', '_') + '.fits')
             survey_string += ' {}'.format(survey)
         else:
             print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
