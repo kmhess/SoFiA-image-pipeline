@@ -44,6 +44,15 @@ You can install the latest GitHub version of SIP locally by cloning the reposito
 python3 setup.py develop
 ```
 
+### Docker
+
+We provide a Docker image for use in containerised applications. This image can be found [here](https://hub.docker.com/r/sofiapipeline/image_pipeline).
+To use the latest official Docker image:
+
+```
+docker run -it -v <cwd>/<folder>:/app/<folder> sofiapipeline/image_pipeline:latest -c <folder>/<catalog.xml>
+```
+
 Usage
 ------------
 SIP works under the assumption that the user has run [SoFiA-2](https://github.com/SoFiA-Admin/SoFiA-2) which generated an xml and/or ascii catalog file, and fits moment maps and cubelets for each source.  SIP assumes that these files are in the same directory structure as created by SoFiA-2 where the catalog file and `*_cubelets/` folder are in the same directory.  The output from SIP will be in a newly created folder next to `*_cubelets/` called `*_figures/`.
@@ -51,7 +60,7 @@ SIP works under the assumption that the user has run [SoFiA-2](https://github.co
 ```
 $ sofia_image_pipeline
 
-usage: sofia_image_pipeline [-h] -c CATALOG [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH ] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS [SURVEYS ...]]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]
+usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS ...]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]
 sofia_image_pipeline: error: the following arguments are required: -c/--catalog
 ```
 
@@ -63,15 +72,6 @@ To get help on the parameters:
 sofia_image_pipeline -h
 ```
 
-### Docker
-
-We provide a Docker image for use in containerised applications. This image can be found [here](https://hub.docker.com/r/sofiapipeline/image_pipeline).
-To use the latest official Docker image:
-
-```
-docker run -it -v <cwd>/<folder>:/app/<folder> sofiapipeline/image_pipeline:latest -c <folder>/<catalog.xml>
-```
-
 ### Options
 
 ```
@@ -79,6 +79,7 @@ REQUIRED:
     -c     Catalog file. Can be the ascii file ending in .txt or the XML file from SoFiA-2.
     
 OPTIONAL:
+    -id    Select certain sources from catalog based on the source id number. Default is all sources.
     -x     Output image file type. Any file type accepted by plt.savefig() is in theory valid.  Default is 'png'.
     -o     Path to the original data file on which source finding was conducted. This allows the spectrum with noise to be plotted over the full spectral range of the original cube.  
     -b     Synthesized beam dimensions. If the primary header of the FITS files do not contain the beam information, this can be provided by the user. Accepts 1 to 3 values in order (bmaj, bmin, bpa).
@@ -120,7 +121,9 @@ The current version of this repo also has a test data set (without instructions)
 
 Advanced tips
 --------
-* If you have a large catalog of sources, start by testing SIP with just a small subset (copy the catalog with the full SoFiA header formatting, but keeping only the first couple sources.)  Make sure the image and text outputs from SIP for those sources are as you expect.  Adjust optional variables as necessary.  Run on your larger catalog.
+* Some troubleshooting is available on the [wiki](https://github.com/kmhess/SoFiA-image-pipeline/wiki).
+
+* If you have a large catalog of sources, start by testing SIP with the `-id N` option, where `N` is a source id number.  Make sure the image and text outputs from SIP for that source are as you expect.  Adjust optional variables as necessary.  Run on your larger catalog.
 
 * In addition to overlaying HI contours on survey images available through `astroquery`, a user can request false color images from `'decals'`, or `'panstarrs'`, or gray scale HST-ACS Mosaic images for sources within the COSMOS field with `'hst'`.  The HST image size is currently hardcoded to 40 arcsec on a side. 
 
