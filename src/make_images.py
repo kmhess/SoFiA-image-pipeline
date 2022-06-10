@@ -4,6 +4,7 @@ from astropy.nddata import Cutout2D
 from astropy import constants as const
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
+from astropy.time import Time
 from astropy import units as u
 import astropy.wcs
 from astropy.wcs import WCS
@@ -45,7 +46,7 @@ def get_wcs_info(src_basename, source_id):
     else:
         hiwcs = cubew
 
-    return hiwcs
+    return hiwcs, cubew
 
 # Overlay HI contours on user image
 
@@ -86,21 +87,21 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
 
-        hiwcs = get_wcs_info(src_basename, str(source['id']))
+        hiwcs, cubew = get_wcs_info(src_basename, str(source['id']))
 
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=hiwcs)
+        ax1 = fig.add_subplot(111, projection=opt.wcs)
         plot_labels(source, ax1)
         ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data[~np.isnan(opt.data)], perc[0]),
-                   vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]), transform=ax1.get_transform(opt.wcs))
+                   vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]))
         # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
-                    transform=ax1.get_transform(hiwcs))
+                    transform=ax1.get_transform(cubew))
         # Plot negative contours
         if np.nanmin(hdulist_hi[0].data) < -base_contour:
             ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
                         levels=-base_contour * 2 ** np.arange(10, -1, -1),
-                        transform=ax1.get_transform(hiwcs))
+                        transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -115,11 +116,14 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
             xh = oshape[1]
             yh = oshape[0]
 
-        Wlims = (opt.wcs).wcs_pix2world([[xh, 0], [0, yh]], 0)
-        lims = hiwcs.wcs_world2pix(Wlims, 0)
+        # Wlims = (opt.wcs).wcs_pix2world([[xh, 0], [0, yh]], 0)
+        # lims = hiwcs.wcs_world2pix(Wlims, 0)
 
-        ax1.set_ylim(lims[0,1], lims[1,1])
-        ax1.set_xlim(lims[0,0], lims[1,0])
+        # ax1.set_ylim(lims[0,1], lims[1,1])
+        # ax1.set_xlim(lims[0,0], lims[1,0])
+        ax1.set_xlim(xh,0)
+        ax1.set_ylim(0, yh)
+
         if swapx:
             ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
@@ -165,7 +169,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
-        hiwcs = get_wcs_info(src_basename, str(source['id']))
+        hiwcs, cubew = get_wcs_info(src_basename, str(source['id']))
 
         owcs = WCS(opt[0].header)
 
@@ -183,12 +187,12 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
                        vmax=np.percentile(opt[0].data, 99.8), origin='lower')
         # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
-                    transform=ax1.get_transform(hiwcs))
+                    transform=ax1.get_transform(cubew))
         # Plot negative contours
         if np.nanmin(hdulist_hi[0].data) < -base_contour:
             ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
                         levels=-base_contour * 2 ** np.arange(10, -1, -1),
-                        transform=ax1.get_transform(hiwcs))
+                        transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
@@ -237,21 +241,22 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
             return
 
         mom0 = hdulist_hi[0].data
-        hiwcs = get_wcs_info(src_basename, str(source['id']))
+        hiwcs, cubew  = get_wcs_info(src_basename, str(source['id']))
+        owcs = WCS(opt_head)
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=hiwcs)
+        ax1 = fig.add_subplot(111, projection=owcs)
         plot_labels(source, ax1, x_color='white')
-        im = ax1.imshow(mom0, cmap='gray_r', origin='lower', transform=ax1.get_transform(hiwcs))
+        im = ax1.imshow(mom0, cmap='gray_r', origin='lower', transform=ax1.get_transform(cubew))
         ax1.set(facecolor="white")  # Doesn't work with the color im
         # Plot positive contours
-        ax1.contour(mom0, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10), transform=ax1.get_transform(hiwcs))
+        ax1.contour(mom0, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10), transform=ax1.get_transform(cubew))
         # Plot negative contours
         if np.nanmin(mom0) < -base_contour:
             ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
-                        levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(hiwcs))
+                        levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
@@ -259,15 +264,17 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=18)
 
-        owcs = WCS(opt_head)
-        Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        lims = hiwcs.wcs_world2pix(Wlims, 0)
+        # owcs = WCS(opt_head)
+        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
+        # lims = hiwcs.wcs_world2pix(Wlims, 0)
 
-        ax1.set_ylim(lims[0,1], lims[1,1])
-        ax1.set_xlim(lims[0,0], lims[1,0])
+        # ax1.set_ylim(lims[0,1], lims[1,1])
+        # ax1.set_xlim(lims[0,0], lims[1,0])
+        ax1.set_xlim(0, opt_head['NAXIS1'])
+        ax1.set_ylim(0, opt_head['NAXIS2'])
 
-#         if swapx:
-#             ax1.set_xlim(ax1.get_xlim()[::-1])
+        if swapx:
+            ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         hdulist_hi.close()
@@ -311,10 +318,11 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
 
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
 
-        hiwcs = get_wcs_info(src_basename, str(source['id']))
+        hiwcs, cubew  = get_wcs_info(src_basename, str(source['id']))
 
         mom0 = hdulist_hi[0].data
         snr = hdulist_snr[0].data
+        owcs = WCS(opt_head)
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
@@ -322,11 +330,12 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
         boundaries = [0, 1, 2, 3, 4, 5, 6]
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=hiwcs)
+        ax1 = fig.add_subplot(111, projection=owcs)
+        # ax1 = fig.add_subplot(111, projection=hiwcs)
         plot_labels(source, ax1)
         ax1.set(facecolor="white")  # Doesn't work with the color im
-        im = ax1.imshow(snr, cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(hiwcs))
-        ax1.contour(mom0, linewidths=2, levels=[base_contour, ], colors=['k', ], transform=ax1.get_transform(hiwcs))
+        im = ax1.imshow(snr, cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(cubew))
+        ax1.contour(mom0, linewidths=2, levels=[base_contour, ], colors=['k', ], transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
@@ -336,11 +345,13 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
 
         # Debugging grid
         # ax1.grid(True, ls=':', lw=0.8, color='gray')
-        owcs = WCS(opt_head)
-        Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        lims = hiwcs.wcs_world2pix(Wlims, 0)
-        ax1.set_ylim(lims[0,1], lims[1,1])
-        ax1.set_xlim(lims[0,0], lims[1,0])
+        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
+        # lims = hiwcs.wcs_world2pix(Wlims, 0)
+        # ax1.set_ylim(lims[0,1], lims[1,1])
+        # ax1.set_xlim(lims[0,0], lims[1,0])
+
+        ax1.set_xlim(0, opt_head['NAXIS1'])
+        ax1.set_ylim(0, opt_head['NAXIS2'])
 
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
@@ -426,23 +437,24 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         else:
             singlechansource = False
 
-        hiwcs = get_wcs_info(src_basename, str(source['id']))
+        hiwcs, cubew  = get_wcs_info(src_basename, str(source['id']))
         mom1_d = mom1[0].data
         # Only plot values above the lowest calculated HI value:
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         mom0 = hdulist_hi[0].data
         mom1_d[mom0 < base_contour] = np.nan
+        owcs = WCS(opt_head)
 
         hi_pos = SkyCoord(source['pos_x'], source['pos_y'], unit='deg')
         kinpa = source['kin_pa'] * u.deg
 
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=hiwcs)
+        ax1 = fig.add_subplot(111, projection=owcs)
         plot_labels(source, ax1)
         if not singlechansource:
-            im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(hiwcs))
+            im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(cubew))
         else:
-            im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(hiwcs),
+            im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(cubew),
                             vmin=0.999*np.nanmin(mom1_d), vmax=1.001*np.nanmax(mom1_d))
         vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
         for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
@@ -452,13 +464,13 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=0.6, transform=ax1.get_transform(hiwcs))
+            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=0.6, transform=ax1.get_transform(cubew))
         v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
         # Plot kin_pa from HI center of galaxy
         ax1.annotate("", xy=((hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                             (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg), xycoords=ax1.get_transform('world'),
+                             (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg), xycoords=ax1.get_transform("world"),
                      xytext=((hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,
-                             (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg), textcoords=ax1.get_transform('world'),
+                             (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg), textcoords=ax1.get_transform("world"),
                      arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                      linestyle='--'))
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
@@ -475,11 +487,15 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
 
         # Debugging grid
         # ax1.grid(True, ls=':', lw=0.8, color='gray')
-        owcs = WCS(opt_head)
-        Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        lims = hiwcs.wcs_world2pix(Wlims, 0)
-        ax1.set_ylim(lims[0,1], lims[1,1])
-        ax1.set_xlim(lims[0,0], lims[1,0])
+
+        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
+        # lims = hiwcs.wcs_world2pix(Wlims, 0)
+        # ax1.set_ylim(lims[0,1], lims[1,1])
+        # ax1.set_xlim(lims[0,0], lims[1,0])
+
+        ax1.set_xlim(0, opt_head['NAXIS1'])
+        ax1.set_ylim(0, opt_head['NAXIS2'])
+
 
 #         if swapx:
 #             ax1.set_xlim(ax1.get_xlim()[::-1])
@@ -527,7 +543,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         print("\tMaking HI contour overlay on {} image.".format(survey))
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
 
-        hiwcs = get_wcs_info(src_basename, str(source['id']))
+        hiwcs, cubew  = get_wcs_info(src_basename, str(source['id']))
         mom0 = hdulist_hi[0].data
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
@@ -535,20 +551,23 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
         owcs = WCS(opt_head)
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=hiwcs)
+        ax1 = fig.add_subplot(111, projection=owcs)
         # ax1.set_facecolor("darkgray")   # Doesn't work with the color im
-        ax1.imshow(color_im, origin='lower', transform=ax1.get_transform(owcs))
+        ax1.imshow(color_im, origin='lower')
         plot_labels(source, ax1, x_color='white')
-        ax1.contour(mom0, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10), transform=ax1.get_transform(hiwcs))
+        ax1.contour(mom0, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10), transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='lightgray', linewidth=1))
 
-        Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        lims = hiwcs.wcs_world2pix(Wlims, 0)
-        ax1.set_ylim(lims[0,1], lims[1,1])
-        ax1.set_xlim(lims[0,0], lims[1,0])
+        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
+        # lims = hiwcs.wcs_world2pix(Wlims, 0)
+        # ax1.set_ylim(lims[0,1], lims[1,1])
+        # ax1.set_xlim(lims[0,0], lims[1,0])
+
+        ax1.set_xlim(0, opt_head['NAXIS1'])
+        ax1.set_ylim(0, opt_head['NAXIS2'])
 
         fig.savefig(outfile, bbox_inches='tight')
     else:
