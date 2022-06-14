@@ -133,7 +133,7 @@ def get_wise(hi_pos, opt_view=6*u.arcmin, survey='WISE W1'):
     params['coaddgrp'] = tab['coadd_id'][0][:2]
     params['coadd_ra'] = tab['coadd_id'][0][:4]
     params['band'] = int(survey[-1])
-    params['size'] = str(opt_view.value) + str(opt_view.unit)
+    params['size'] = str(opt_view[0].value) + ',' + str(opt_view[-1].value) + str(opt_view[0].unit)
 
     path = str.format("/{coaddgrp:s}/{coadd_ra:s}/{coadd_id:s}/{coadd_id:s}-w{band:1d}-int-3.fits?"
                       "center={POS:s}&size={size:s}", **params)
