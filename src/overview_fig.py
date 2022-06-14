@@ -87,14 +87,17 @@ if 'decals' in surveys:
 if len(surveys) > 0:
     for survey in surveys:
         if not os.path.isfile(outname + survey + '.fits'):
-            try:
-                overlay_image = get_skyview(hi_pos, opt_view=opt_view, survey=survey)
-            except ValueError:
-                print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
-                      "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
-                      "surveys.".format(survey))
-            except HTTPError:
-                print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
+            if ('wise' in survey) or ('WISE' in survey):
+                overlay_image = get_wise(hi_pos, opt_view=opt_view, survey=survey)
+            else:
+                try:
+                    overlay_image = get_skyview(hi_pos, opt_view=opt_view, survey=survey)
+                except ValueError:
+                    print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
+                          "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
+                          "surveys.".format(survey))
+                except HTTPError:
+                    print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
             overlay_image.writeto(outname + survey.replace(' ', '_') + '.fits')
             survey_string += ' {}'.format(survey)
         else:
