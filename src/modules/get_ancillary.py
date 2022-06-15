@@ -3,7 +3,7 @@ from PIL import Image
 from io import BytesIO
 from urllib.error import HTTPError
 
-from astropy.io import fits
+from astropy.io import ascii, fits
 from astropy import units as u
 from astropy.wcs import WCS
 from astroquery.skyview import SkyView
@@ -105,3 +105,42 @@ def get_decals(hi_pos, opt_view=6*u.arcmin):
         color_im = None
 
     return color_im, fits_head
+
+
+def get_wise(hi_pos, opt_view=6*u.arcmin, survey='WISE W1'):
+    """Retrieve a WISE image from a certain pointing.
+
+    :param hi_pos: position in the HI data
+    :type hi_pos: astropy SkyCoord object
+    :param opt_view: size of the optical image, defaults to 6*u.arcmin
+    :type opt_view: astropy.units.arcmin, optional
+    :param survey: survey containing WISE data, defaults to 'WISE W1'
+    :type survey: str, optional
+    :return: optical image
+    :rtype: astropy HDUList
+    """
+
+    # IRSA query only accepts things in J2000/ICRS, so:
+    # Note 2MASS is available through astroquery! get_irsa --> get_wise
+    hi_pos = hi_pos.transform_to('icrs')
+    params = {'POS': '{},{}'.format(hi_pos.ra.deg, hi_pos.dec.deg)}
+
+    api_endpoint = "https://irsa.ipac.caltech.edu/ibe/search/wise/allwise/p3am_cdd"
+    r = requests.get(url=api_endpoint, params=params)
+    tab = ascii.read(r.content.decode(), header_start=44, data_start=48, format='fixed_width')
+
+    params['coadd_id'] = tab['coadd_id'][0]
+    params['coaddgrp'] = tab['coadd_id'][0][:2]
+    params['coadd_ra'] = tab['coadd_id'][0][:4]
+    params['band'] = int(survey[-1])
+    params['size'] = str(opt_view[0].value) + ',' + str(opt_view[-1].value) + str(opt_view[0].unit)
+
+    path = str.format("/{coaddgrp:s}/{coadd_ra:s}/{coadd_id:s}/{coadd_id:s}-w{band:1d}-int-3.fits?"
+                      "center={POS:s}&size={size:s}", **params)
+
+    try:
+        result = fits.open(api_endpoint.replace('search', 'data') + path)
+    except:
+        result = None
+
+    return result
