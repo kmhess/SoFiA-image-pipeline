@@ -15,7 +15,7 @@ setup(
         "astropy == 5.0.1",
         "astroquery == 0.4.5",
         "matplotlib == 3.4.1",
-        "numpy == 1.21.0",
+        "numpy == 1.22.0",
         "Pillow == 9.1.1",
         "pvextractor == 0.2",
         "reproject == 0.7.1",
