@@ -137,8 +137,8 @@ SkyView.survey_dict
 
 * Downloading survey images from `astroquery.SkyView` or other online sources is the greatest limiting factor in the speed of SIP.  To avoid this, for catalogs with a high source density, you may consider downloading one large image to disk before running SIP.  For this purpose, we have included `overview_fig.py`. For example:
 ```
-python3 src/overview_fig.py -h
-python3 src/overview_fig.py -ra 174.465 -dec 21.9743 -i 0.5 -s 'Survey Name' -o my_image
+python3 src/download_usr_fig.py -h
+python3 src/download_usr_fig.py -ra 174.465 -dec 21.9743 -i 0.5 -s 'Survey Name' -o my_image
 sofia_image_pipeline -c <path/to/catalog.xml> -ui <my_image_SurveyName.fits>
 ```
 
