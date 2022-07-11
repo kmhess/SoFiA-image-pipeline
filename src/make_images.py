@@ -30,9 +30,15 @@ optical_HI = u.doppler_optical(HI_restfreq)
 ###################################################################
 
 
-## get uniform wcs object
-def get_wcs_info(src_basename, source_id):
-    cubeh = fits.getheader(src_basename + '_{}_cube.fits'.format(source_id))
+## Get uniform wcs object
+def get_wcs_info(fits_name):
+    """
+
+    :param fits_name: basename for the source for data files
+    :type fits_name: str
+    :return:
+    """
+    cubeh = fits.getheader(fits_name)
     cubew = WCS(cubeh).sub(2)
 
     if cubew.wcs.equinox != 2000.0:
@@ -87,7 +93,17 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
 
-        hiwcs, cubew = get_wcs_info(src_basename, str(source['id']))
+        try:
+            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+        except FileNotFoundError:
+            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+            print("\tWARNING: No cubelet to match source {}."
+                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
+            try:
+                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+            except FileNotFoundError:
+                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+                exit()
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=opt.wcs)
@@ -169,7 +185,17 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
-        hiwcs, cubew = get_wcs_info(src_basename, str(source['id']))
+        try:
+            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+        except FileNotFoundError:
+            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+            print("\tWARNING: No cubelet to match source {}."
+                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
+            try:
+                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+            except FileNotFoundError:
+                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+                exit()
 
         owcs = WCS(opt[0].header)
 
@@ -241,7 +267,18 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
             return
 
         mom0 = hdulist_hi[0].data
-        hiwcs, cubew  = get_wcs_info(src_basename, str(source['id']))
+        try:
+            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+        except FileNotFoundError:
+            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+            print("\tWARNING: No cubelet to match source {}."
+                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
+            try:
+                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+            except FileNotFoundError:
+                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+                exit()
+
         owcs = WCS(opt_head)
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
@@ -318,7 +355,17 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
 
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
 
-        hiwcs, cubew  = get_wcs_info(src_basename, str(source['id']))
+        try:
+            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+        except FileNotFoundError:
+            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+            print("\tWARNING: No cubelet to match source {}."
+                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
+            try:
+                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+            except FileNotFoundError:
+                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+                exit()
 
         mom0 = hdulist_hi[0].data
         snr = hdulist_snr[0].data
@@ -437,7 +484,18 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         else:
             singlechansource = False
 
-        hiwcs, cubew  = get_wcs_info(src_basename, str(source['id']))
+        try:
+            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+        except FileNotFoundError:
+            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+            print("\tWARNING: No cubelet to match source {}."
+                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
+            try:
+                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+            except FileNotFoundError:
+                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+                exit()
+
         mom1_d = mom1[0].data
         # Only plot values above the lowest calculated HI value:
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
@@ -551,7 +609,18 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         print("\tMaking HI contour overlay on {} image.".format(survey))
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
 
-        hiwcs, cubew  = get_wcs_info(src_basename, str(source['id']))
+        try:
+            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+        except FileNotFoundError:
+            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+            print("\tWARNING: No cubelet to match source {}."
+                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
+            try:
+                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+            except FileNotFoundError:
+                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+                exit()
+
         mom0 = hdulist_hi[0].data
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
@@ -894,17 +963,17 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                     except:
                         print("\t\tSecond attempt failed. Either survey doesn't cover this area, or server failed."
                               " Try again later?")
-                except:
-                    print("\tERROR: general error attempting return image from SkyView query for {} survey. Trying with"
-                          " cache=False.".format(survey))
-                    try:
-                        overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
-                        make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, swapx,
-                                     suffix=suffix, survey=survey)
-                        if surveys[0] == survey:
-                            opt_head = overlay_image[0].header
-                    except:
-                        print("\t\tSecond attempt failed. Try again later?")
+                # except:
+                #     print("\tERROR: general error attempting return image from SkyView query for {} survey. Trying with"
+                #           " cache=False.".format(survey))
+                #     try:
+                #         overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
+                #         make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, swapx,
+                #                      suffix=suffix, survey=survey)
+                #         if surveys[0] == survey:
+                #             opt_head = overlay_image[0].header
+                #     except:
+                #         print("\t\tSecond attempt failed. Try again later?")
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
