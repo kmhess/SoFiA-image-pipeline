@@ -16,7 +16,6 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
 
     # Specify the command to use imagemagick's convert (karma has a convert which may conflict)
     # convert_im = "/usr/local/Cellar/imagemagick/7.1.0-13/bin/convert"
-    convert_im = "convert"
 
     # Configure expected file name:
     infile = src_basename.replace('cubelets', 'figures') + '_{}_'.format(source['id'])
@@ -27,9 +26,12 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     if user_image and os.path.exists('{0}mom0_usr.{1}'.format(infile, suffix)):
         os.system("{0} {1}mom0_usr.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
                   " +append temp.{2}".format(imgck, infile, suffix))
-    else:
+    elif surveys:
         os.system("{0} {1}mom0_{3}.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
                   " +append temp.{2}".format(imgck, infile, suffix, surveys[0].replace(" ", "").lower()))
+    else:
+        print("\tWARNING: No ancillary data image available for source {}.".format(source['id']))
+        os.system("{0} {1}mom0.{2} {1}snr.{2} {1}mom1.{2} +append temp.{2}".format(imgck, infile, suffix))
     os.system("{0} {1}spec.{2} -resize 125% temp2.{2}".format(imgck, infile, suffix))
     os.system("{0} {1}specfull.{2} -resize 125% temp3.{2}".format(imgck, infile, suffix))
     os.system("{0} temp2.{2} temp3.{2} {1}pv.{2} +append temp4.{2}".format(imgck, infile, suffix))
