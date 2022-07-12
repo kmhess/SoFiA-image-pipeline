@@ -16,9 +16,10 @@ setup(
         "astroquery == 0.4.5",
         "matplotlib == 3.4.1",
         "numpy == 1.22.0",
-        "Pillow == 9.1.1",
+        "Pillow == 9.2.0",
         "pvextractor == 0.2",
         "reproject == 0.7.1",
+        "setuptools==62.3.2",
         "requests == 2.25.1",
         "sphinx_rtd_theme == 1.0.0",
         "xmltodict == 0.12.0"
@@ -29,6 +30,7 @@ setup(
     entry_points={
         'console_scripts': [
             'sofia_image_pipeline=src.image_pipeline:main',
+            'download_usr_fig=src.download_usr_fig:main'
         ],
     },
 )
