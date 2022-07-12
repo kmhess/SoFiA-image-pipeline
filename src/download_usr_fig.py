@@ -89,23 +89,28 @@ def main():
     # If requested retrieve any number of survey images available through SkyView.
     if len(surveys) > 0:
         for survey in surveys:
-            if not os.path.isfile(outname + survey + '.fits'):
+            outfile = outname + survey.replace(' ', '_') + '.fits'
+            if not os.path.isfile(outfile):
                 if ('wise' in survey) or ('WISE' in survey):
                     overlay_image = get_wise(hi_pos, opt_view=opt_view, survey=survey)
                 else:
                     try:
                         overlay_image = get_skyview(hi_pos, opt_view=opt_view, survey=survey)
+                    # THESE EXCEPTS MAY BE UNNECESSARY/PREEMPTED BY GET_SKYVIEW AT TIMES.
                     except ValueError:
-                        print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized "
+                        print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized"
                               " by astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery"
                               " for valid surveys.".format(survey))
+                        overlay_image = None
                     except HTTPError:
                         print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
-                overlay_image.writeto(outname + survey.replace(' ', '_') + '.fits')
-                survey_string += ' {}'.format(survey)
+                        overlay_image = None
+                if overlay_image:
+                    overlay_image.writeto(outname + survey.replace(' ', '_') + '.fits', overwrite=True)
+                    survey_string += ' {}'.format(survey)
             else:
-                print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
-                      " with `-o` flag. Continuing to next requested survey".format(outname + survey + '.fits'))
+                print("\tWARNING: {} already exists; will not overwrite. Choose a different outname prefix"
+                      " with `-o` flag. Continuing to next requested survey.".format(outfile))
 
     if len(survey_string) > 0:
         print("\n\tDONE! Saved survey images to disk for{}.".format(survey_string))
