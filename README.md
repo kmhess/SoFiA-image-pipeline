@@ -135,10 +135,10 @@ SkyView.survey_dict
 
 * In addition to overlaying HI contours on survey images available through `astroquery`, a user can request WISE images (`'WISE W#'` where `#` is the band number); false color images from `'decals'`, or `'panstarrs'`; or gray scale HST-ACS Mosaic images for sources within the COSMOS field with `'hst'`.  The HST image size is currently hardcoded to 40 arcsec on a side. 
 
-* Downloading survey images from `astroquery.SkyView` or other online sources is the greatest limiting factor in the speed of SIP.  To avoid this, for catalogs with a high source density, you may consider downloading one large image to disk before running SIP.  For this purpose, we have included `overview_fig.py`. For example:
+* Downloading survey images from `astroquery.SkyView` or other online sources is the greatest limiting factor in the speed of SIP.  To avoid this, for catalogs with a high source density, you may consider downloading one large image to disk before running SIP.  For this purpose, we have included the command line tool `download_usr_fig`. For example:
 ```
-python3 src/download_usr_fig.py -h
-python3 src/download_usr_fig.py -ra 174.465 -dec 21.9743 -i 0.5 -s 'Survey Name' -o my_image
+download_usr_fig -h
+download_usr_fig -ra 174.465 -dec 21.9743 -i 0.5 -s 'Survey Name' -o my_image
 sofia_image_pipeline -c <path/to/catalog.xml> -ui <my_image_SurveyName.fits>
 ```
 
@@ -166,7 +166,7 @@ See the github repo for known bugs and desired enhancements.  We aim to fix seri
 
 In addition we are aware of the following issues:
 * Saving figures with .ps or .eps format has issues with transparency and background colors appearing black.
-* `overview_fig.py` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `image_pipeline.py`.
+* `download_usr_fig` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `sofia_image_pipeline`.
 * WISE images, PanSTARRS and DECaLS cannot (yet) be plotted with Galactic coordinates.
 * The mask (red line) on pv-diagram plots may not be perfectly aligned from left-to-right.  Please use this line only as a rough indication of the mask position.  Refer to actual data for the truth.  Any suggestions for how to improve this are welcome.
 * For data with channels that are not uniform in width (e.g. `SPECSYS = FELO-OPT`), SIP's conversion to km/s is off compared to SoFiA-2's: the programs use formula from [here](https://www.astro.rug.nl/software/kapteyn/spectralbackground.html#aips-axis-type-felo) or use wcslib to do the conversion, respectively.  We haven't tracked down the discrepancy.  To the best of our knowledge, only relatively old radio data observing nearby galaxies, might be in this `FELO` format. 
