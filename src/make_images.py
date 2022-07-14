@@ -26,6 +26,8 @@ from src.modules.get_hst_cosmos import get_hst_cosmos
 HI_restfreq = 1420405751.77 * u.Hz
 optical_HI = u.doppler_optical(HI_restfreq)
 
+# https://stackoverflow.com/questions/25705773/image-cropping-tool-python
+Image.MAX_IMAGE_PIXELS = None
 
 ###################################################################
 
@@ -54,9 +56,8 @@ def get_wcs_info(fits_name):
 
     return hiwcs, cubew
 
+
 # Overlay HI contours on user image
-
-
 def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png', color_im=False):
     """Overlay HI contours on top of a user provided image
 
@@ -155,7 +156,6 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
 
 # Overlay HI contours on another image
-
 def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, swapx, suffix='png', survey='DSS2 Blue'):
     """Overlay HI contours on top of an optical image
 
@@ -315,7 +315,6 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         fig.savefig(outfile, bbox_inches='tight')
 
         hdulist_hi.close()
-
 
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -841,7 +840,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # I leave this for later.
     if user_image:
         print("\tLoading usr image {0:s}".format(user_image))
-        if (user_image[-4:] == '.jpg') | (user_image[-4:] == '.png'):
+        if (user_image[-4:] == '.jpg') or (user_image[-4:] == '.png'):
             usrim_d = Image.open(user_image)
             usrim_h = fits.getheader(user_image[:-4] + '_hdr.fits')
             color_im = True
@@ -868,17 +867,21 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
         print('\tExtracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
-            if user_image[-4:] == '.jpg' | (user_image[-4:] == '.png'):
+            if user_image[-4:] == '.jpg' or (user_image[-4:] == '.png'):
                 # Split off individual color channels, take subset and recombine.
                 r, g, b = usrim_d.split()
-                usrim_cut = Cutout2D(r, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs, mode='partial')
-                usrim_cut_g = Cutout2D(g, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs, mode='partial')
-                usrim_cut_b = Cutout2D(b, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs, mode='partial')
-                usrim_cut_rgb = Image.merge("RGB", (Image.fromarray(usrim_cut.data), Image.fromarray(usrim_cut_g.data), Image.fromarray(usrim_cut_b.data)))
+                usrim_cut = Cutout2D(r, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+                                     wcs=usrim_wcs, mode='partial', fill_value=0)
+                usrim_cut_g = Cutout2D(g, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+                                       wcs=usrim_wcs, mode='partial', fill_value=0)
+                usrim_cut_b = Cutout2D(b, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+                                       wcs=usrim_wcs, mode='partial', fill_value=0)
+                usrim_cut_rgb = Image.merge("RGB", (Image.fromarray(usrim_cut.data), Image.fromarray(usrim_cut_g.data),
+                                                    Image.fromarray(usrim_cut_b.data)))
                 usrim_cut.data = usrim_cut_rgb
-                print(usrim_cut.wcs)
             else:
                 usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs, mode='partial')
+
             make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png', color_im=color_im)
             opt_head = usrim_cut.wcs.to_header()
             # wcs.to_header() seems to have a bug where it doesn't include the axis information.
