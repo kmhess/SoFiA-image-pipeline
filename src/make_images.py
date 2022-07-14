@@ -171,6 +171,8 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
     :type opt: dict
     :param base_contour: base contour
     :type base_contour: float
+    :param swapx: invert the x-axis if cdelt is negative
+    :type swapx: bool
     :param suffix: file type, defaults to 'png'
     :type suffix: str, optional
     :param survey: survey from which to use data, defaults to 'DSS2 Blue'
@@ -241,7 +243,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
 
 
 # Make HI grey scale image
-def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png'):
+def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, swapx, suffix='png'):
     """Overlay HI contours on the HI gray scale image.
 
     :param source: source object
@@ -305,12 +307,6 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=18)
 
-        # owcs = WCS(opt_head)
-        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
@@ -328,7 +324,7 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
 
 
 # Make HI significance image
-def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png'):
+def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, swapx, suffix='png'):
     """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
     :param source: source object
@@ -394,13 +390,6 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Pixel SNR", fontsize=18)
 
-        # Debugging grid
-        # ax1.grid(True, ls=':', lw=0.8, color='gray')
-        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
-
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
@@ -414,7 +403,7 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
 
 
 # Make velocity map for object
-def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png', sofia=2):
+def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png', sofia=2):
     """
 
     :param source: source object
@@ -563,20 +552,9 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
             cbar.add_lines(cf)
         cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
-        # Debugging grid
-        # ax1.grid(True, ls=':', lw=0.8, color='gray')
-
-        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
-
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
-
-#         if swapx:
-#             ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         mom1.close()
@@ -649,11 +627,6 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='lightgray', linewidth=1))
-
-        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -1006,11 +979,11 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
-        make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
-        make_snr(source,  hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
-        make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix, sofia=2)
+        make_mom0(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
+        make_snr(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
+        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix, sofia=2)
 
-    # Make pv if it was created (only in SoFiA-1); not dependent on having a survey image to regrid to.
+    # Make pv if it was created; not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, opt_view=opt_view, suffix=suffix)
 
     plt.close('all')
