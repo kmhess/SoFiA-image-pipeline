@@ -39,7 +39,7 @@ def get_wcs_info(fits_name):
     :return:
     """
     cubeh = fits.getheader(fits_name)
-    cubew = WCS(cubeh).sub(2)
+    cubew = WCS(cubeh, fix=True, translate_units='shd').sub(2)
 
     if cubew.wcs.equinox != 2000.0:
         sky = cubew.sub(2).pixel_to_world(cubew.wcs.crpix[0], cubew.wcs.crpix[1])
