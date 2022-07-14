@@ -229,7 +229,6 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
 
-
         if swapx:
             ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
@@ -310,8 +309,8 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
-        if swapx:
-            ax1.set_xlim(ax1.get_xlim()[::-1])
+        # if swapx:
+        #     ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         hdulist_hi.close()
@@ -857,7 +856,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             print("\tCould not determine pixel size of user image. Aborting.")
             exit()
 
-        if (usrim_pix_x > 0) & (not color_im):
+        if (usrim_pix_x > 0.0):
             swapx = True
         else:
             swapx = False
@@ -880,8 +879,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                                                     Image.fromarray(usrim_cut_b.data)))
                 usrim_cut.data = usrim_cut_rgb
             else:
-                usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs, mode='partial')
-
+                usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+                                     wcs=usrim_wcs, mode='partial')
             make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png', color_im=color_im)
             opt_head = usrim_cut.wcs.to_header()
             # wcs.to_header() seems to have a bug where it doesn't include the axis information.
@@ -982,8 +981,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
-        make_mom0(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
-        make_snr(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
+        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, swapx, suffix=suffix)
+        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, swapx, suffix=suffix)
         make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix, sofia=2)
 
     # Make pv if it was created; not dependent on having a survey image to regrid to.
