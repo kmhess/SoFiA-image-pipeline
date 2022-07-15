@@ -26,6 +26,8 @@ from src.modules.get_hst_cosmos import get_hst_cosmos
 HI_restfreq = 1420405751.77 * u.Hz
 optical_HI = u.doppler_optical(HI_restfreq)
 
+# https://stackoverflow.com/questions/25705773/image-cropping-tool-python
+Image.MAX_IMAGE_PIXELS = None
 
 ###################################################################
 
@@ -54,10 +56,9 @@ def get_wcs_info(fits_name):
 
     return hiwcs, cubew
 
+
 # Overlay HI contours on user image
-
-
-def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
+def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png', color_im=False):
     """Overlay HI contours on top of a user provided image
 
     :param source: source object
@@ -78,6 +79,8 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
     :type perc: list, float
     :param suffix: file type, defaults to 'png'
     :type suffix: str, optional
+    :param color_im: flag if user input is a color image
+    :type color_im: bool
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
@@ -105,11 +108,21 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
 
+        owcs = opt.wcs
         fig = plt.figure(figsize=(8, 8))
-        ax1 = fig.add_subplot(111, projection=opt.wcs)
-        plot_labels(source, ax1)
-        ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data[~np.isnan(opt.data)], perc[0]),
-                   vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]))
+        ax1 = fig.add_subplot(111, projection=owcs)
+
+        # Plot background image in color, or not:
+        if color_im:
+            ax1.imshow(opt.data, origin='lower')
+            plot_labels(source, ax1, x_color='white')
+            # oshape = opt.data.size
+        else:
+            ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data[~np.isnan(opt.data)], perc[0]),
+                       vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]))
+            plot_labels(source, ax1)
+            # oshape = opt.data.shape
+
         # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(cubew))
@@ -121,24 +134,17 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
-                              transform=ax1.transAxes, edgecolor='white', linewidth=1))        
-
-        oshape = opt.data.shape
-        
-        if len(oshape) > 2:
-            xh = oshape[2]
-            yh = oshape[1]
-        else:
-            xh = oshape[1]
-            yh = oshape[0]
-
-        # Wlims = (opt.wcs).wcs_pix2world([[xh, 0], [0, yh]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
-        ax1.set_xlim(xh,0)
-        ax1.set_ylim(0, yh)
+                              transform=ax1.transAxes, edgecolor='white', linewidth=1))
+        # Conflicting with swapx???
+        # if len(oshape) > 2:
+        #     xh = oshape[2]
+        #     yh = oshape[1]
+        # else:
+        #     xh = oshape[1]
+        #     yh = oshape[0]
+        #
+        # ax1.set_xlim(xh, 0)
+        # ax1.set_ylim(0, yh)
 
         if swapx:
             ax1.set_xlim(ax1.get_xlim()[::-1])
@@ -151,7 +157,6 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
 
 # Overlay HI contours on another image
-
 def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, swapx, suffix='png', survey='DSS2 Blue'):
     """Overlay HI contours on top of an optical image
 
@@ -167,6 +172,8 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
     :type opt: dict
     :param base_contour: base contour
     :type base_contour: float
+    :param swapx: invert the x-axis if cdelt is negative
+    :type swapx: bool
     :param suffix: file type, defaults to 'png'
     :type suffix: str, optional
     :param survey: survey from which to use data, defaults to 'DSS2 Blue'
@@ -223,7 +230,6 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
 
-
         if swapx:
             ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
@@ -237,7 +243,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
 
 
 # Make HI grey scale image
-def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png'):
+def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
     """Overlay HI contours on the HI gray scale image.
 
     :param source: source object
@@ -301,21 +307,12 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=18)
 
-        # owcs = WCS(opt_head)
-        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
-        if swapx:
-            ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         hdulist_hi.close()
-
 
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -324,7 +321,7 @@ def make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
 
 
 # Make HI significance image
-def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png'):
+def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
     """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
     :param source: source object
@@ -390,13 +387,6 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Pixel SNR", fontsize=18)
 
-        # Debugging grid
-        # ax1.grid(True, ls=':', lw=0.8, color='gray')
-        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
-
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
@@ -410,7 +400,7 @@ def make_snr(source, hi_pos_common, src_basename, cube_params, patch, opt_head, 
 
 
 # Make velocity map for object
-def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png', sofia=2):
+def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base_contour, suffix='png', sofia=2):
     """
 
     :param source: source object
@@ -559,20 +549,9 @@ def make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head,
             cbar.add_lines(cf)
         cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
 
-        # Debugging grid
-        # ax1.grid(True, ls=':', lw=0.8, color='gray')
-
-        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
-
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
-
-#         if swapx:
-#             ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         mom1.close()
@@ -645,11 +624,6 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='lightgray', linewidth=1))
-
-        # Wlims = owcs.wcs_pix2world([[0, 0], [opt_head['NAXIS1'], opt_head['NAXIS2']]], 0)
-        # lims = hiwcs.wcs_world2pix(Wlims, 0)
-        # ax1.set_ylim(lims[0,1], lims[1,1])
-        # ax1.set_xlim(lims[0,0], lims[1,0])
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -864,28 +838,49 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # I leave this for later.
     if user_image:
         print("\tLoading usr image {0:s}".format(user_image))
-        with fits.open(user_image) as usrim:
-            usrim_d = usrim[0].data
-            usrim_h = usrim[0].header
-            if ('cdelt1' in usrim_h) and ('cdelt2' in usrim_h):
-                usrim_pix_x, usrim_pix_y = usrim_h['cdelt1'], np.abs(usrim_h['cdelt2'])
-            elif ('cd1_1' in usrim_h) and ('cd2_2' in usrim_h):
-                usrim_pix_x, usrim_pix_y = usrim_h['cd1_1'], np.abs(usrim_h['cd2_2'])
-            else:
-                print("\tCould not determine pixel size of user image. Aborting.")
-                exit()
+        if (user_image[-4:] == '.jpg') or (user_image[-4:] == '.png'):
+            usrim_d = Image.open(user_image)
+            usrim_h = fits.getheader(user_image[:-4] + '_hdr.fits')
+            color_im = True
+        else:
+            usrim_d = fits.getdata(user_image)
+            usrim_h = fits.getheader(user_image)
+            color_im = False
 
-            if usrim_pix_x > 0:
-                swapx = True
-            else:
-                swapx = False
-            usrim_pix_x = np.abs(usrim_pix_x)
-            usrim_wcs = WCS(usrim_h)
+        if ('cdelt1' in usrim_h) and ('cdelt2' in usrim_h):
+            usrim_pix_x, usrim_pix_y = usrim_h['cdelt1'], np.abs(usrim_h['cdelt2'])
+        elif ('cd1_1' in usrim_h) and ('cd2_2' in usrim_h):
+            usrim_pix_x, usrim_pix_y = usrim_h['cd1_1'], np.abs(usrim_h['cd2_2'])
+        else:
+            print("\tCould not determine pixel size of user image. Aborting.")
+            exit()
+
+        if usrim_pix_x > 0.0:
+            swapx = True
+        else:
+            swapx = False
+        usrim_pix_x = np.abs(usrim_pix_x)
+        usrim_wcs = WCS(usrim_h)
         print('\tImage loaded.')
+
         print('\tExtracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
-            usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x], wcs=usrim_wcs, mode='partial')
-            make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png')
+            if user_image[-4:] == '.jpg' or (user_image[-4:] == '.png'):
+                # Split off individual color channels, take subset and recombine.
+                r, g, b = usrim_d.split()
+                usrim_cut = Cutout2D(r, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+                                     wcs=usrim_wcs, mode='partial', fill_value=0)
+                usrim_cut_g = Cutout2D(g, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+                                       wcs=usrim_wcs, mode='partial', fill_value=0)
+                usrim_cut_b = Cutout2D(b, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+                                       wcs=usrim_wcs, mode='partial', fill_value=0)
+                usrim_cut_rgb = Image.merge("RGB", (Image.fromarray(usrim_cut.data), Image.fromarray(usrim_cut_g.data),
+                                                    Image.fromarray(usrim_cut_b.data)))
+                usrim_cut.data = usrim_cut_rgb
+            else:
+                usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+                                     wcs=usrim_wcs, mode='partial')
+            make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range, suffix='png', color_im=color_im)
             opt_head = usrim_cut.wcs.to_header()
             # wcs.to_header() seems to have a bug where it doesn't include the axis information.
             opt_head['NAXIS'] = 2
@@ -985,11 +980,11 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
-        make_mom0(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
-        make_snr(source,  hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix)
-        make_mom1(source, hi_pos_common, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix, sofia=2)
+        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
+        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
+        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix, sofia=2)
 
-    # Make pv if it was created (only in SoFiA-1); not dependent on having a survey image to regrid to.
+    # Make pv if it was created; not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, opt_view=opt_view, suffix=suffix)
 
     plt.close('all')

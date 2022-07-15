@@ -69,7 +69,8 @@ def main():
                             ' spectral line data.')
 
     parser.add_argument('-ui', '--user-image', default=None,
-                        help='Optional: Full path to the FITS image on which to overlay HI contours.')
+                        help='Optional: Full path to the FITS image on which to overlay HI contours.  Users can also provide\n'
+                             ' a false color jpg or png image, as long as there is a matching fits file that ends in "_hdr.fits".')
 
     parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
                         help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')

@@ -88,7 +88,7 @@ OPTIONAL:
     -snr   Specify the SNR range within which to plot the lowest HI contour. Requires 2 values. Default is [2.0, 3.0].
     -s     List of surveys on which to overlay HI contours. Only the first entry will be used in the combined image if `-m` option is used. Default is 'DSS2 Blue'.
     -m     Make a combined image using ImageMagick.  If a path is provided after this option, it is assumed to be the path to the `convert` executable of ImageMagick. 
-    -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
+    -ui    User supplied image fits or jpg/png color image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
     -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
 ```
 
@@ -166,7 +166,6 @@ See the github repo for known bugs and desired enhancements.  We aim to fix seri
 
 In addition we are aware of the following issues:
 * Saving figures with .ps or .eps format has issues with transparency and background colors appearing black.
-* `download_usr_fig` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `sofia_image_pipeline`.
 * WISE images, PanSTARRS and DECaLS cannot (yet) be plotted with Galactic coordinates.
 * The mask (red line) on pv-diagram plots may not be perfectly aligned from left-to-right.  Please use this line only as a rough indication of the mask position.  Refer to actual data for the truth.  Any suggestions for how to improve this are welcome.
 * For data with channels that are not uniform in width (e.g. `SPECSYS = FELO-OPT`), SIP's conversion to km/s is off compared to SoFiA-2's: the programs use formula from [here](https://www.astro.rug.nl/software/kapteyn/spectralbackground.html#aips-axis-type-felo) or use wcslib to do the conversion, respectively.  We haven't tracked down the discrepancy.  To the best of our knowledge, only relatively old radio data observing nearby galaxies, might be in this `FELO` format. 
