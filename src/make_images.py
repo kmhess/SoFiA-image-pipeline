@@ -13,7 +13,6 @@ from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
 from matplotlib.colors import PowerNorm
 import numpy as np
-from reproject import reproject_interp
 from urllib.error import HTTPError
 
 from src.modules.functions import get_info
@@ -687,7 +686,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
             print("\tNo pv fits file. Perhaps you ran source finding with an old version of SoFiA-2?")
             return
 
-        # For plotting mask, reproject needs to know unit explicitly, whereas WCS assumes it is degs
+        # For plotting mask, reproject needs to know unit explicitly, whereas WCS assumes it is degs (deprecated?)
         pv[0].header['CUNIT1'] = 'deg'
 
         wcs_pv = WCS(pv[0].header, fix=True, translate_units='shd')

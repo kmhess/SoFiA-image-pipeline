@@ -18,9 +18,8 @@ setup(
         "numpy == 1.22.0",
         "Pillow == 9.2.0",
         "pvextractor == 0.2",
-        "reproject == 0.7.1",
-        "setuptools==62.3.2",
         "requests == 2.25.1",
+        "setuptools==62.3.2",
         "sphinx_rtd_theme == 1.0.0",
         "xmltodict == 0.12.0"
     ],
