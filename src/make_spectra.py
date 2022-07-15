@@ -133,11 +133,11 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
 
         # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
         ax_margin_percent = 0.15
-        if (ymax > 2.*galspec_max) | (ymin < np.nanmin([2.*galspec_min, -5.*np.nanstd(spectrumJy).value])):
+        if (ymax > 5.*galspec_max) | (ymin < np.nanmin([-2.*np.abs(galspec_min), -5.*np.nanstd(spectrumJy).value])):
             print("\tWARNING: Suspect there is a lot of noise in the full spectrum?  Trying to adjust"
                   " y-axis to source.")
-            ax_margin = (1 + ax_margin_percent) * np.array(galspec_max, np.nanmin([galspec_min,
-                                                                                   -5*np.nanstd(spectrumJy).value]))
+            ax_margin = (1 + ax_margin_percent) * np.array([np.nanmin([-2.*np.abs(galspec_min),
+                                                                       -3*np.nanstd(spectrumJy).value]), 4*galspec_max])
             ax2_spec.set_ylim(ax_margin)
 
     else:
