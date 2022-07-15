@@ -116,12 +116,12 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         if color_im:
             ax1.imshow(opt.data, origin='lower')
             plot_labels(source, ax1, x_color='white')
-            oshape = opt.data.size
+            # oshape = opt.data.size
         else:
             ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data[~np.isnan(opt.data)], perc[0]),
                        vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]))
             plot_labels(source, ax1)
-            oshape = opt.data.shape
+            # oshape = opt.data.shape
 
         # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
@@ -135,15 +135,16 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
-        if len(oshape) > 2:
-            xh = oshape[2]
-            yh = oshape[1]
-        else:
-            xh = oshape[1]
-            yh = oshape[0]
-
-        ax1.set_xlim(xh, 0)
-        ax1.set_ylim(0, yh)
+        # Conflicting with swapx???
+        # if len(oshape) > 2:
+        #     xh = oshape[2]
+        #     yh = oshape[1]
+        # else:
+        #     xh = oshape[1]
+        #     yh = oshape[0]
+        #
+        # ax1.set_xlim(xh, 0)
+        # ax1.set_ylim(0, yh)
 
         if swapx:
             ax1.set_xlim(ax1.get_xlim()[::-1])
