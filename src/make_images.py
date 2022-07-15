@@ -242,7 +242,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sw
 
 
 # Make HI grey scale image
-def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, swapx, suffix='png'):
+def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
     """Overlay HI contours on the HI gray scale image.
 
     :param source: source object
@@ -309,8 +309,6 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
-        # if swapx:
-        #     ax1.set_xlim(ax1.get_xlim()[::-1])
         fig.savefig(outfile, bbox_inches='tight')
 
         hdulist_hi.close()
@@ -322,7 +320,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
 
 # Make HI significance image
-def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, swapx, suffix='png'):
+def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
     """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
     :param source: source object
@@ -401,7 +399,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 
 # Make velocity map for object
-def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base_contour, swapx, suffix='png', sofia=2):
+def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base_contour, suffix='png', sofia=2):
     """
 
     :param source: source object
@@ -856,7 +854,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             print("\tCould not determine pixel size of user image. Aborting.")
             exit()
 
-        if (usrim_pix_x > 0.0):
+        if usrim_pix_x > 0.0:
             swapx = True
         else:
             swapx = False
@@ -981,9 +979,9 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
-        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, swapx, suffix=suffix)
-        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, swapx, suffix=suffix)
-        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, swapx, suffix=suffix, sofia=2)
+        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
+        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
+        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix, sofia=2)
 
     # Make pv if it was created; not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, opt_view=opt_view, suffix=suffix)
