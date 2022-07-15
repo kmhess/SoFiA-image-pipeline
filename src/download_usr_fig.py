@@ -71,6 +71,7 @@ def main():
         else:
             print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
                   " with `-o` flag. Continuing to next requested survey".format(outname + 'panstarrs.jpg'))
+            surveys.remove('panstarrs')
 
     # If requested retrieve DECaLS false color imaging
     if 'decals' in surveys:
@@ -85,6 +86,7 @@ def main():
         else:
             print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
                   " with `-o` flag. Continuing to next requested survey".format(outname + 'decals.jpg'))
+            surveys.remove('decals')
 
     # If requested retrieve any number of survey images available through SkyView.
     if len(surveys) > 0:
