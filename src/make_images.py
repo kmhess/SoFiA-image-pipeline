@@ -482,7 +482,9 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         else:
             im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(cubew),
                             vmin=0.999*np.nanmin(mom1_d), vmax=1.001*np.nanmax(mom1_d))
-        vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
+        # Don't know how to deal with CRPIX that's different between original data and subcubes (sofia issue; chan2freq, chan2vel)
+        # vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
+        vel_maxhalf = np.abs(velmax - velmin) / 2.
         for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
             n_contours = vel_maxhalf // vunit
             if n_contours <= 4:
