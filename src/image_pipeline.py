@@ -83,7 +83,7 @@ def main():
     imagemagick = args.imagemagick
 
     try:
-        beam = [int(b) for b in args.beam.split(',')]
+        beam = [float(b) for b in args.beam.split(',')]
     except:
         beam = []
     opt_view = args.image_size * u.arcmin
