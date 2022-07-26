@@ -134,6 +134,7 @@ def get_info(fits_name, beam=None):
             bmaj = header['BMAJ'] * 3600. * u.arcsec
             bmin = header['BMIN'] * 3600. * u.arcsec
             bpa = header['BPA']
+            print(f"\tFound {bmaj:.1f}x{bmin:.1f} beam with PA={bpa:.1f} deg in primary header.")
         except:
             print("\tWARNING: Couldn't find beam in primary header information; in other extension? " \
                   "Assuming beam is 3.5x3.5 pixels")
@@ -161,10 +162,10 @@ def get_info(fits_name, beam=None):
             try:
                 equinox = header['EPOCH']
                 if equinox < 1984.0:
-                    equinox = 'B' + str (equinox)
+                    equinox = 'B' + str(equinox)
                     frame = 'fk4'
                 else:
-                    equinox = 'J' + str (equinox)
+                    equinox = 'J' + str(equinox)
                     frame = 'fk5'
                 print("\tWARNING: Using deprecated EPOCH in header for equinox: {}.".format(equinox))
             except KeyError:
