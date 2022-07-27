@@ -76,7 +76,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 
 
 # Make full spectrum plot:
-def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
+def make_specfull(source, src_basename, cube_params, original, suffix='png'):
 
     outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
 
@@ -105,10 +105,10 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
             fig2, ax2_spec, outfile2 = None, None, None
             return fig2, ax2_spec, outfile2
 
-        if full == True:
-            fig2 = plt.figure(figsize=(15, 4))
-        else:
+        if not original:
             fig2 = plt.figure(figsize=(8, 4))
+        else:
+            fig2 = plt.figure(figsize=(15, 4))
 
         ax2_spec = fig2.add_subplot(111)
         ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
@@ -131,14 +131,15 @@ def make_specfull(source, src_basename, cube_params, suffix='png', full=False):
         ax2_spec.plot([maskmin, maskmin], [0.95*ymin, 0.95*ymax], ':', color='gray')
         ax2_spec.plot([maskmax, maskmax], [0.95*ymin, 0.95*ymax], ':', color='gray')
 
-        # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
-        ax_margin_percent = 0.15
-        if (ymax > 5.*galspec_max) | (ymin < np.nanmin([-2.*np.abs(galspec_min), -5.*np.nanstd(spectrumJy).value])):
-            print("\tWARNING: Suspect there is a lot of noise in the full spectrum?  Trying to adjust"
-                  " y-axis to source.")
-            ax_margin = (1 + ax_margin_percent) * np.array([np.nanmin([-2.*np.abs(galspec_min),
-                                                                       -3*np.nanstd(spectrumJy).value]), 4*galspec_max])
-            ax2_spec.set_ylim(ax_margin)
+        # # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
+        # ax_margin_percent = 0.15
+        # if (ymax > 5.*galspec_max) | (ymin < np.nanmin([-2.*np.abs(galspec_min), -5.*np.nanstd(spectrumJy).value])):
+        #     print("\tWARNING: Suspect there is a lot of noise in the full spectrum?  Trying to adjust"
+        #           " y-axis to source.")
+        #     ax_margin = (1. + ax_margin_percent) * np.array([np.nanmin([-2.*np.abs(galspec_min),
+        #                                                                 -3*np.nanstd(spectrumJy).value]), 3.*galspec_max])
+        #     print(ax_margin)
+        #     ax2_spec.set_ylim(ax_margin)
 
     else:
         fig2, ax2_spec, outfile2 = None, None, None
@@ -224,7 +225,7 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
         get_noise_spec(source, src_basename, cube_params, original)
 
     # Make plot of spectrum with noise
-    fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, suffix=suffix, full=False)
+    fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, suffix=suffix)
 
     if outfile1 and outfile2:
         ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
