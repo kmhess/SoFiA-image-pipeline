@@ -83,7 +83,7 @@ def make_specfull(source, src_basename, cube_params, original, suffix='png'):
     if not os.path.isfile(outfile2):
 
         try:
-            print("\tMaking HI spectrum plot covering the full frequency range.")
+            print("\tMaking HI spectrum plot including noise.")
             convention = 'Optical'
             if 'freq' in source.colnames:
                 spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
@@ -142,6 +142,7 @@ def make_specfull(source, src_basename, cube_params, original, suffix='png'):
         #     ax2_spec.set_ylim(ax_margin)
 
     else:
+        print('\t{} already exists. Will not overwrite.'.format(outfile2))
         fig2, ax2_spec, outfile2 = None, None, None
 
     return fig2, ax2_spec, outfile2
@@ -195,6 +196,7 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
         ax1_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
 
     else:
+        print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
 
     return fig1, ax1_spec, outfile1
