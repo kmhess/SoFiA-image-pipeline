@@ -1,4 +1,6 @@
 import os
+import random
+import string
 
 
 # Note, although this has been generalized, it seems to work best with png's!
@@ -19,23 +21,24 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
 
     # Configure expected file name:
     infile = src_basename.replace('cubelets', 'figures') + '_{}_'.format(source['id'])
+    code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
 
     # Use terminal commands to assemble figures with imagemagick: https://imagemagick.org/index.php
     print("\tAssembling figures with imagemagick")
     new_file = "{}combo.{}".format(infile, suffix)
     if user_image and os.path.exists('{0}mom0_usr.{1}'.format(infile, suffix)):
         os.system("{0} {1}mom0_usr.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
-                  " +append temp.{2}".format(imgck, infile, suffix))
+                  " +append temp{3}.{2}".format(imgck, infile, suffix, code))
     elif surveys:
         os.system("{0} {1}mom0_{3}.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
-                  " +append temp.{2}".format(imgck, infile, suffix, surveys[0].replace(" ", "").lower()))
+                  " +append temp{4}.{2}".format(imgck, infile, suffix, surveys[0].replace(" ", "").lower(), code))
     else:
         print("\tWARNING: No ancillary data image available for source {}.".format(source['id']))
-        os.system("{0} {1}mom0.{2} {1}snr.{2} {1}mom1.{2} +append temp.{2}".format(imgck, infile, suffix))
-    os.system("{0} {1}spec.{2} -resize 125% temp2.{2}".format(imgck, infile, suffix))
-    os.system("{0} {1}specfull.{2} -resize 125% temp3.{2}".format(imgck, infile, suffix))
-    os.system("{0} temp2.{2} temp3.{2} {1}pv.{2} +append temp4.{2}".format(imgck, infile, suffix))
-    os.system("{0} temp.{2} temp4.{2} -append {1}".format(imgck, new_file, suffix))
-    os.system('rm -rf temp*.{}'.format(suffix))
+        os.system("{0} {1}mom0.{2} {1}snr.{2} {1}mom1.{2} +append temp{3}.{2}".format(imgck, infile, suffix, code))
+    os.system("{0} {1}spec.{2} -resize 125% temp2{3}.{2}".format(imgck, infile, suffix, code))
+    os.system("{0} {1}specfull.{2} -resize 125% temp3{3}.{2}".format(imgck, infile, suffix, code))
+    os.system("{0} temp2{3}.{2} temp3{3}.{2} {1}pv.{2} +append temp4{3}.{2}".format(imgck, infile, suffix, code))
+    os.system("{0} temp{3}.{2} temp4{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
+    os.system('rm -rf temp*{1}.{0}'.format(suffix, code))
 
     return
