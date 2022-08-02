@@ -7,15 +7,16 @@ import sys
 
 # Import installed Python libraries
 from astropy.io import fits  # change to table.read?
-# from astropy.coordinates import SkyCoord
 from astropy.table import Table
 from astropy import units as u
+import pkg_resources  # part of setuptools
 import numpy as np
 
 from src import make_images, make_spectra
 from src.modules.functions import get_radecfreq
 from src.combine_images import combine_images
 
+version = pkg_resources.require("SoFiA-image-pipeline")[0].version
 
 ###################################################################
 
@@ -89,7 +90,7 @@ def main():
     opt_view = args.image_size * u.arcmin
 
     print("\n*****************************************************************")
-    print("\tBeginning SoFiA-image-pipeline (SIP).")
+    print("\tBeginning SoFiA-image-pipeline (SIP) {}.".format(version))
 
     if (len(args.surveys) == 0) and (not args.user_image):
         args.surveys = ['DSS2 Blue']
