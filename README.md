@@ -178,6 +178,8 @@ In addition we are aware of the following issues:
 
 Version history
 ---------------
+* SIP 1.2.0
+    * Released 12 July 2022 
 * SIP 1.1.0
     * Released 9 May 2022
 * SIP 1.0.0
