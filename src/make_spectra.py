@@ -105,15 +105,21 @@ def make_specfull(source, src_basename, cube_params, original, suffix='png'):
             fig2, ax2_spec, outfile2 = None, None, None
             return fig2, ax2_spec, outfile2
 
-        if not original:
-            fig2 = plt.figure(figsize=(8, 4))
-        else:
+        # Could be more clever about picking the size of the figure when there are a lot of channels. Leave for later.
+        if original or len(spec) >= 800:
             fig2 = plt.figure(figsize=(15, 4))
+        else:
+            fig2 = plt.figure(figsize=(8, 4))
 
         ax2_spec = fig2.add_subplot(111)
         ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
-        ax2_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
-                          yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+        # If there are lots of channels, don't plot errors (too crowded and can tell from noise.) Cut off currently arbitrary.
+        if len(spec) < 800:
+            ax2_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
+                              yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+        else:
+            print("\tInput *_specfull.txt is >=800 channels; expanding figure, not including error bars (noise should be indicative).")
+            ax2_spec.plot(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'])
         ax2_spec.set_title(source['name'])
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]")
