@@ -12,7 +12,7 @@ import numpy as np
 from src.modules.panstarrs_fcns import getcolorim, geturl
 
 
-def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
+def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue', cache=True):
     """Retrieve the optical image from a certain pointing.
 
     :param hi_pos: position in the HI data
@@ -21,6 +21,8 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
     :type opt_view: astropy.units.arcmin, optional
     :param survey: survey containing optical data, defaults to 'DSS2 Blue'
     :type survey: str, optional
+    :param cache: are the downloaded ancillary files cached
+    :type cache: bool
     :return: optical image
     :rtype: astropy HDUList
     """
@@ -29,15 +31,16 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue'):
 
     # Get a survey image from SkyView:
     if hi_pos.frame.name == 'galactic':
-        path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='galactic',
-                                  width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels)
+        path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='galactic', width=opt_view[0],
+                                  height=opt_view[-1], survey=[survey], pixels=opt_pixels, cache=cache)
     elif (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
-        path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS',
-                                  width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels)
+        path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS', width=opt_view[0],
+                                  height=opt_view[-1], survey=[survey], pixels=opt_pixels, cache=cache)
     # Note that there seems to be a bug in SkyView that it sometimes won't retrieve non-J2000.0.  Keep an eye on this!
     else:
         path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates=hi_pos.equinox.value,
-                                  width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels)
+                                  width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels,
+                                  cache=cache)
     if len(path) != 0:
         print("\tSurvey image retrieved from {}.".format(survey))
         result = path[0]
