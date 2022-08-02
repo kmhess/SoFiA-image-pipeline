@@ -4,7 +4,7 @@ from astropy.io import fits
 from astropy import units as u
 from astropy.wcs import WCS
 import numpy as np
-from pvextractor import extract_pv_slice,PathFromCenter
+from pvextractor import extract_pv_slice, PathFromCenter
 
 
 def chan2freq(channels, fits_name):
@@ -134,7 +134,7 @@ def get_info(fits_name, beam=None):
             bmaj = header['BMAJ'] * 3600. * u.arcsec
             bmin = header['BMIN'] * 3600. * u.arcsec
             bpa = header['BPA']
-            print(f"\tFound {bmaj:.1f}x{bmin:.1f} beam with PA={bpa:.1f} deg in primary header.")
+            print(f"\tFound {bmaj:.1f} by {bmin:.1f} beam with PA={bpa:.1f} deg in primary header.")
         except:
             print("\tWARNING: Couldn't find beam in primary header information; in other extension? " \
                   "Assuming beam is 3.5x3.5 pixels")
@@ -315,14 +315,19 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
     """
 
     slice = PathFromCenter(center=SkyCoord(ra=source['pos_x'], dec=source['pos_y'], unit='deg'),
-                           length=opt_view, angle=source['kin_pa']*u.deg, width=1*u.arcsec)
+                           length=opt_view, angle=source['kin_pa']*u.deg, width=6*u.arcsec)
     mask = fits.open(filename)
     try:
         mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'))
     except ValueError:
-        print("\tWARNING: Cannot extract pv slice of mask (dunno why). Continuing.")
-        mask_pv = None
-
+        print('\tWARNING: pvextractor is complaining about non-square pixels, try with assert_square = False')
+        try:
+            mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'),
+                                       assert_square=False)
+        except:
+            print('\tERROR: Cannot extract pv slice of mask.  Try upgrading to latest version of pvextractor (v>=0.4) from github:\n'
+                  '\t\t"python3 -m pip install git+https://github.com/radio-astro-tools/pvextractor"')
+            mask_pv = None
     mask.close()
 
     return mask_pv
