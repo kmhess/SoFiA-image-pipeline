@@ -656,62 +656,66 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, suffix='png'
         # ax1.imshow(pvd, cmap='gray', aspect='auto', vmin=-3*pvd_rms, vmax=+3*pvd_rms)
         ax1.imshow(pvd, cmap=pvd_map, aspect='auto', norm=divnorm)
 
-        # if np.all (np.isnan (pv[0].data)): continue
-        # Plot positive contours
-        if np.nanmax(pvd) > 3*pvd_rms:
-            ax1.contour(pvd, colors=['k', ], levels=3**np.arange(1, 10)*pvd_rms)
-        # Plot negative contours
-        if np.nanmin(pvd) < -3*pvd_rms:
-            ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 3**np.arange(10, 0, -1), linestyles=['dashed', ])
-
-        ax1.autoscale(False)
-        if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
-            print("\tAttempting to overlay mask boundaries on pv diagram ...")
-            mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view[0])
-            if mask_pv:
-                # Extract_pv has a header bug, reset the reference pixel:
-                mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
-                ax1.contour(mask_pv.data, colors='red', levels=[0.01], transform=ax1.get_transform(WCS(mask_pv.header)))
-            print("\t... done.")
+        if np.all(np.isnan(pv[0].data)):
+            print("\tWARNING: Input pv plot is all nan's. For SoFiA-2, may have failed to calculate kin_pa.")
+            pv.close()
+            return
         else:
-            print("\tNo mask cubelet found to overlay mask on pv diagram.")
-        ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
-                 transform=ax1.get_transform('world'))
-        ax1.set_title(source['name'], fontsize=16)
-        ax1.tick_params(axis='both', which='major', labelsize=18)
-        ax1.set_xlabel('Angular Offset [deg]', fontsize=16)
-        ax1.text(0.5, 0.05, 'Kinematic PA = {:5.1f} deg'.format(source['kin_pa']), ha='center', va='center',
-                 transform=ax1.transAxes, color='orange', fontsize=18)
-        ax1.coords[1].set_ticks_position('l')
+            # Plot positive contours
+            if np.nanmax(pvd) > 3*pvd_rms:
+                ax1.contour(pvd, colors=['k', ], levels=3**np.arange(1, 10)*pvd_rms)
+            # Plot negative contours
+            if np.nanmin(pvd) < -3*pvd_rms:
+                ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 3**np.arange(10, 0, -1), linestyles=['dashed', ])
 
-        convention = 'Optical'
-        if 'freq' in source.colnames:
-            freq_sys = source['freq']
-            ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
-                     linewidth=0.75, transform=ax1.get_transform('world'))
-            ax1.set_ylabel('Frequency [MHz]', fontsize=16)
-            ax1.coords[1].set_format_unit(u.MHz)
-            # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
-            ax2 = ax1.twinx()
-            vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
-            vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
-            ax2.set_ylim(vel1, vel2)
-            ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention))
-        else:
-            if cube_params['spec_axis'] == 'VRAD':
-                convention = 'Radio'
-            vel_sys = source['v_col']
-            ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
-                     linewidth=0.75, transform=ax1.get_transform('world'))
-            ax1.coords[1].set_format_unit(u.km / u.s)
-            ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention,
-                                                          fontsize=18))
-        if pv[0].header['cdelt2'] < 0:
-            ax1.set_ylim(ax1.get_ylim()[::-1])
-            ax1.set_xlim(ax1.get_xlim()[::-1])
+            ax1.autoscale(False)
+            if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
+                print("\tAttempting to overlay mask boundaries on pv diagram ...")
+                mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])), opt_view=opt_view[0])
+                if mask_pv:
+                    # Extract_pv has a header bug, reset the reference pixel:
+                    mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
+                    ax1.contour(mask_pv.data, colors='red', levels=[0.01], transform=ax1.get_transform(WCS(mask_pv.header)))
+                print("\t... done.")
+            else:
+                print("\tNo mask cubelet found to overlay mask on pv diagram.")
+            ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
+                     transform=ax1.get_transform('world'))
+            ax1.set_title(source['name'], fontsize=16)
+            ax1.tick_params(axis='both', which='major', labelsize=18)
+            ax1.set_xlabel('Angular Offset [deg]', fontsize=16)
+            ax1.text(0.5, 0.05, 'Kinematic PA = {:5.1f} deg'.format(source['kin_pa']), ha='center', va='center',
+                     transform=ax1.transAxes, color='orange', fontsize=18)
+            ax1.coords[1].set_ticks_position('l')
 
-        fig.savefig(outfile, bbox_inches='tight')
-        pv.close()
+            convention = 'Optical'
+            if 'freq' in source.colnames:
+                freq_sys = source['freq']
+                ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
+                         linewidth=0.75, transform=ax1.get_transform('world'))
+                ax1.set_ylabel('Frequency [MHz]', fontsize=16)
+                ax1.coords[1].set_format_unit(u.MHz)
+                # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
+                ax2 = ax1.twinx()
+                vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
+                vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
+                ax2.set_ylim(vel1, vel2)
+                ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention))
+            else:
+                if cube_params['spec_axis'] == 'VRAD':
+                    convention = 'Radio'
+                vel_sys = source['v_col']
+                ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
+                         linewidth=0.75, transform=ax1.get_transform('world'))
+                ax1.coords[1].set_format_unit(u.km / u.s)
+                ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention,
+                                                              fontsize=18))
+            if pv[0].header['cdelt2'] < 0:
+                ax1.set_ylim(ax1.get_ylim()[::-1])
+                ax1.set_xlim(ax1.get_xlim()[::-1])
+
+            fig.savefig(outfile, bbox_inches='tight')
+            pv.close()
 
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile))
