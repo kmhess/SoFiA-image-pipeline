@@ -338,13 +338,15 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
     return mask_pv
 
 
-def plot_labels(source, ax, x_color='k'):
+def plot_labels(source, ax, default_beam, x_color='k'):
     """Plot labels on spatial plots depending on the coordinate frame.
 
     :param source: source object
     :type source: Astropy table
     :param ax: matplotlib axes instance
     :type ax: axes object
+    :param default_beam: whether the synthesized beam is known from data/user or not
+    :type default_beam: bool
     :param x_color: color of galaxy position marker
     :type x_color: str
     :return:
@@ -358,10 +360,16 @@ def plot_labels(source, ax, x_color='k'):
         x_coord, y_coord = 'ra', 'dec'
         x_label, y_label = 'RA (ICRS)', 'Dec (ICRS)'
 
-    ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75, transform=ax.get_transform('world'))
+    ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75,
+               transform=ax.get_transform('world'))
     ax.set_title(source['name'], fontsize=20)
     ax.tick_params(axis='both', which='major', labelsize=18)
-    ax.coords[x_coord].set_axislabel (x_label, fontsize=20)
-    ax.coords[y_coord].set_axislabel (y_label, fontsize=20)
+    ax.coords[x_coord].set_axislabel(x_label, fontsize=20)
+    ax.coords[y_coord].set_axislabel(y_label, fontsize=20)
+    if default_beam:
+        ax.scatter(0.92, 0.9, marker='x', c='red', s=500, linewidth=5, transform=ax.transAxes, zorder=99)
+        ax.plot([0.1, 0.9], [0.05, 0.05], c='red', linewidth=3, transform=ax.transAxes, zorder=100)
+        ax.text(0.5, 0.5, 'Not calculated with correct beam', transform=ax.transAxes, fontsize=40, color='gray',
+                alpha=0.5, ha='center', va='center', rotation='30', zorder=101)
 
     return
