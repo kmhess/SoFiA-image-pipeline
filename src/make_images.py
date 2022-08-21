@@ -106,7 +106,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=opt.wcs)
-        plot_labels(source, ax1)
+        plot_labels(source, ax1, cube_params['default_beam'])
         ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data[~np.isnan(opt.data)], perc[0]),
                    vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]))
         # Plot positive contours
@@ -183,7 +183,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        plot_labels(source, ax1)
+        plot_labels(source, ax1, cube_params['default_beam'])
         if survey == 'hst':
             # ax1.imshow(opt[0].data, origin='lower', cmap='twilight', norm=LogNorm(vmax=5))
             # ax1.imshow(opt[0].data, origin='lower', cmap='Greys', norm=LogNorm(vmin=-0.003, vmax=30))
@@ -263,7 +263,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
                                              cube_params['bmin'].value)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        plot_labels(source, ax1, x_color='white')
+        plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
         im = ax1.imshow(mom0, cmap='gray_r', origin='lower', transform=ax1.get_transform(cubew))
         ax1.set(facecolor="white")  # Doesn't work with the color im
         # Plot positive contours
@@ -347,7 +347,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
         # ax1 = fig.add_subplot(111, projection=hiwcs)
-        plot_labels(source, ax1)
+        plot_labels(source, ax1, cube_params['default_beam'])
         ax1.set(facecolor="white")  # Doesn't work with the color im
         im = ax1.imshow(snr, cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(cubew))
         ax1.contour(mom0, linewidths=2, levels=[base_contour, ], colors=['k', ], transform=ax1.get_transform(cubew))
@@ -476,7 +476,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        plot_labels(source, ax1)
+        plot_labels(source, ax1, cube_params['default_beam'])
         if not singlechansource:
             im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(cubew))
         else:
@@ -590,7 +590,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         ax1 = fig.add_subplot(111, projection=owcs)
         # ax1.set_facecolor("darkgray")   # Doesn't work with the color im
         ax1.imshow(color_im, origin='lower')
-        plot_labels(source, ax1, x_color='white')
+        plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
         ax1.contour(mom0, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10), transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
