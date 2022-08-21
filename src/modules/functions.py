@@ -115,6 +115,7 @@ def get_info(fits_name, beam=None):
 
     cellsize = header['CDELT2'] * 3600. * u.arcsec
 
+    default_beam = False
     if len(beam) == 3:
         print(f"\tUsing user specified beam: {beam[0]} arcsec by {beam[1]} arcsec; PA: {beam[2]} deg")
         bmaj = beam[0] * u.arcsec
@@ -136,9 +137,12 @@ def get_info(fits_name, beam=None):
             bpa = header['BPA']
             print(f"\tFound {bmaj:.1f} by {bmin:.1f} beam with PA={bpa:.1f} deg in primary header.")
         except:
-            print("\tWARNING: Couldn't find beam in primary header information; in other extension? " \
-                  "Assuming beam is 3.5x3.5 pixels")
+            print("\tWARNING: Couldn't find beam in primary header information; in other extension? "
+                  "Assuming beam is 3.5x3.5 pixels"
+                  "\n\t\tColumn density and beam plotted as order of magnitude estimate ONLY. "
+                  "\n\t\tRerun with -b and provide beam info to remove red strikethroughs on plots.")
             bmaj, bmin, bpa = 3.5 * cellsize, 3.5 * cellsize, 0
+            default_beam = True
 
     pix_per_beam = bmaj / cellsize * bmin / cellsize * np.pi / (4 * np.log(2))
 
@@ -219,8 +223,9 @@ def get_info(fits_name, beam=None):
         print("\tNo SPECSYS, VELREF, or reference frame in CTYPE3, assuming data in TOPOCENT reference frame.")
         spec_sys = 'TOPOCENT'
 
-    return {'bmaj': bmaj, 'bmin': bmin, 'bpa': bpa, 'pix_per_beam': pix_per_beam, 'chan_width': chan_width,
-            'equinox': equinox, 'frame': frame, 'cellsize': cellsize, 'spec_sys': spec_sys, 'spec_axis': spec_axis}
+    return {'bmaj': bmaj, 'bmin': bmin, 'bpa': bpa, 'pix_per_beam': pix_per_beam, 'default_beam': default_beam,
+            'chan_width': chan_width, 'equinox': equinox, 'frame': frame, 'cellsize': cellsize, 'spec_sys': spec_sys,
+            'spec_axis': spec_axis}
 
 
 def get_radecfreq(catalog, original):
