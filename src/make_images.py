@@ -88,7 +88,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
-        
+
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value)
 
@@ -881,8 +881,15 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         surveys.remove('panstarrs')
 
     # If requested plot HI contours on DECaLS imaging
+    dev_dr = False
+    if 'decals' in surveys and 'decals-dev' in surveys:
+        print("\tERROR: Only one between decals and decals-dev can be given.")
+        exit()
+    elif 'decals-dev' in surveys:
+        surveys[surveys.index('decals-dev')] = 'decals'
+        dev_dr = True
     if ('decals' in surveys) and (hi_pos_common.frame.name != 'galactic'):
-        decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view)
+        decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, dev_dr=dev_dr)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
                       survey='decals')
         if surveys[0] == 'decals':

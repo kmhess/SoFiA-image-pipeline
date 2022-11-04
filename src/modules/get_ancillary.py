@@ -82,7 +82,7 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
     return color_im, fits_head
 
 
-def get_decals(hi_pos, opt_view=6*u.arcmin):
+def get_decals(hi_pos, opt_view=6*u.arcmin, dev_dr=False):
     """Get DECaLS false color image and g-band fits (for the WCS).
 
     :param hi_pos: position in the HI data
@@ -95,8 +95,12 @@ def get_decals(hi_pos, opt_view=6*u.arcmin):
     # Get DECaLS false color image and fits (for the WCS). Example URL for this script provided by John Wu.
     pixscale = 0.262   # default(?) arcsec/pixel
     dimen = (opt_view.to(u.arcsec).value / pixscale).astype(int)
-    url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
-          'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
+    if dev_dr:
+        url = 'https://www.legacysurvey.org/viewer-dev/cutout.fits?ra={}&dec={}&layer=ls-dr10-grz&' \
+              'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
+    else:
+        url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
+              'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
 
     try:
         fits_head = fits.getheader(url)
