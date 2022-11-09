@@ -30,14 +30,16 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
         os.system("{0} {1}mom0_usr.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
                   " +append temp{3}.{2}".format(imgck, infile, suffix, code))
     elif surveys:
-        os.system("{0} {1}mom0_{3}.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2}"
-                  " +append temp{4}.{2}".format(imgck, infile, suffix, surveys[0].replace(" ", "").lower().replace('decals-dev', 'decals'), code))
+        os.system("{0} {1}mom0_{3}.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2} +append"
+                  " temp{4}.{2}".format(imgck, infile, suffix,
+                                        surveys[0].replace(" ", "").lower().replace('decals-dev', 'decals'), code))
     else:
         print("\tWARNING: No ancillary data image available for source {}.".format(source['id']))
         os.system("{0} {1}mom0.{2} {1}snr.{2} {1}mom1.{2} +append temp{3}.{2}".format(imgck, infile, suffix, code))
     os.system("{0} {1}spec.{2} -resize 125% temp2{3}.{2}".format(imgck, infile, suffix, code))
     os.system("{0} {1}specfull.{2} -resize 125% temp3{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} temp2{3}.{2} temp3{3}.{2} {1}pv.{2} +append temp4{3}.{2}".format(imgck, infile, suffix, code))
+    os.system("{0} temp2{3}.{2} temp3{3}.{2} {1}pv.{2} {1}pv_min.{2} +append temp4{3}.{2}".format(imgck, infile,
+                                                                                                  suffix, code))
     os.system("{0} temp{3}.{2} temp4{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
     new_file_size = os.path.getsize(new_file)
     if new_file_size > file_size_limit:
