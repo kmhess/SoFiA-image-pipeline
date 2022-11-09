@@ -306,7 +306,7 @@ def get_subcube(source, original):
     return subcube
 
 
-def create_pv(source, filename, opt_view=6*u.arcmin):
+def create_pv(source, filename, opt_view=6*u.arcmin, min_axis=False):
     """
 
     :param source: source object
@@ -315,12 +315,17 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
     :type filename: str
     :param opt_view: requested size of the image for regriding
     :type opt_view: quantity
+    :param min_axis: flag for extracting major or minor axis
+    :type min_axis: boolean
     :return: position-velocity slice of the mask cube
     :rtype: FITS HDU
     """
 
+    pos_angle = source['kin_pa']
+    if min_axis == True:
+        pos_angle += 90.
     slice = PathFromCenter(center=SkyCoord(ra=source['pos_x'], dec=source['pos_y'], unit='deg'),
-                           length=opt_view, angle=source['kin_pa']*u.deg, width=6*u.arcsec)
+                           length=opt_view, angle=pos_angle*u.deg, width=6*u.arcsec)
     mask = fits.open(filename)
     try:
         mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'))
@@ -330,7 +335,7 @@ def create_pv(source, filename, opt_view=6*u.arcmin):
             mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'),
                                        assert_square=False)
         except:
-            print('\tERROR: Cannot extract pv slice of mask.  Try upgrading to latest version of pvextractor (v>=0.4) from github:\n'
+            print('\tERROR: Cannot extract pv slice of mask. Try upgrading to latest version of pvextractor (v>=0.4) from github:\n'
                   '\t\t"python3 -m pip install git+https://github.com/radio-astro-tools/pvextractor"')
             mask_pv = None
     mask.close()
