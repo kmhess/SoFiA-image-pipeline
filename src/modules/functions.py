@@ -88,7 +88,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin):
     else:
       print("\tWARNING: Mom0 imag units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
       nhi = sbr
-    nhi_ofm = np.int(np.floor(np.log10(nhi)))
+    nhi_ofm = np.int(np.floor(np.log10(np.abs(nhi))))
     nhi_label = '$N_\mathrm{{HI}}$ = {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$'.format(nhi/10**nhi_ofm, nhi_ofm)
     nhi_labels = '$N_\mathrm{{HI}}$ = $2^n$ x {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$ ($n$=0,1,...)'.format(nhi/10**nhi_ofm, nhi_ofm)
     return nhi, nhi_label, nhi_labels
