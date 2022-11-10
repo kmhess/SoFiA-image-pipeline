@@ -267,11 +267,17 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         im = ax1.imshow(mom0, cmap='gray_r', origin='lower', transform=ax1.get_transform(cubew))
         ax1.set(facecolor="white")  # Doesn't work with the color im
         # Plot positive contours
-        ax1.contour(mom0, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10), transform=ax1.get_transform(cubew))
-        # Plot negative contours
-        if np.nanmin(mom0) < -base_contour:
+        if base_contour > 0.0:
+            ax1.contour(mom0, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10),
+                        transform=ax1.get_transform(cubew))
+        # Plot negative contours when there's still positive emission
+            if np.nanmin(mom0) < -base_contour:
+                ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
+                            levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
+        # Plot negative contours when there's no positive emission
+        else:
             ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
-                        levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
+                        levels=base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
@@ -349,7 +355,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         # ax1 = fig.add_subplot(111, projection=hiwcs)
         plot_labels(source, ax1, cube_params['default_beam'])
         ax1.set(facecolor="white")  # Doesn't work with the color im
-        im = ax1.imshow(snr, cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(cubew))
+        im = ax1.imshow(np.abs(snr), cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(cubew))
         ax1.contour(mom0, linewidths=2, levels=[base_contour, ], colors=['k', ], transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -468,7 +474,10 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         # Only plot values above the lowest calculated HI value:
         hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
         mom0 = hdulist_hi[0].data
-        mom1_d[mom0 < base_contour] = np.nan
+        if base_contour > 0.0:
+            mom1_d[mom0 < base_contour] = np.nan
+        else:
+            mom1_d[mom0 > base_contour] = np.nan
         owcs = WCS(opt_head)
 
         hi_pos = SkyCoord(source['pos_x'], source['pos_y'], unit='deg')
@@ -591,7 +600,18 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         # ax1.set_facecolor("darkgray")   # Doesn't work with the color im
         ax1.imshow(color_im, origin='lower')
         plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
-        ax1.contour(mom0, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10), transform=ax1.get_transform(cubew))
+        # Plot positive contours
+        if base_contour > 0.0:
+            ax1.contour(mom0, cmap='Oranges', linewidths=1.2, levels=base_contour * 2 ** np.arange(10),
+                        transform=ax1.get_transform(cubew))
+            # Plot negative contours when there's still positive emission
+            if np.nanmin(mom0) < -base_contour:
+                ax1.contour(mom0, cmap='YlOrBr', linewidths=1.2, linestyles='dashed',
+                            levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
+        # Plot negative contours when there's no positive emission
+        else:
+            ax1.contour(mom0, cmap='YlOrBr', linewidths=1.2, linestyles='dashed',
+                        levels=base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -763,8 +783,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     try:
         with fits.open(src_basename + '_{}_snr.fits'.format(str(source['id']))) as hdulist_snr, \
                 fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi:
-            HIlowest = np.median(hdulist_hi[0].data[(hdulist_snr[0].data > snr_range[0]) *
-                                                    (hdulist_snr[0].data < snr_range[1])])
+            HIlowest = np.median(hdulist_hi[0].data[(np.abs(hdulist_snr[0].data) > snr_range[0]) *
+                                                    (np.abs(hdulist_snr[0].data) < snr_range[1])])
         print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
                                                                                                           HIlowest))
     # If no SNR map use the channel width of the original data (provided by user if necessary) for lowest HI contour.
