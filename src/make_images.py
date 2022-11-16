@@ -186,16 +186,21 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        plot_labels(source, ax1, cube_params['default_beam'])
         if survey == 'hst':
+            plot_labels(source, ax1, cube_params['default_beam'], x_color='w')
             # ax1.imshow(opt[0].data, origin='lower', cmap='twilight', norm=LogNorm(vmax=5))
             # ax1.imshow(opt[0].data, origin='lower', cmap='Greys', norm=LogNorm(vmin=-0.003, vmax=30))
             ax1.imshow(opt[0].data, origin='lower', cmap='Greys',
                        norm=PowerNorm(gamma=0.25, vmin=np.percentile(opt[0].data, 20),
                                       vmax=np.percentile(opt[0].data, 99.5)))
+            ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='black',
+                     fontsize=18)
         else:
+            plot_labels(source, ax1, cube_params['default_beam'])
             ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
                        vmax=np.percentile(opt[0].data, 99.8), origin='lower')
+            ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white',
+                     fontsize=18)
         # Plot positive contours
         ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(cubew))
@@ -204,7 +209,6 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
             ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
                         levels=-base_contour * 2 ** np.arange(10, -1, -1),
                         transform=ax1.get_transform(cubew))
-        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
 
@@ -904,7 +908,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # For CHILES: plot HI contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
-        hst_opt_view = 40 * u.arcsec
+        hst_opt_view = np.array([40,]) * u.arcsec
         if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
             hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
         hst_opt = get_hst_cosmos(source, opt_view=hst_opt_view)
