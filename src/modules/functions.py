@@ -67,30 +67,45 @@ def felo2vel(channels, fits_name):
     return velocities
 
 
-def sbr2nhi(sbr, bunit, bmaj, bmin):
+def sbr2nhi(sbr, bunit, bmaj, bmin, spec_line=None):
     """Get the HI column density from sbr.
 
     :param sbr: SBR
     :type sbr: float
     :param bunit: unit in which sbr is measured
     :type bunit: str
-    :param bmaj: major axis of the beam
+    :param bmaj: major axis of the beam in arcseconds
     :type bmaj: float
-    :param bmin: minor axis of the bea,
+    :param bmin: minor axis of the beam in arcseconds,
     :type bmin: float
+    :param line:
+    :type line:
     :return: column density
     :rtype: float
     """
-    if (bunit == 'Jy/beam*m/s') or (bunit == 'Jy/beam*M/S'):
-      nhi = 1.104e+21 * sbr / bmaj / bmin
-    elif bunit == 'Jy/beam*Hz':
-      nhi = 2.330e+20 * sbr / bmaj / bmin
+    if (spec_line == None) or (spec_line == 'HI'):
+        if (bunit == 'Jy/beam*m/s') or (bunit == 'Jy/beam*M/S'):
+          nhi = 1.104e+21 * sbr / bmaj / bmin
+        elif bunit == 'Jy/beam*Hz':
+          nhi = 2.330e+20 * sbr / bmaj / bmin
+        else:
+          print("\tWARNING: Mom0 imag units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
+          nhi = sbr
+        nhi_ofm = np.int(np.floor(np.log10(np.abs(nhi))))
+        nhi_label = '$N_\mathrm{{HI}}$ = {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$'.format(nhi/10**nhi_ofm, nhi_ofm)
+        nhi_labels = '$N_\mathrm{{HI}}$ = $2^n$ x {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$ ($n$=0,1,...)'.format(nhi/10**nhi_ofm, nhi_ofm)
     else:
-      print("\tWARNING: Mom0 imag units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
-      nhi = sbr
-    nhi_ofm = np.int(np.floor(np.log10(np.abs(nhi))))
-    nhi_label = '$N_\mathrm{{HI}}$ = {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$'.format(nhi/10**nhi_ofm, nhi_ofm)
-    nhi_labels = '$N_\mathrm{{HI}}$ = $2^n$ x {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$ ($n$=0,1,...)'.format(nhi/10**nhi_ofm, nhi_ofm)
+        # Jy to K conversion: https://science.nrao.edu/facilities/vla/proposing/TBconv
+        if bunit == 'Jy/beam*Hz':
+            line = line_lookup(spec_line)
+            nhi = 1.222e+3 * sbr / bmaj / bmin / line['restfreq'].to(u.GHz).value**2
+        else:
+            print("\tWARNING: Mom0 imag units are not Jy/beam*Hz. Cannot convert to K surface brightness.")
+            nhi = sbr
+        nhi_ofm = np.int(np.floor(np.log10(np.abs(nhi))))
+        nhi_label = '$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ K Hz'.format(line['name'], nhi/10**nhi_ofm, nhi_ofm)
+        nhi_labels = '$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f} x $10^{{ {:d} }}$ K Hz ($n$=0,1,...)'.format(line['name'],
+                                                                                             nhi/10**nhi_ofm, nhi_ofm)
     return nhi, nhi_label, nhi_labels
 
 
@@ -341,6 +356,28 @@ def create_pv(source, filename, opt_view=6*u.arcmin, min_axis=False):
     mask.close()
 
     return mask_pv
+
+
+def line_lookup(spec_line):
+    """Return rest frequency and object to convert to optical velocities for requested line.
+
+    :param line:
+    :type line:
+    :return:
+    :rtype:
+    """
+
+    if (spec_line == None) or (spec_line == 'HI'):
+        restfreq_line = 1420405751.77 * u.Hz
+        optical = u.doppler_optical(restfreq_line)
+    elif spec_line == 'CO':
+        restfreq_line = 115.27120180 * u.GHz
+        optical = u.doppler_optical(restfreq_line)
+    else:
+        print("ERROR: Unrecognized spectral line.  Try 'HI' or 'CO'.")
+        exit()
+
+    return {'name': spec_line, 'restfreq': restfreq_line, 'optical':optical}
 
 
 def plot_labels(source, ax, default_beam, x_color='k'):

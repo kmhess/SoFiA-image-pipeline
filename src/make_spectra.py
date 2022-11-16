@@ -6,11 +6,7 @@ from astropy import units as u
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel
-
-
-HI_restfreq = 1420405751.77 * u.Hz
-optical_HI = u.doppler_optical(HI_restfreq)
+from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, line_lookup
 
 
 ###################################################################
@@ -76,7 +72,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 
 
 # Make full spectrum plot:
-def make_specfull(source, src_basename, cube_params, original, suffix='png'):
+def make_specfull(source, src_basename, cube_params, original, spec_line=None, suffix='png'):
 
     outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
 
@@ -86,12 +82,13 @@ def make_specfull(source, src_basename, cube_params, original, suffix='png'):
             print("\tMaking HI spectrum plot including noise.")
             convention = 'Optical'
             if 'freq' in source.colnames:
+                line = line_lookup(spec_line)
                 spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
-                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['optical']).value
                 maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s,
-                                                                                    equivalencies=optical_HI).value
+                                                                                    equivalencies=line['optical']).value
                 maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
-                                                                                    equivalencies=optical_HI).value
+                                                                                    equivalencies=line['optical']).value
             else:
                 # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
                 if 'v_rad' in source.colnames:
@@ -155,7 +152,7 @@ def make_specfull(source, src_basename, cube_params, original, suffix='png'):
 
 
 # Make SoFiA masked spectrum plot (no noise):
-def make_spec(source, src_basename, cube_params, suffix='png'):
+def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
 
     outfile1 = src_basename.replace('cubelets', 'figures') + '_{}_spec.{}'.format(source['id'], suffix)
 
@@ -165,9 +162,10 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
             print("\tMaking HI SoFiA masked spectrum plot.")
             convention = 'Optical'
             if 'freq' in source.colnames:
+                line = line_lookup(spec_line)
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
-                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['optical']).value
             else:
                 # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
                 if 'v_rad' in source.colnames:
@@ -208,7 +206,7 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
     return fig1, ax1_spec, outfile1
 
 
-def main(source, src_basename, original=None, suffix='png', beam=None):
+def main(source, src_basename, original=None, spec_line=None, suffix='png', beam=None):
 
     print("\tStart making spectral profiles")
 
@@ -224,7 +222,7 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
             return
 
     # Make plot of SoFiA masked spectrum
-    fig1, ax1_spec, outfile1 = make_spec(source, src_basename, cube_params, suffix=suffix)
+    fig1, ax1_spec, outfile1 = make_spec(source, src_basename, cube_params, spec_line=spec_line, suffix=suffix)
 
     # Make text file of spectrum with noise; use full frequency range of original cube if provided:
     # Can be a bit more precise here in the output options/specification.
@@ -233,8 +231,8 @@ def main(source, src_basename, original=None, suffix='png', beam=None):
         get_noise_spec(source, src_basename, cube_params, original)
 
     # Make plot of spectrum with noise
-    fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, suffix=suffix)
-
+    fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
+                                             suffix=suffix)
     if outfile1 and outfile2:
         ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
         ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
