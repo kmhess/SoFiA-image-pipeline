@@ -75,6 +75,9 @@ def main():
     parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
                         help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
 
+    parser.add_argument('-line', '--spectral-line', default=None,
+                        help='Optional: Provide name of spectral line such as "CO(1-0)". Default is "HI".')
+
     ###################################################################
 
     # Parse the arguments above
@@ -200,8 +203,8 @@ def main():
             print("\n\t-Source {}: {}.".format(source['id'], source['name']))
             make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
                              chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                             user_image=args.user_image, user_range=args.user_range)
-            make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
+                             user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
+            make_spectra.main(source, src_basename, original, spec_line=args.spectral_line, suffix=suffix, beam=beam)
 
             if imagemagick:
                 combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), user_image=args.user_image)
