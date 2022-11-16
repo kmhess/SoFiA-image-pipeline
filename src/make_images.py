@@ -16,14 +16,11 @@ import numpy as np
 from urllib.error import HTTPError
 
 from src.modules.functions import get_info
-from src.modules.functions import chan2freq, chan2vel, sbr2nhi
+from src.modules.functions import chan2freq, chan2vel, sbr2nhi, line_lookup
 from src.modules.functions import create_pv
 from src.modules.functions import plot_labels
 from src.modules.get_ancillary import *
 from src.modules.get_hst_cosmos import get_hst_cosmos
-
-HI_restfreq = 1420405751.77 * u.Hz
-optical_HI = u.doppler_optical(HI_restfreq)
 
 
 ###################################################################
@@ -56,7 +53,8 @@ def get_wcs_info(fits_name):
 
 
 # Overlay HI contours on user image
-def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, suffix='png'):
+def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, spec_line=None,
+                     suffix='png'):
     """Overlay HI contours on top of a user provided image
 
     :param source: source object
@@ -75,6 +73,8 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
     :type swapx: bool
     :param perc: percentage range of data for plotting user image
     :type perc: list, float
+    :param spec_line: name of spectral line
+    :type spec_line: str
     :param suffix: file type, defaults to 'png'
     :type suffix: str, optional
     :return:
@@ -90,7 +90,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
             return
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value)
+                                             cube_params['bmin'].value, spec_line=spec_line)
 
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
@@ -134,7 +134,8 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
 
 # Overlay HI contours on another image
-def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
+def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, spec_line=None, suffix='png',
+                 survey='DSS2 Blue'):
     """Overlay HI contours on top of an optical image
 
     :param source: source object
@@ -149,6 +150,8 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
     :type opt: dict
     :param base_contour: base contour
     :type base_contour: float
+    :param spec_line: name of spectral line
+    :type spec_line: str
     :param suffix: file type, defaults to 'png'
     :type suffix: str, optional
     :param survey: survey from which to use data, defaults to 'DSS2 Blue'
@@ -166,7 +169,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
             return
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value)
+                                             cube_params['bmin'].value, spec_line=spec_line)
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
         except FileNotFoundError:
@@ -215,7 +218,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
 
 
 # Make HI grey scale image
-def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
+def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png'):
     """Overlay HI contours on the HI gray scale image.
 
     :param source: source object
@@ -230,6 +233,8 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
     :type opt_head: FITS header
     :param base_contour: lowest HI contour
     :type base_contour: float
+    :param spec_line: name of spectral line
+    :type spec_line: str
     :param suffix: image file type
     :type suffix: str
     :return:
@@ -260,7 +265,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         owcs = WCS(opt_head)
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value)
+                                             cube_params['bmin'].value, spec_line=spec_line)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
         plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
@@ -298,7 +303,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
 
 # Make HI significance image
-def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
+def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png'):
     """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
     :param source: source object
@@ -313,6 +318,8 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
     :type opt_head: FITS header
     :param base_contour: lowest HI contour
     :type base_contour: float
+    :param spec_line: name of spectral line
+    :type spec_line: str
     :param suffix: image file type
     :type suffix: str
     :return:
@@ -346,7 +353,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         owcs = WCS(opt_head)
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value)
+                                             cube_params['bmin'].value, spec_line=spec_line)
         wa_cmap = colors.ListedColormap(['w', 'royalblue', 'limegreen', 'yellow', 'orange', 'r'])
         boundaries = [0, 1, 2, 3, 4, 5, 6]
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
@@ -377,7 +384,8 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 
 # Make velocity map for object
-def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base_contour, suffix='png', sofia=2):
+def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base_contour, spec_line=None, suffix='png',
+              sofia=2):
     """
 
     :param source: source object
@@ -390,10 +398,12 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
     :type patch: dict
     :param opt_head: Header for the color image
     :type opt_head: FITS header
-    :param base_contour: lowest HI contour
-    :type base_contour: float
     :param opt_view: requested size of the image for regriding
     :type opt_view: quantity
+    :param base_contour: lowest HI contour
+    :type base_contour: float
+    :param spec_line: name of spectral line
+    :type spec_line: str
     :param suffix: image file type
     :type suffix: str
     :param sofia: major sofia version number
@@ -418,26 +428,29 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             print("\tERROR: No fits snr map associated with source, so can't determine mask for mom1 figure.")
             return
 
+        # Get frequency information for spectral line in question:
+        line = line_lookup(spec_line)
+
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
         convention = 'Optical'
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
-            mom1[0].data = (mom1[0].data * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+            mom1[0].data = (mom1[0].data * u.Hz).to(u.km / u.s, equivalencies=line['optical']).value
             # Calculate spectral quantities for plotting
-            v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=optical_HI).value
+            v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['optical']).value
             # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
             w50 = (const.c * source['w50'] * u.Hz / (source['freq'] * u.Hz)).to(u.km/u.s,
-                                                                                equivalencies=optical_HI).value
+                                                                                equivalencies=line['optical']).value
             w20 = (const.c * source['w20'] * u.Hz / (source['freq'] * u.Hz)).to(u.km/u.s,
-                                                                                equivalencies=optical_HI).value
+                                                                                equivalencies=line['optical']).value
             if sofia == 2:
                 freqmin = chan2freq(source['z_min'], src_basename + '_{}_cube.fits'.format(source['id']))
                 freqmax = chan2freq(source['z_max'], src_basename + '_{}_cube.fits'.format(source['id']))
             elif sofia == 1:
                 freqmin = chan2freq(source['z_min'], src_basename + '_{}.fits'.format(source['id']))
                 freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id']))
-            velmax = freqmin.to(u.km / u.s, equivalencies=optical_HI).value
-            velmin = freqmax.to(u.km / u.s, equivalencies=optical_HI).value
+            velmax = freqmin.to(u.km / u.s, equivalencies=line['optical']).value
+            velmin = freqmax.to(u.km / u.s, equivalencies=line['optical']).value
         else:
             # Convert moment map from m/s into units of km/s.
             mom1[0].data = (mom1[0].data * u.m / u.s).to(u.km / u.s).value
@@ -544,8 +557,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
 
 
 # Overlay HI contours on false color optical image
-def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
-                  survey='panstarrs'):
+def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, spec_line=None,
+                  suffix='png', survey='panstarrs'):
     """Overlay HI contours on a false color image.
 
     :param source: source object
@@ -562,6 +575,8 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     :type opt_head: FITS header
     :param base_contour: lowest HI contour
     :type base_contour: float
+    :param spec_line: name of spectral line
+    :type spec_line: str
     :param suffix: image file type
     :type suffix: str
     :param survey: survey name to retrieve color image
@@ -592,7 +607,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         mom0 = hdulist_hi[0].data
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value)
+                                             cube_params['bmin'].value, spec_line=spec_line)
 
         owcs = WCS(opt_head)
         fig = plt.figure(figsize=(8, 8))
@@ -630,7 +645,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
 
 # Make pv plot for object
-def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=True, suffix='png'):
+def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=None, min_axis=True, suffix='png'):
     """Plot the position-velocity slice for the source.
 
     :param source: source object
@@ -641,6 +656,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
     :type cube_params: dict
     :param opt_view: requested size of the image for regriding
     :type opt_view: quantity
+    :param spec_line: name of spectral line
+    :type spec_line: str
     :param min_axis: flag for extracting major or minor axis
     :type min_axis: boolean
     :param suffix: image file type
@@ -670,6 +687,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
         ax1 = fig.add_subplot(111, projection=WCS(pv[0].header, fix=True, translate_units='shd'))
         pvd = pv[0].data
         pvd_rms = 1.4826 * np.nanmedian(np.abs(pvd[pvd < 0]))  # Estimate rms as MAD of negative pix assuming median = 0
+
+        # Get frequency information for spectral line in question:
+        line = line_lookup(spec_line)
 
         # Append second color map for above the 3 sigma noise:
         # https://matplotlib.org/3.5.0/tutorials/colors/colormapnorms.html#twoslopenorm-different-mapping-on-either-side-of-a-center
@@ -729,8 +749,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
                 ax1.coords[1].set_format_unit(u.MHz)
                 # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
                 ax2 = ax1.twinx()
-                vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
-                vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
+                vel1 = const.c.to(u.km / u.s).value * (line['restfreq'].to(u.Hz).value / freq1 - 1)
+                vel2 = const.c.to(u.km / u.s).value * (line['restfreq'].to(u.Hz).value / freq2 - 1)
                 ax2.set_ylim(vel1, vel2)
                 ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention))
             else:
@@ -756,7 +776,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
 
 
 def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, chan_width=None, surveys=None,
-         snr_range=[2, 3], user_image=None, user_range=[10., 99.]):
+         snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None):
 
     print("\tStart making spatial images.")
     swapx = False
@@ -871,7 +891,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
                                  wcs=usrim_wcs, mode='partial')
             make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range,
-                             suffix='png')
+                             suffix='png', spec_line=spec_line)
             opt_head = usrim_cut.wcs.to_header()
             # wcs.to_header() seems to have a bug where it doesn't include the axis information.
             opt_head['NAXIS'] = 2
@@ -892,7 +912,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_height = (cube_params['bmaj'] / hst_opt_view).decompose()
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
-            make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst')
+            make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst',
+                         spec_line=spec_line)
         if surveys[0] == 'hst':
             opt_head = hst_opt[0].header
             opt_view = hst_opt_view
@@ -904,7 +925,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         pstar_im, pstar_head = get_panstarrs(hi_pos_common, opt_view=opt_view)
         if pstar_im:
             make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest,
-                          suffix=suffix, survey='panstarrs')
+                          suffix=suffix, survey='panstarrs', spec_line=spec_line)
         if surveys[0] == 'panstarrs':
             opt_head = pstar_head
         surveys.remove('panstarrs')
@@ -923,7 +944,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     if ('decals' in surveys) and (hi_pos_common.frame.name != 'galactic'):
         decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, dev_dr=dev_dr)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
-                      survey='decals')
+                      survey='decals', spec_line=spec_line)
         if surveys[0] == 'decals':
             opt_head = decals_head
         surveys.remove('decals')
@@ -937,14 +958,14 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             if ('wise' in survey) or ('WISE' in survey):
                 overlay_image = get_wise(hi_pos_common, opt_view=opt_view, survey=survey)
                 make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
-                             survey=survey)
+                             survey=survey, spec_line=spec_line)
                 if surveys[0] == survey:
                     opt_head = overlay_image[0].header
             else:
                 try:
                     overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
                     make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
-                                 survey=survey)
+                                 survey=survey, spec_line=spec_line)
                     if surveys[0] == survey:
                         opt_head = overlay_image[0].header
                 except ValueError:
@@ -957,7 +978,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                     try:
                         overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
                         make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest,
-                                     suffix=suffix, survey=survey)
+                                     suffix=suffix, survey=survey, spec_line=spec_line)
                         if surveys[0] == survey:
                             opt_head = overlay_image[0].header
                     except:
@@ -969,7 +990,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                 #     try:
                 #         overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
                 #         make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, swapx,
-                #                      suffix=suffix, survey=survey)
+                #                      suffix=suffix, survey=survey, spec_line=spec_line)
                 #         if surveys[0] == survey:
                 #             opt_head = overlay_image[0].header
                 #     except:
@@ -977,13 +998,14 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
-        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
-        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
-        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix, sofia=2)
+        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
+        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
+        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix, sofia=2,
+                  spec_line=spec_line)
 
     # Make pv and/or pv_min if they were created; not dependent on having a survey image to regrid to.
-    make_pv(source, src_basename, cube_params, opt_view=opt_view, suffix=suffix, min_axis=False)
-    make_pv(source, src_basename, cube_params, opt_view=opt_view, suffix=suffix, min_axis=True)
+    make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=False)
+    make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=True)
 
     plt.close('all')
 
