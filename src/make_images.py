@@ -895,7 +895,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst')
         if surveys[0] == 'hst':
             opt_head = hst_opt[0].header
-            opt_view = hst_opt_view
+            opt_view = np.array([hst_opt_view.value,]) * u.arcsec
             patch = patch_hst
         surveys.remove('hst')
 
