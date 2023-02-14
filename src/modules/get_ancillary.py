@@ -1,5 +1,5 @@
 import requests
-from PIL import Image
+from PIL import Image, ImageEnhance
 from io import BytesIO
 from urllib.error import HTTPError
 
@@ -96,7 +96,7 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, dev_dr=False):
     pixscale = 0.262   # default(?) arcsec/pixel
     dimen = (opt_view.to(u.arcsec).value / pixscale).astype(int)
     if dev_dr:
-        url = 'https://www.legacysurvey.org/viewer-dev/cutout.fits?ra={}&dec={}&layer=ls-dr10-grz&' \
+        url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr10&' \
               'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
     else:
         url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
