@@ -81,9 +81,10 @@ def sbr2nhi(sbr, bunit, bmaj, bmin):
     :return: column density
     :rtype: float
     """
+    # NEED TO ADD UNITS THAT ANNOYINGLY COME OUT OF SPECTRAL CUBE! DONE?
     if (bunit == 'Jy/beam*m/s') or (bunit == 'Jy/beam*M/S'):
       nhi = 1.104e+21 * sbr / bmaj / bmin
-    elif bunit == 'Jy/beam*Hz':
+    elif (bunit == 'Jy/beam*Hz') or (bunit == 'beam-1 Jy*Hz'):
       nhi = 2.330e+20 * sbr / bmaj / bmin
     else:
       print("\tWARNING: Mom0 imag units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
