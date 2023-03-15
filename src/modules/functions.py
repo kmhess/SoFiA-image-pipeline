@@ -185,15 +185,19 @@ def get_info(fits_name, beam=None):
         print("\tFound {} reference frame specified in SPECSYS in header.".format(spec_sys))
     except:
         try:
-            velref = header['VELREF']
-            if velref == 1: spec_sys = 'LSR'
-            if velref == 2: spec_sys = 'HELIOCEN'
-            if velref == 3: spec_sys = 'TOPOCENT'
-            print("\tDerived {} reference frame from VELREF in header using AIPS convention.".format(spec_sys))
+            spec_sys = header['SPECSYS3']
+            print("\tFound {} reference frame specified in SPECSYS3 in header.".format(spec_sys))
         except:
-            # Comment this message out for now...program checks later.
-            # print("\tNo SPECSYS or VELREF in header to define reference frame, checking CTYPE3.")
-            pass
+            try:
+                velref = header['VELREF']
+                if velref == 1: spec_sys = 'LSR'
+                if velref == 2: spec_sys = 'HELIOCEN'
+                if velref == 3: spec_sys = 'TOPOCENT'
+                print("\tDerived {} reference frame from VELREF in header using AIPS convention.".format(spec_sys))
+            except:
+                # Comment this message out for now...program checks later.
+                print("\tNo SPECSYS, SPECSYS3, or VELREF in header to define reference frame, will check CTYPE3.")
+                pass
 
     # Try to determine the spectral properties
     if fits_name[-9:] != 'cube.fits':
