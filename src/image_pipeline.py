@@ -164,17 +164,6 @@ def main():
     catalog['pos_x'] = None
     catalog['pos_y'] = None
 
-    # Rename the spectral column if cube was in velocity. For now treat all velocity axes the same (dumb temporary fix)
-    if 'v_app' in catalog.colnames:
-        catalog.rename_column('v_app', 'v_col')
-    elif 'v_rad' in catalog.colnames:
-        catalog.rename_column('v_rad', 'v_col')
-    elif 'v_opt' in catalog.colnames:
-        catalog.rename_column('v_opt', 'v_col')
-    elif 'freq' not in catalog.colnames:
-        print("ERROR: Column name for spectral axis not recognized.\n")
-        exit()
-
     # Set up some directories
     cubelet_dir = catalog_file.split("_cat.")[0] + '_cubelets/'
     if not os.path.isdir(cubelet_dir):
