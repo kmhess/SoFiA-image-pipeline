@@ -442,7 +442,13 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # Convert moment map from m/s into units of km/s.
             mom1[0].data = (mom1[0].data * u.m / u.s).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
-            v_sys = (source['v_col'] * u.m / u.s).to(u.km / u.s).value
+            if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
+                convention = 'Radio'
+                v_sys = (source['v_rad'] * u.m / u.s).to(u.km / u.s).value
+            elif 'v_opt' in source.colnames:
+                v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
+            elif 'v_app' in source.colnames:
+                v_sys = (source['v_app'] * u.m / u.s).to(u.km / u.s).value
             # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
             w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
             w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
@@ -450,8 +456,6 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
             velmax = chan2vel(source['z_max'], src_basename +
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
-            if cube_params['spec_axis'] == 'VRAD':
-                convention = 'Radio'
 
         if velmin == velmax:
             singlechansource = True
@@ -734,9 +738,13 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
                 ax2.set_ylim(vel1, vel2)
                 ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention))
             else:
-                if cube_params['spec_axis'] == 'VRAD':
+                if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
                     convention = 'Radio'
-                vel_sys = source['v_col']
+                    vel_sys = source['v_rad']
+                elif 'v_opt' in source.colnames:
+                    vel_sys = source['v_opt']
+                elif 'v_app' in source.colnames:
+                    vel_sys = source['v_app']
                 ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
                          linewidth=0.75, transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
