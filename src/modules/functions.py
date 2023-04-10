@@ -136,7 +136,15 @@ def get_info(fits_name, beam=None):
             bmaj = header['BMAJ'] * 3600. * u.arcsec
             bmin = header['BMIN'] * 3600. * u.arcsec
             bpa = header['BPA']
-            print(f"\tFound {bmaj:.1f} by {bmin:.1f} beam with PA={bpa:.1f} deg in primary header.")
+            if bmaj * bmin == 0.0:
+                print("\tWARNING: BMAJ and/or BMIN in header = 0! "
+                      "Assuming beam is 3.5x3.5 pixels"
+                      "\n\t\tColumn density and beam plotted as order of magnitude estimate ONLY. "
+                      "\n\t\tRerun with -b and provide beam info to remove red strikethroughs on plots.")
+                bmaj, bmin, bpa = 3.5 * cellsize, 3.5 * cellsize, 0
+                default_beam = True
+            else:
+                print(f"\tFound {bmaj:.1f} by {bmin:.1f} beam with PA={bpa:.1f} deg in primary header.")
         except:
             print("\tWARNING: Couldn't find beam in primary header information; in other extension? "
                   "Assuming beam is 3.5x3.5 pixels"
