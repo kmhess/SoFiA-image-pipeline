@@ -189,21 +189,26 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
             # ax1.imshow(opt[0].data, origin='lower', cmap='twilight', norm=LogNorm(vmax=5))
             # ax1.imshow(opt[0].data, origin='lower', cmap='Greys', norm=LogNorm(vmin=-0.003, vmax=30))
             ax1.imshow(opt[0].data, origin='lower', cmap='Greys',
-                       norm=PowerNorm(gamma=0.25, vmin=np.percentile(opt[0].data, 20),
+                       norm=PowerNorm(gamma=0.4, vmin=np.percentile(opt[0].data, 20),
                                       vmax=np.percentile(opt[0].data, 99.5)))
+            # Plot positive contours
+            ax1.contour(hdulist_hi[0].data, cmap='Blues_r', linewidths=1, levels=base_contour * 2 ** np.arange(10),
+                    transform=ax1.get_transform(cubew))
+            ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
         else:
             ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
                        vmax=np.percentile(opt[0].data, 99.8), origin='lower')
-        # Plot positive contours
-        if np.isfinite(base_contour):
-            ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
-                    transform=ax1.get_transform(cubew))
-        # Plot negative contours
-        if np.nanmin(hdulist_hi[0].data) < -base_contour and np.isfinite(base_contour):
-            ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
-                        levels=-base_contour * 2 ** np.arange(10, -1, -1),
-                        transform=ax1.get_transform(cubew))
-        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
+            # Plot positive contours
+            if np.isfinite(base_contour):
+                ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
+                            transform=ax1.get_transform(cubew))
+            # Plot negative contours
+            if np.nanmin(hdulist_hi[0].data) < -base_contour and np.isfinite(base_contour):
+                ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
+                            levels=-base_contour * 2 ** np.arange(10, -1, -1),
+                            transform=ax1.get_transform(cubew))
+            ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
+                
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
 
