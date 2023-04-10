@@ -65,6 +65,10 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
                 velocities = spec_template['col2'] if spec_template else felo2vel(channels, fits_file)
                 ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
                             names=['chan', 'velo', 'f_sum', 'n_pix'])
+            elif 'VRAD' in cube_params['spec_axis']:
+                velocities = spec_template['col2'] if spec_template else chan2vel(channels, fits_file)
+                ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
+                            names=['chan', 'v_rad', 'f_sum', 'n_pix'])
             else:
                 velocities = spec_template['col2'] if spec_template else chan2vel(channels, fits_file)
                 ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
@@ -93,7 +97,6 @@ def make_specfull(source, src_basename, cube_params, original, suffix='png'):
                 maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
                                                                                     equivalencies=optical_HI).value
             else:
-                # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
                 if 'v_rad' in source.colnames:
                     convention = 'Radio'
                 spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
@@ -169,7 +172,6 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
             else:
-                # Maybe problematic...isn't everything changed to v_col in image_pipeline.py?
                 if 'v_rad' in source.colnames:
                     convention = 'Radio'
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
