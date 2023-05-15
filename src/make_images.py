@@ -531,6 +531,21 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                          xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
                          arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                          linestyle='--'))
+        # Plot the minor axis if pv_min was created by SoFiA:
+        if os.path.isfile(src_basename + '_{}_pv_min.fits'.format(source['id'])):
+            pa_min = kinpa + 90. * u.deg
+            p1x, p1y = (hi_pos.ra + 0.35 * opt_view[0] * np.sin(pa_min) / np.cos(hi_pos.dec)).deg,\
+                       (hi_pos.dec + 0.35 * opt_view[0] * np.cos(pa_min)).deg
+            p2x, p2y = (hi_pos.ra - 0.35 * opt_view[0] * np.sin(pa_min) / np.   cos(hi_pos.dec)).deg,\
+                       (hi_pos.dec - 0.35 * opt_view[0] * np.cos(pa_min)).deg
+            # Assume same issues with Galactic coordinates with plotting min PA as kinpa above
+            if 'l' in source.colnames:
+                ax1.plot([p1x, p2x], [p1y, p2y], linestyle=':', color='k', transform=ax1.get_transform('world'))
+            else:
+                ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
+                            xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
+                            arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
+                                            linestyle=':'))
 
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
         if not singlechansource:
