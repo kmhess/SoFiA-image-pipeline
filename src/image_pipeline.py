@@ -75,6 +75,9 @@ def main():
     parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
                         help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
 
+    parser.add_argument('-uc', '--user-catalog', default=None,
+                        help='Optional: Catalogue of sources whose positions should be marked in the HI overlay PNG.')
+
     ###################################################################
 
     # Parse the arguments above
@@ -181,6 +184,55 @@ def main():
     # Make all the images on a source-by-source basis.  In future, could parallelize this.
     n_src = 0
 
+    # Read in the optional user catalog:
+    user_catalog_file = args.user_catalog
+
+    if user_catalog_file.split(".")[-1] == "xml":
+        print("\tReading user catalog in XML format.")
+        try:
+            user_catalog = Table.read(user_catalog_file)
+        except FileNotFoundError:
+            print("\tERROR: {} user catalog not found. Typo or wrong directory?\n".format(user_catalog_file))
+            exit()
+        except:
+            no_user_cat = True
+    elif (user_catalog_file.split(".")[-1] == "txt") | (user_catalog_file.split(".")[-1] == "ascii"):
+        print("\tReading user catalog in ascii format. Assuming that the header is in row 0.")
+        try:
+            user_catalog = Table.read(user_catalog_file, format='ascii', header_start=0)
+            no_user_cat = False
+        except FileNotFoundError:
+            print("\tERROR: {} user catalog not found. Typo or wrong directory?\n".format(catalog_file))
+            exit()
+        except:
+            no_user_cat = True
+        if no_user_cat == True:
+            try:
+                catalog = Table.read(catalog_file, format='ascii', header_start=0)
+                no_user_cat = False
+            except:
+                no_user_cat = True
+        if no_user_cat == True:
+            print("\tERROR: Trouble reading ascii format user catalog. A bug?")
+    else:
+        print("\tERROR: User catalog must be in xml or ascii format.\n")
+        exit()
+    try:
+        user_catalog = user_catalog['OBJID','RA','DEC']
+    except:
+        print("\tERROR: Could not extract columns id,RA,DEC from user catalog {}. Check header?\n".format(catalog_file))
+        print("\t       These are the available columns: {}".format(user_catalog.colnames))
+        exit()
+    print("\t{} entries in user catalog".format(len(user_catalog)))
+
+    try:
+        user_catalog = user_catalog[~user_catalog['RA'].mask] # remove rows with masked RA
+        user_catalog = user_catalog[np.isfinite(user_catalog['RA'])] # remove rows with non-finite RA
+    except:
+        print("\tERROR: Failed selecting user catalog entries with a finite RA. A bug?\n")
+        exit()
+    print("\t{} entries with unmasked and finite RA in user catalog".format(len(user_catalog)))
+
     for source in catalog:
 
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
@@ -189,7 +241,7 @@ def main():
             print("\n\t-Source {}: {}.".format(source['id'], source['name']))
             make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
                              chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                             user_image=args.user_image, user_range=args.user_range)
+                             user_image=args.user_image, user_range=args.user_range, user_cat=user_catalog)
             make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
             if imagemagick:

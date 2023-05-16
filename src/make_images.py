@@ -135,7 +135,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
 
 # Overlay HI contours on another image
-def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue'):
+def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, suffix='png', survey='DSS2 Blue', user_cat=None):
     """Overlay HI contours on top of an optical image
 
     :param source: source object
@@ -208,7 +208,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
                             levels=-base_contour * 2 ** np.arange(10, -1, -1),
                             transform=ax1.get_transform(cubew))
             ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
-                
+
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
 
@@ -574,7 +574,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
 
 # Overlay HI contours on false color optical image
 def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
-                  survey='panstarrs'):
+                  survey='panstarrs', user_cat_sel=None):
     """Overlay HI contours on a false color image.
 
     :param source: source object
@@ -628,7 +628,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         ax1 = fig.add_subplot(111, projection=owcs)
         # ax1.set_facecolor("darkgray")   # Doesn't work with the color im
         ax1.imshow(color_im, origin='lower')
-        plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
+        plot_labels(source, ax1, cube_params['default_beam'], x_color='white', user_cat_sel=user_cat_sel)
         if np.isfinite(base_contour):
             # Plot positive contours
             if base_contour > 0.0:
@@ -790,7 +790,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
 
 
 def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, chan_width=None, surveys=None,
-         snr_range=[2, 3], user_image=None, user_range=[10., 99.]):
+         snr_range=[2, 3], user_image=None, user_range=[10., 99.], user_cat=None):
 
     print("\tStart making spatial images.")
     swapx = False
@@ -871,6 +871,14 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         print("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view))
         opt_view = np.array([opt_view,]) * u.arcmin
 
+    # Select sources within the FoV from the user catalogue
+    if not user_cat is None:
+        sel_radius = np.sqrt(2) * opt_view / 2
+        user_cat_sel = user_cat[hi_pos_common.separation(SkyCoord(user_cat['RA'],user_cat['DEC'], unit='deg')) <= sel_radius]
+        print("\tWill overlay {} sources from user catalog".format(len(user_cat_sel)))
+    else:
+        user_cat_sel = None
+
     # Calculate the size of the beam (plotted as a fraction of the image size)
     patch_height = (cube_params['bmaj'] / opt_view).decompose()
     patch_width = (cube_params['bmin'] / opt_view).decompose()
@@ -925,7 +933,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_height = (cube_params['bmaj'] / hst_opt_view).decompose()
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
-            make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst')
+            make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst', user_cat=user_cat)
         if surveys[0] == 'hst':
             opt_head = hst_opt[0].header
             opt_view = np.array([hst_opt_view.value,]) * u.arcsec
@@ -937,7 +945,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         pstar_im, pstar_head = get_panstarrs(hi_pos_common, opt_view=opt_view)
         if pstar_im:
             make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest,
-                          suffix=suffix, survey='panstarrs')
+                          suffix=suffix, survey='panstarrs', user_cat=user_cat)
         if surveys[0] == 'panstarrs':
             opt_head = pstar_head
         surveys.remove('panstarrs')
@@ -956,7 +964,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     if ('decals' in surveys) and (hi_pos_common.frame.name != 'galactic'):
         decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, dev_dr=dev_dr)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
-                      survey='decals')
+                      survey='decals', user_cat_sel=user_cat_sel)
         if surveys[0] == 'decals':
             opt_head = decals_head
         surveys.remove('decals')
@@ -970,14 +978,14 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             if ('wise' in survey) or ('WISE' in survey):
                 overlay_image = get_wise(hi_pos_common, opt_view=opt_view, survey=survey)
                 make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
-                             survey=survey)
+                             survey=survey, user_cat=user_cat)
                 if surveys[0] == survey:
                     opt_head = overlay_image[0].header
             else:
                 try:
                     overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
                     make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
-                                 survey=survey)
+                                 survey=survey, user_cat=user_cat)
                     if surveys[0] == survey:
                         opt_head = overlay_image[0].header
                 except ValueError:
@@ -990,7 +998,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                     try:
                         overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
                         make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest,
-                                     suffix=suffix, survey=survey)
+                                     suffix=suffix, survey=survey, user_cat=user_cat)
                         if surveys[0] == survey:
                             opt_head = overlay_image[0].header
                     except:

@@ -359,7 +359,7 @@ def create_pv(source, filename, opt_view=6*u.arcmin, min_axis=False):
     return mask_pv
 
 
-def plot_labels(source, ax, default_beam, x_color='k'):
+def plot_labels(source, ax, default_beam, x_color='k', user_cat_sel=None):
     """Plot labels on spatial plots depending on the coordinate frame.
 
     :param source: source object
@@ -383,6 +383,15 @@ def plot_labels(source, ax, default_beam, x_color='k'):
 
     ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75,
                transform=ax.get_transform('world'))
+
+    if not user_cat_sel is None:
+#        ax.scatter(user_cat_sel['RA'], user_cat_sel['DEC'], marker='o', c='r', linewidth=0.5,
+#                   transform=ax.get_transform('world'))
+
+        for qq in user_cat_sel:
+            ax.text(qq['RA'], qq['DEC'], qq['OBJID'], color='r',
+                       transform=ax.get_transform('world'))
+
     ax.set_title(source['name'], fontsize=20)
     ax.tick_params(axis='both', which='major', labelsize=18)
     ax.coords[x_coord].set_axislabel(x_label, fontsize=20)
