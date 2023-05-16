@@ -220,7 +220,7 @@ def main():
     try:
         user_catalog = user_catalog['OBJID','RA','DEC']
     except:
-        print("\tERROR: Could not extract columns id,RA,DEC from user catalog {}. Check header?\n".format(catalog_file))
+        print("\tERROR: Could not extract columns OBJID,RA,DEC from user catalog {}. Check header?\n".format(catalog_file))
         print("\t       These are the available columns: {}".format(user_catalog.colnames))
         exit()
     print("\t{} entries in user catalog".format(len(user_catalog)))
