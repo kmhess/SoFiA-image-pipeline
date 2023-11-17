@@ -16,10 +16,10 @@ setup(
         "astroquery == 0.4.5",
         "matplotlib == 3.4.1",
         "numpy == 1.22.0",
-        "Pillow >= 10.0.0",
+        "Pillow >= 10.0.1",
         "pvextractor >= 0.2",
-        "requests == 2.25.1",
-        "setuptools == 62.3.2",
+        "requests >= 2.31.0",
+        "setuptools >= 65.5.1",
         "sphinx_rtd_theme == 1.0.0",
         "xmltodict == 0.12.0"
     ],
