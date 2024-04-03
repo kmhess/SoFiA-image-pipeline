@@ -820,6 +820,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             HIlowest = np.median(hdulist_hi[0].data[(np.abs(hdulist_snr[0].data) > snr_range[0]) *
                                                     (np.abs(hdulist_snr[0].data) < snr_range[1])])
             if not HIlowest > 0.0:
+                print("\tEncountered empty SNR map, skipping this plot.")
                 return True
         print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
                                                                                                           HIlowest))
