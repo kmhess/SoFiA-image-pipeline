@@ -44,7 +44,7 @@ def get_wcs_info(fits_name):
     if cubew.wcs.equinox != 2000.0:
         sky = cubew.sub(2).pixel_to_world(cubew.wcs.crpix[0], cubew.wcs.crpix[1])
         sky_icrs = sky.transform_to("icrs")
-        
+
         cubeh['EPOCH'] = 2000.0
         cubeh['CRVAL1'] = sky_icrs.ra.deg
         cubeh['CRVAL2'] = sky_icrs.dec.deg
@@ -208,7 +208,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, su
                             levels=-base_contour * 2 ** np.arange(10, -1, -1),
                             transform=ax1.get_transform(cubew))
             ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
-                
+
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
 
@@ -819,6 +819,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                 fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi:
             HIlowest = np.median(hdulist_hi[0].data[(np.abs(hdulist_snr[0].data) > snr_range[0]) *
                                                     (np.abs(hdulist_snr[0].data) < snr_range[1])])
+            if not HIlowest > 0.0:
+                return True
         print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
                                                                                                           HIlowest))
     # If no SNR map use the channel width of the original data (provided by user if necessary) for lowest HI contour.
