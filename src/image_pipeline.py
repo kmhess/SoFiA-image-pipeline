@@ -193,6 +193,9 @@ def main():
             make_spectra.main(source, src_basename, original, suffix=suffix, beam=beam)
 
             if imagemagick:
+                if 'decals-dr9' in surveys:
+                    surveys=list(surveys)
+                    surveys[surveys.index('decals-dr9')] = 'decals'
                 combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), user_image=args.user_image)
 
             n_src += 1
