@@ -93,8 +93,12 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, dr9=False):
     :rtype: Tuple[color_im, FITS_header] TODO check exact types!
     """
     # Get DECaLS false color image and fits (for the WCS). Example URL for this script provided by John Wu.
-    pixscale = 0.262   # default(?) arcsec/pixel
+    pixscale = 0.262   # default arcsec/pixel
     dimen = (opt_view.to(u.arcsec).value / pixscale).astype(int)
+    if dimen[0] > 3000:
+        pixscale = pixscale*dimen[0]/3000.
+        dimen = [3000]
+
     if dr9:
         url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
               'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
