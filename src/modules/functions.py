@@ -118,7 +118,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source):
         nhi = sbr
     
     if np.isfinite(nhi):
-        nhi_ofm = np.int(np.floor(np.log10(np.abs(nhi))))
+        nhi_ofm = int(np.floor(np.log10(np.abs(nhi))))
     else:
         nhi_ofm = 0
     
