@@ -57,10 +57,10 @@ def main():
                             ' of all pixels whose SNR value is within the given range. Default is [2,3].')
 
     parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
-                        help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
-                            ' These additional non-SkyView options are also available: \'decals\',\'panstarrs\',\'hst\'.\n'
-                            ' \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue" if no user\n' 
-                            ' provided image.')
+                        help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours. These\n'
+                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'panstarrs\',\'hst\'.\n'
+                            ' \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue" if no user provided\n' 
+                            ' image.')
 
     parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
                         help='Optional: combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'

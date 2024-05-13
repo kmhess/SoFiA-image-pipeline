@@ -82,7 +82,7 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
     return color_im, fits_head
 
 
-def get_decals(hi_pos, opt_view=6*u.arcmin, dev_dr=False):
+def get_decals(hi_pos, opt_view=6*u.arcmin, dr9=False):
     """Get DECaLS false color image and g-band fits (for the WCS).
 
     :param hi_pos: position in the HI data
@@ -95,11 +95,11 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, dev_dr=False):
     # Get DECaLS false color image and fits (for the WCS). Example URL for this script provided by John Wu.
     pixscale = 0.262   # default(?) arcsec/pixel
     dimen = (opt_view.to(u.arcsec).value / pixscale).astype(int)
-    if dev_dr:
-        url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr10&' \
+    if dr9:
+        url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
               'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
     else:
-        url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
+        url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr10&' \
               'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
 
     try:
@@ -107,7 +107,10 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, dev_dr=False):
         r = requests.get(url.replace("fits", "jpg").split('bands')[0])
         color_im = Image.open(BytesIO(r.content))
     except HTTPError:
-        print("\tWARNING: HTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS coverage?")
+        if dr9:
+            print("\tWARNING: HTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR9 coverage?")
+        else:
+            print("\tWARNING: HTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR10 coverage?")
         fits_head = None
         color_im = None
 

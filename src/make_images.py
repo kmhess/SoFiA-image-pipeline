@@ -946,15 +946,15 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         surveys.remove('panstarrs')
 
     # If requested plot HI contours on DECaLS imaging
-    dev_dr = False
-    if 'decals' in surveys and 'decals-dev' in surveys:
-        print("\tERROR: Only one between decals and decals-dev can be given.")
+    dr9 = False
+    if 'decals' in surveys and 'decals-dr9' in surveys:
+        print("\tERROR: Only one between decals and decals-dr9 can be given.")
         exit()
-    elif 'decals-dev' in surveys:
-        surveys[surveys.index('decals-dev')] = 'decals'
-        dev_dr = True
+    elif 'decals-dr9' in surveys:
+        surveys[surveys.index('decals-dr9')] = 'decals'
+        dr9 = True
     if ('decals' in surveys) and (hi_pos_common.frame.name != 'galactic'):
-        decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, dev_dr=dev_dr)
+        decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, dr9=dr9)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
                       survey='decals')
         if surveys[0] == 'decals':
