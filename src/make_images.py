@@ -572,6 +572,116 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
     return
 
 
+# Make velocity dispersion map for object
+def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
+    """
+    :return:
+    """
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom2.{}'.format(source['id'], suffix)
+
+    if not os.path.isfile(outfile):
+
+        try:
+            print("\tMaking velocity dispersion map.")
+            mom2 = fits.open(src_basename + '_{}_mom2.fits'.format(source['id']))
+        except FileNotFoundError:
+            print("\tNo mom2 fits file. Perhaps you ran SoFiA without generating moments?")
+            return
+
+        if not os.path.isfile(src_basename + '_{}_cube.fits'.format(source['id'])):
+            print("\tERROR: No fits cube associated with source, so can't determine min & max velocities for mom2 figure.")
+            return
+        elif not os.path.isfile(src_basename + '_{}_snr.fits'.format(source['id'])):
+            print("\tERROR: No fits snr map associated with source, so can't determine mask for mom2 figure.")
+            return
+
+        # Do some preparatory work depending on the units of the spectral axis on the input cube.
+        convention = 'Optical'
+        if 'freq' in source.colnames:
+            # Convert moment map from Hz into units of km/s
+            mom2[0].data = (HI_restfreq - mom2[0].data * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+        else:
+            # Convert moment map from m/s into units of km/s.
+            mom2[0].data = (mom2[0].data * u.m / u.s).to(u.km / u.s).value
+            # Calculate spectral quantities for plotting
+            if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
+                convention = 'Radio'
+
+        if source['z_min'] == source['z_max']:
+            singlechansource = True
+        else:
+            singlechansource = False
+
+        try:
+            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+        except FileNotFoundError:
+            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+            print("\tWARNING: No cubelet to match source {}."
+                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
+            try:
+                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+            except FileNotFoundError:
+                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+                exit()
+
+        mom2_d = mom2[0].data
+        # Only plot values above the lowest calculated HI value:
+        hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+        mom0 = hdulist_hi[0].data
+        if base_contour > 0.0 and np.isfinite(base_contour):
+            mom2_d[mom0 < base_contour] = np.nan
+        elif np.isfinite(base_contour):
+            mom2_d[mom0 > base_contour] = np.nan
+        else:
+            mom2_d *= np.nan
+        owcs = WCS(opt_head)
+
+        hi_pos = SkyCoord(source['pos_x'], source['pos_y'], unit='deg')
+
+        fig = plt.figure(figsize=(8, 8))
+        ax1 = fig.add_subplot(111, projection=owcs)
+        plot_labels(source, ax1, cube_params['default_beam'])
+        if not singlechansource:
+            im = ax1.imshow(mom2_d, cmap='Spectral_r', origin='lower', transform=ax1.get_transform(cubew))
+        else:
+            im = ax1.imshow(mom2_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(cubew),
+                            vmin=0.999*np.nanmin(mom2_d), vmax=1.001*np.nanmax(mom2_d))
+        # Don't know how to deal with CRPIX that's different between original data and subcubes (sofia issue; chan2freq, chan2vel)
+        # vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
+        vel_max = np.nanmax(mom2_d)
+        for vunit in [3, 5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
+            n_contours = vel_max // vunit
+            if n_contours <= 6:
+                break
+        levels = np.arange(vunit,vel_max,vunit)
+        # clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
+        if not singlechansource:
+            cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=0.6, transform=ax1.get_transform(cubew))
+        v_disp_label = "$\Delta \sigma_{{contours}}$ = {} km/s".format(int(vunit))
+
+        ax1.text(0.5, 0.05, v_disp_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
+        ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
+                              transform=ax1.transAxes, facecolor='#4199B5', edgecolor='#D8424D', linewidth=1))
+        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cbar = fig.colorbar(im, cax=cb_ax)
+        if not singlechansource:
+            cbar.add_lines(cf)
+        cbar.set_label("{} Velocity Dispersion [km/s]".format(convention), 
+                       fontsize=18)
+
+        ax1.set_xlim(0, opt_head['NAXIS1'])
+        ax1.set_ylim(0, opt_head['NAXIS2'])
+
+        fig.savefig(outfile, bbox_inches='tight')
+        mom2.close()
+        hdulist_hi.close()
+
+    else:
+        print('\t{} already exists. Will not overwrite.'.format(outfile))
+
+    return
+
+
 # Overlay HI contours on false color optical image
 def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, suffix='png',
                   survey='panstarrs'):
@@ -1013,6 +1123,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
         make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix, sofia=2)
+        make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
 
     # Make pv and/or pv_min if they were created; not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, opt_view=opt_view, suffix=suffix, min_axis=False)
