@@ -13,7 +13,7 @@ setup(
     ],
     install_requires=[
         "astropy >= 5.0.2",
-        "astroquery == 0.4.5",
+        "astroquery >= 0.4.7",
         "matplotlib >= 3.5.1",
         "numpy == 1.22.0",
         "Pillow >= 10.0.1",

@@ -421,6 +421,6 @@ def plot_labels(source, ax, default_beam, x_color='k'):
         ax.scatter(0.92, 0.9, marker='x', c='red', s=500, linewidth=5, transform=ax.transAxes, zorder=99)
         ax.plot([0.1, 0.9], [0.05, 0.05], c='red', linewidth=3, transform=ax.transAxes, zorder=100)
         ax.text(0.5, 0.5, 'Not calculated with correct beam', transform=ax.transAxes, fontsize=40, color='gray',
-                alpha=0.5, ha='center', va='center', rotation='30', zorder=101)
+                alpha=0.5, ha='center', va='center', rotation=30, zorder=101)
 
     return
