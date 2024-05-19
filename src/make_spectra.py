@@ -125,8 +125,9 @@ def make_specfull(source, src_basename, cube_params, original, suffix='png'):
             ax2_spec.plot(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'])
         ax2_spec.set_title(source['name'])
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
-        ax2_spec.set_ylabel("Integrated Flux [Jy]")
-        ax2_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
+        ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=14)
+        ax2_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=14)
+        ax2_spec.tick_params(axis='both', which='major', labelsize=12)
 
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
         galspec_max = np.nanmax(spectrumJy[np.where(spec['chan'] == source['z_min'])[0][0]:
@@ -200,8 +201,10 @@ def make_spec(source, src_basename, cube_params, suffix='png'):
                               yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
         ax1_spec.set_title(source['name'])
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
-        ax1_spec.set_ylabel("Integrated Flux [Jy]")
-        ax1_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention))
+        ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=14)
+        ax1_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=14)
+        ax1_spec.tick_params(axis='both', which='major', labelsize=12)
+            # ax1.set_xlabel('Angular Offset [deg]', fontsize=18)
 
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
