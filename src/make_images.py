@@ -291,6 +291,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=18)
+        cbar.ax.tick_params(labelsize=16)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -371,6 +372,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Pixel SNR", fontsize=18)
+        cbar.ax.tick_params(labelsize=16)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -558,6 +560,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         if not singlechansource:
             cbar.add_lines(cf)
         cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
+        cbar.ax.tick_params(labelsize=16)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -666,8 +669,8 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
-        cbar.set_label("{} Velocity Dispersion [km/s]".format(convention), 
-                       fontsize=18)
+        cbar.set_label("{} Velocity Dispersion [km/s]".format(convention), fontsize=18)
+        cbar.ax.tick_params(labelsize=16)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -847,9 +850,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
                 print("\tNo mask cubelet found to overlay mask on {} diagram.".format(pv_axis))
             ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
                      transform=ax1.get_transform('world'))
-            ax1.set_title(source['name'], fontsize=16)
+            ax1.set_title(source['name'], fontsize=18)
             ax1.tick_params(axis='both', which='major', labelsize=18)
-            ax1.set_xlabel('Angular Offset [deg]', fontsize=16)
+            ax1.set_xlabel('Angular Offset [deg]', fontsize=18)
             pos_angle = source['kin_pa']
             pa_label = 'Kinematic PA'
             if pv_axis == 'pv_min':
@@ -865,14 +868,17 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
                 freq_sys = source['freq']
                 ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
                          linewidth=0.75, transform=ax1.get_transform('world'))
-                ax1.set_ylabel('Frequency [MHz]', fontsize=16)
+                ax1.set_ylabel('Frequency [MHz]', fontsize=18)
                 ax1.coords[1].set_format_unit(u.MHz)
                 # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
                 ax2 = ax1.twinx()
                 vel1 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq1 - 1)
                 vel2 = const.c.to(u.km / u.s).value * (HI_restfreq.value / freq2 - 1)
                 ax2.set_ylim(vel1, vel2)
-                ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention))
+                ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention),
+                                                              fontsize=18)
+                ax2.tick_params(labelsize=16)
+                # ax2.set_yticklabels(fontsize=18)
             else:
                 if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
                     convention = 'Radio'
@@ -884,8 +890,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, min_axis=Tru
                 ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
                          linewidth=0.75, transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
-                ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention,
-                                                              fontsize=18))
+                ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention),
+                                                              fontsize=18)
             if pv[0].header['cdelt2'] < 0:
                 ax1.set_ylim(ax1.get_ylim()[::-1])
                 ax1.set_xlim(ax1.get_xlim()[::-1])
