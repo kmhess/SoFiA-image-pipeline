@@ -30,17 +30,21 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
                 cube = fits.getdata(fits_file)
                 mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
                 spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                                           names=['chan', 'col2', 'f_sum', 'n_pix'])
+                                            names=['chan', 'col2', 'f_sum', 'n_pix'])
                 channels = spec_template['chan']
             else:
-                print("\tOriginal data cube provided: making full spectrum image with noise.")
                 fits_file = original
                 cube = get_subcube(source, original)
-                mask = get_subcube(source, original[:-5] + '_mask.fits')
+                if os.path.isfile(original) and os.path.isfile(original[:-5] + '_mask.fits'):
+                    print("\tOriginal data cube provided: making full spectrum image with noise.")
+                    mask = get_subcube(source, original[:-5] + '_mask.fits')
+                elif os.path.isfile(original) and os.path.isfile(src_basename.split('_cubelets')[0] + '_mask.fits'):
+                    print("\tOriginal data cube provided, original file name differs from catalog file: Making full spectrum image with noise.")
+                    mask = get_subcube(source, src_basename.split('_cubelets')[0] + '_mask.fits')
                 spec_template = None
                 channels = np.asarray(range(cube.shape[0]))
         except:
-            print("\tNo cube file provided, or original file name differs from catalog file name so can't generate a *_specfull.txt with noise.")
+            print("\tWrong name provided for original file, or original mask file doesn't exist, so can't generate a *_specfull.txt with noise.")
             return
 
         mask2d = np.sum(mask, axis=0)
