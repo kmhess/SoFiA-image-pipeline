@@ -21,8 +21,8 @@ version = pkg_resources.require("SoFiA-image-pipeline")[0].version
 ###################################################################
 
 def main():
-    parser = ArgumentParser(description="Create images from a SoFiA catalog and cubelets, or fits file. \n"
-                                        "Only works with SoFiA-2 and wcs=True (for now).",
+    parser = ArgumentParser(description="Welcome to the SoFiA Image Pipeline, version {}.\n"
+                            "Create images from a SoFiA catalog and cubelets, or fits file. Only works with SoFiA-2 and wcs=True (for now).".format(version),
                             formatter_class=RawTextHelpFormatter)
 
     parser.add_argument('-c', '--catalog', required=True,
