@@ -21,8 +21,8 @@ version = pkg_resources.require("SoFiA-image-pipeline")[0].version
 ###################################################################
 
 def main():
-    parser = ArgumentParser(description="Create images from a SoFiA catalog and cubelets, or fits file. \n"
-                                        "Only works with SoFiA-2 and wcs=True (for now).",
+    parser = ArgumentParser(description="Welcome to the SoFiA Image Pipeline, version {}.\n"
+                            "Create images from a SoFiA catalog and cubelets, or fits file. Only works with SoFiA-2 and wcs=True (for now).".format(version),
                             formatter_class=RawTextHelpFormatter)
 
     parser.add_argument('-c', '--catalog', required=True,
@@ -57,10 +57,10 @@ def main():
                             ' of all pixels whose SNR value is within the given range. Default is [2,3].')
 
     parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
-                        help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
-                            ' These additional non-SkyView options are also available: \'decals\',\'panstarrs\',\'hst\'.\n'
-                            ' \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue" if no user\n' 
-                            ' provided image.')
+                        help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours. These\n'
+                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'panstarrs\',\'hst\'.\n'
+                            ' \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue" if no user provided\n' 
+                            ' image.')
 
     parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
                         help='Optional: combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'
@@ -167,17 +167,6 @@ def main():
     catalog['pos_x'] = None
     catalog['pos_y'] = None
 
-    # Rename the spectral column if cube was in velocity. For now treat all velocity axes the same (dumb temporary fix)
-    if 'v_app' in catalog.colnames:
-        catalog.rename_column('v_app', 'v_col')
-    elif 'v_rad' in catalog.colnames:
-        catalog.rename_column('v_rad', 'v_col')
-    elif 'v_opt' in catalog.colnames:
-        catalog.rename_column('v_opt', 'v_col')
-    elif 'freq' not in catalog.colnames:
-        print("ERROR: Column name for spectral axis not recognized.\n")
-        exit()
-
     # Set up some directories
     cubelet_dir = catalog_file.split("_cat.")[0] + '_cubelets/'
     if not os.path.isdir(cubelet_dir):
@@ -207,6 +196,9 @@ def main():
             make_spectra.main(source, src_basename, original, spec_line=args.spectral_line, suffix=suffix, beam=beam)
 
             if imagemagick:
+                if 'decals-dr9' in surveys:
+                    surveys=list(surveys)
+                    surveys[surveys.index('decals-dr9')] = 'decals'
                 combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), user_image=args.user_image)
 
             n_src += 1
