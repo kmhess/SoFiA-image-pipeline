@@ -149,10 +149,10 @@ for src in sources:
     print("  {}".format(src))
     new_png = "{}_combo.png".format(src)
     survey = "dss2blue"
-    os.system("{} {}_mom0_{}.png {}_mom0.png {}_snr.png {}_mom1.png +append temp.png".format(convert_im, src, survey, src, src, src, src))
+    os.system("{0} {1}_mom0_{2}.png {1}_mom0.png {1}_snr.png {1}_mom1.png {1}_mom2.png +append temp.png".format(convert_im, src, survey))
     os.system("{} {}_spec.png -resize 125% temp2.png".format(convert_im, src))
     os.system("{} {}_specfull.png -resize 125% temp3.png".format(convert_im, src))
-    os.system("{} temp2.png temp3.png {}_pv.png +append temp4.png".format(convert_im, src, src, src))
+    os.system("{0} temp2.png temp3.png {1}_pv.png {1}_pv_min.png +append temp4.png".format(convert_im, src))
     os.system("{} temp.png temp4.png -append {}".format(convert_im, new_png))
     os.system('rm -rf temp.png temp2.png temp3.png temp4.png')
 ```
