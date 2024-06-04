@@ -91,6 +91,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
     """
 
     c = const.c.to(u.m/u.s).value
+    line = line_lookup(spec_line)
     
     if (bunit == 'Jy/beam*m/s') or (bunit == 'Jy/beam*M/S'):
         print("\tWARNING: Assumes velocity axis of cube is in the *observed* frame. If cube is in source rest frame, "

@@ -90,7 +90,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
             return
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value, spec_line=spec_line)
+                                             cube_params['bmin'].value, source, spec_line=spec_line)
 
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
@@ -170,7 +170,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
             return
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value, spec_line=spec_line)
+                                             cube_params['bmin'].value, source, spec_line=spec_line)
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
         except FileNotFoundError:
@@ -273,7 +273,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         owcs = WCS(opt_head)
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value, spec_line=spec_line)
+                                             cube_params['bmin'].value, source, spec_line=spec_line)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
         plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
@@ -361,7 +361,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         owcs = WCS(opt_head)
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value, spec_line=spec_line)
+                                             cube_params['bmin'].value, source, spec_line=spec_line)
         wa_cmap = colors.ListedColormap(['w', 'royalblue', 'limegreen', 'yellow', 'orange', 'r'])
         boundaries = [0, 1, 2, 3, 4, 5, 6]
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
@@ -637,7 +637,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         mom0 = hdulist_hi[0].data
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
-                                             cube_params['bmin'].value, spec_line=spec_line)
+                                             cube_params['bmin'].value, source, spec_line=spec_line)
 
         owcs = WCS(opt_head)
         fig = plt.figure(figsize=(8, 8))
