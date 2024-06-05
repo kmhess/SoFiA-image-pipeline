@@ -419,16 +419,19 @@ def line_lookup(spec_line):
     """
 
     if (spec_line == None) or (spec_line == 'HI'):
+        spec_line == 'HI'
         restfreq_line = 1420405751.77 * u.Hz
-        optical = u.doppler_optical(restfreq_line)
+        convention = u.doppler_optical(restfreq_line)
+        rad_opt = 'Optical'
     elif spec_line == 'CO':
         restfreq_line = 115.27120180 * u.GHz
-        optical = u.doppler_optical(restfreq_line)
+        convention = u.doppler_radio(restfreq_line)
+        rad_opt = 'Radio'
     else:
         print("ERROR: Unrecognized spectral line.  Try 'HI' or 'CO'.")
         exit()
 
-    return {'name': spec_line, 'restfreq': restfreq_line, 'optical':optical}
+    return {'name': spec_line, 'restfreq': restfreq_line, 'convention':convention, 'rad_opt':rad_opt}
 
 
 def plot_labels(source, ax, default_beam, x_color='k'):
