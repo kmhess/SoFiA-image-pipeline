@@ -590,7 +590,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
 
 
 # Make velocity dispersion map for object
-def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png'):
+def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png', spec_line=None):
     """
     :return:
     """
@@ -612,11 +612,14 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
             print("\tERROR: No fits snr map associated with source, so can't determine mask for mom2 figure.")
             return
 
+        # Get frequency information for spectral line in question:
+        line = line_lookup(spec_line)
+
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
         convention = 'Optical'
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
-            mom2[0].data = (HI_restfreq - mom2[0].data * u.Hz).to(u.km / u.s, equivalencies=optical_HI).value
+            mom2[0].data = (line['restfreq'] - mom2[0].data * u.Hz).to(u.km / u.s, equivalencies=line['optical']).value
         else:
             # Convert moment map from m/s into units of km/s.
             mom2[0].data = (mom2[0].data * u.m / u.s).to(u.km / u.s).value
@@ -1152,7 +1155,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
         make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix, sofia=2,
                   spec_line=spec_line)
-        make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix)
+        make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
 
     # Make pv and/or pv_min if they were created; not dependent on having a survey image to regrid to.
     make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=False)
