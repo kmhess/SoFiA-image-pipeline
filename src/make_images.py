@@ -895,7 +895,6 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                      transform=ax1.transAxes, color='orange', fontsize=18)
             ax1.coords[1].set_ticks_position('l')
 
-            convention = 'Optical'
             if 'freq' in source.colnames:
                 freq_sys = source['freq']
                 ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
@@ -904,25 +903,24 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 ax1.coords[1].set_format_unit(u.MHz)
                 # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
                 ax2 = ax1.twinx()
-                vel1 = const.c.to(u.km / u.s).value * (line['restfreq'].to(u.Hz).value / freq1 - 1)
-                vel2 = const.c.to(u.km / u.s).value * (line['restfreq'].to(u.Hz).value / freq2 - 1)
+                vel1 = (const.c * (freq1 - source['freq'])/source['freq']).to(u.km / u.s).value
+                vel2 = (const.c * (freq2 - source['freq'])/source['freq']).to(u.km / u.s).value
                 ax2.set_ylim(vel1, vel2)
-                ax2.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention),
-                                                              fontsize=18)
+                ax2.set_ylabel('Restframe velocity [km/s]', fontsize=18)
                 ax2.tick_params(labelsize=16)
-                # ax2.set_yticklabels(fontsize=18)
             else:
+                print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity has been applied!")
                 if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
-                    convention = 'Radio'
-                    vel_sys = source['v_rad']
+                    line['rad_opt'] = 'Radio'
+                    v_sys = source['v_rad']
                 elif 'v_opt' in source.colnames:
-                    vel_sys = source['v_opt']
+                    v_sys = source['v_opt']
                 elif 'v_app' in source.colnames:
-                    vel_sys = source['v_app']
-                ax1.plot([ang1, ang2], [vel_sys, vel_sys], c='orange', linestyle='--',
+                    v_sys = source['v_app']
+                ax1.plot([ang1, ang2], [v_sys, v_sys], c='orange', linestyle='--',
                          linewidth=0.75, transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
-                ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), convention),
+                ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), line['rad_opt']),
                                                               fontsize=18)
             if pv[0].header['cdelt2'] < 0:
                 ax1.set_ylim(ax1.get_ylim()[::-1])
