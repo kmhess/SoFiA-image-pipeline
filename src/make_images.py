@@ -443,31 +443,33 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         line = line_lookup(spec_line)
 
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
-        convention = 'Optical'
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
-            mom1[0].data = (mom1[0].data * u.Hz).to(u.km / u.s, equivalencies=line['optical']).value
+
+            if line['rad_opt'] == 'Radio':
+                print("\WARNING: Velocity dispersion calculated in source restframe because 'radio velocity' convention has no physical meaning.")
+            mom1[0].data = (const.c * (mom1[0].data - source['freq'])/source['freq']).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
-            v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['optical']).value
+            v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
             # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
-            w50 = (const.c * source['w50'] * u.Hz / (source['freq'] * u.Hz)).to(u.km/u.s,
-                                                                                equivalencies=line['optical']).value
-            w20 = (const.c * source['w20'] * u.Hz / (source['freq'] * u.Hz)).to(u.km/u.s,
-                                                                                equivalencies=line['optical']).value
+            w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
+            w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
             if sofia == 2:
-                freqmin = chan2freq(source['z_min'], src_basename + '_{}_cube.fits'.format(source['id']))
-                freqmax = chan2freq(source['z_max'], src_basename + '_{}_cube.fits'.format(source['id']))
+                freqmin = chan2freq(source['z_min'], src_basename + '_{}_cube.fits'.format(source['id'])).to(u.Hz).value
+                freqmax = chan2freq(source['z_max'], src_basename + '_{}_cube.fits'.format(source['id'])).to(u.Hz).value
             elif sofia == 1:
-                freqmin = chan2freq(source['z_min'], src_basename + '_{}.fits'.format(source['id']))
-                freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id']))
-            velmax = freqmin.to(u.km / u.s, equivalencies=line['optical']).value
-            velmin = freqmax.to(u.km / u.s, equivalencies=line['optical']).value
+                freqmin = chan2freq(source['z_min'], src_basename + '_{}.fits'.format(source['id'])).to(u.Hz).value
+                freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id'])).to(u.Hz).value
+            velmax = (const.c * (freqmin - source['freq'])/source['freq']).to(u.km / u.s).value
+            velmin = (const.c * (freqmax - source['freq'])/source['freq']).to(u.km / u.s).value
+            cbar_label = "Restframe Velocity [km/s]"
         else:
+            print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity has been applied!")
             # Convert moment map from m/s into units of km/s.
             mom1[0].data = (mom1[0].data * u.m / u.s).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
-                convention = 'Radio'
+                line['rad_opt'] = 'Radio'
                 v_sys = (source['v_rad'] * u.m / u.s).to(u.km / u.s).value
             elif 'v_opt' in source.colnames:
                 v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
@@ -480,6 +482,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
             velmax = chan2vel(source['z_max'], src_basename +
                               '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
+            cbar_label = "{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt'])
 
         if velmin == velmax:
             singlechansource = True
@@ -528,7 +531,10 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             n_contours = vel_maxhalf // vunit
             if n_contours <= 4:
                 break
-        levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
+        if 'freq' in source.colnames:
+                levels = [-3*vunit, -2*vunit, -1*vunit, 0, 1*vunit, 2*vunit, 3*vunit]
+        else:
+            levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
             cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=0.6, transform=ax1.get_transform(cubew))
@@ -573,7 +579,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
-        cbar.set_label("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=18)
+        cbar.set_label(cbar_label, fontsize=18)
         cbar.ax.tick_params(labelsize=16)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
