@@ -622,16 +622,18 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         line = line_lookup(spec_line)
 
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
-        convention = 'Optical'
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
-            mom2[0].data = (line['restfreq'] - mom2[0].data * u.Hz).to(u.km / u.s, equivalencies=line['optical']).value
+            mom2[0].data = (const.c * mom2[0].data / (source['freq'])).to(u.km / u.s).value
+            cbar_label = "Restframe Velocity Dispersion [km/s]"
         else:
+            print("WARNING: Input cube is in velocity units--no correction to source rest frame velocity dispersion has been applied!")
             # Convert moment map from m/s into units of km/s.
             mom2[0].data = (mom2[0].data * u.m / u.s).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
-                convention = 'Radio'
+                line['rad_opt'] = 'Radio'
+            cbar_label = "{} Velocity Dispersion [km/s]".format(line['rad_opt'])
 
         if source['z_min'] == source['z_max']:
             singlechansource = True
@@ -692,7 +694,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
-        cbar.set_label("{} Velocity Dispersion [km/s]".format(convention), fontsize=18)
+        cbar.set_label(cbar_label, fontsize=18)
         cbar.ax.tick_params(labelsize=16)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
