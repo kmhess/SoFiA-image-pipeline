@@ -428,8 +428,8 @@ def line_lookup(spec_line):
         rad_opt = 'Optical'
     elif spec_line == 'CO':
         restfreq_line = 115.27120180 * u.GHz
-        convention = u.doppler_radio(restfreq_line)
-        rad_opt = 'Radio'
+        convention = u.doppler_optical(restfreq_line)
+        rad_opt = 'Optical'
     else:
         print("ERROR: Unrecognized spectral line.  Try 'HI' or 'CO'.")
         exit()
