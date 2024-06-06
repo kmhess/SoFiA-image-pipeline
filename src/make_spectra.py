@@ -86,24 +86,27 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
 
     if not os.path.isfile(outfile2):
 
+        # Get frequency information for spectral line in question:
+        line = line_lookup(spec_line)
+
         try:
             print("\tMaking HI spectrum plot including noise.")
-            convention = 'Optical'
             if 'freq' in source.colnames:
-                line = line_lookup(spec_line)
                 spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
-                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['optical']).value
+                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
                 maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s,
-                                                                                    equivalencies=line['optical']).value
+                                                                                    equivalencies=line['convention']).value
                 maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
-                                                                                    equivalencies=line['optical']).value
+                                                                                    equivalencies=line['convention']).value
             else:
                 if 'v_rad' in source.colnames:
-                    convention = 'Radio'
+                    line['rad_opt'] = 'Radio'
                 spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
-                maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s).value
-                maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s).value
+                maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s,
+                                                                                         equivalencies=line['convention']).value
+                maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
+                                                                                         equivalencies=line['convention']).value
         except FileNotFoundError:
             print("\tNo existing _specfull.txt file. Perhaps there is no cube to generate one, or need to specify original.")
             fig2, ax2_spec, outfile2 = None, None, None
@@ -127,7 +130,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec.set_title(source['name'])
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=14)
-        ax2_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=14)
+        ax2_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt']), fontsize=14)
         ax2_spec.tick_params(axis='both', which='major', labelsize=12)
 
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
@@ -166,17 +169,18 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
 
     if not os.path.isfile(outfile1):
 
+        # Get frequency information for spectral line in question:
+        line = line_lookup(spec_line)
+
         try:
             print("\tMaking HI SoFiA masked spectrum plot.")
-            convention = 'Optical'
             if 'freq' in source.colnames:
-                line = line_lookup(spec_line)
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
-                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['optical']).value
+                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
             else:
                 if 'v_rad' in source.colnames:
-                    convention = 'Radio'
+                    line['rad_opt'] = 'Radio'
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
@@ -204,7 +208,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         ax1_spec.set_title(source['name'])
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=14)
-        ax1_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), convention), fontsize=14)
+        ax1_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt']), fontsize=14)
         ax1_spec.tick_params(axis='both', which='major', labelsize=12)
             # ax1.set_xlabel('Angular Offset [deg]', fontsize=18)
 
