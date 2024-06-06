@@ -127,12 +127,25 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         else:
             print("\tInput *_specfull.txt is >=800 channels; expanding figure, not including error bars (noise should be indicative).")
             ax2_spec.plot(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'])
-        ax2_spec.set_title(source['name'])
+        ax2_spec.set_title(source['name'], fontsize=16)
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=14)
-        ax2_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt']), fontsize=14)
+        ax2_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
+                                                                       line['rad_opt']), fontsize=14)
         ax2_spec.tick_params(axis='both', which='major', labelsize=12)
-
+        ax2_spec.autoscale(False)
+        if 'freq' in source.colnames:
+            ax2b_spec = ax2_spec.twiny()
+            freq1 = (spec['freq'][-1] * u.Hz).to(u.MHz)
+            freq2 = (spec['freq'][0] * u.Hz).to(u.MHz)
+            ax2b_spec.set_xlabel('Frequency [MHz]', fontsize=14)
+            if freq1 >= 2*u.GHz:
+                freq1 = freq1.to(u.GHz)
+                freq2 = freq2.to(u.GHz)
+                ax2b_spec.set_xlabel('Frequency [GHz]', fontsize=14)
+            ax2b_spec.set_xlim(freq1.value, freq2.value)
+            ax2b_spec.tick_params(labelsize=12)
+            ax2b_spec.ticklabel_format(style='plain', useOffset=False)
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
         galspec_max = np.nanmax(spectrumJy[np.where(spec['chan'] == source['z_min'])[0][0]:
                                            np.where(spec['chan'] == source['z_max'])[0][0]+1])
@@ -205,12 +218,25 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         elif specunits == 'Jy':
             ax1_spec.errorbar(optical_velocity, spec['f_sum'], elinewidth=0.75,
                               yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
-        ax1_spec.set_title(source['name'])
+        ax1_spec.set_title(source['name'], fontsize=16)
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=14)
-        ax1_spec.set_xlabel("{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt']), fontsize=14)
+        ax1_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
+                                                                       line['rad_opt']), fontsize=14)
         ax1_spec.tick_params(axis='both', which='major', labelsize=12)
-            # ax1.set_xlabel('Angular Offset [deg]', fontsize=18)
+        ax1_spec.autoscale(False)
+        if 'freq' in source.colnames:
+            ax1b_spec = ax1_spec.twiny()
+            freq1 = (spec['freq'][-1] * u.Hz).to(u.MHz)
+            freq2 = (spec['freq'][0] * u.Hz).to(u.MHz)
+            ax1b_spec.set_xlabel('Frequency [MHz]', fontsize=14)
+            if freq1 >= 2*u.GHz:
+                freq1 = freq1.to(u.GHz)
+                freq2 = freq2.to(u.GHz)
+                ax1b_spec.set_xlabel('Frequency [GHz]', fontsize=14)
+            ax1b_spec.set_xlim(freq1.value, freq2.value)
+            ax1b_spec.ticklabel_format(style='plain', useOffset=False)
+            ax1b_spec.tick_params(labelsize=12)
 
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
