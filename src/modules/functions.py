@@ -123,7 +123,10 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
         if (spec_line == None) or (spec_line == 'HI'):
             nhi = 2.330e+20 * (1 + z) ** 4 * sbr / bmaj / bmin
         else:
-            nhi = 1.222e+3 * sbr / bmaj / bmin / line['restfreq'].to(u.GHz).value**2
+            # Units of Jy/beam Hz
+            nhi = sbr
+            # Units of Kelvin Hz
+            # nhi = 1.222e+3 * sbr / bmaj / bmin / line['restfreq'].to(u.GHz).value**2
         
     else:
         if (spec_line == None) or (spec_line == 'HI'):
@@ -141,8 +144,8 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
         nhi_label = '$N_\mathrm{{HI}}$ = {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$'.format(nhi/10**nhi_ofm, nhi_ofm)
         nhi_labels = '$N_\mathrm{{HI}}$ = $2^n$ x {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$ ($n$=0,1,...)'.format(nhi/10**nhi_ofm, nhi_ofm)
     else:
-        nhi_label = '$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ K Hz'.format(line['name'], nhi/10**nhi_ofm, nhi_ofm)
-        nhi_labels = '$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f} x $10^{{ {:d} }}$ K Hz ($n$=0,1,...)'.format(line['name'],
+        nhi_label = '$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/beam Hz'.format(line['name'], nhi/10**nhi_ofm, nhi_ofm)
+        nhi_labels = '$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f} x $10^{{ {:d} }}$ Jy/beam Hz ($n$=0,1,...)'.format(line['name'],
                                                                                              nhi/10**nhi_ofm, nhi_ofm)
 
     return nhi, nhi_label, nhi_labels
