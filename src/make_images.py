@@ -1094,22 +1094,26 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         surveys.remove('panstarrs')
 
     # If requested plot HI contours on DECaLS imaging
-    dr9 = False
+    decals = 'decals'
     if 'decals' in surveys and 'decals-dr9' in surveys:
+        # Only decals and decals-dr9 have common overlap; decaps shouldn't be called at the same time.
         print("\tERROR: Only one between decals and decals-dr9 can be given.")
         exit()
     elif 'decals-dr9' in surveys:
         surveys[surveys.index('decals-dr9')] = 'decals'
-        dr9 = True
+        decals = 'dr9'
+    elif 'decaps' in surveys:
+        surveys[surveys.index('decaps')] = 'decals'
+        decals = 'decaps'
     if ('decals' in surveys) and (hi_pos_common.frame.name != 'galactic'):
-        decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, dr9=dr9)
+        decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, decals=decals)
         make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
                       survey='decals', spec_line=spec_line)
-        if surveys[0] == 'decals':
+        if (surveys[0] == 'decals') or (surveys[0] == 'dr9') or (surveys[0] == 'decaps'):
             opt_head = decals_head
         surveys.remove('decals')
-    elif ('decals' in surveys) and (hi_pos_common.frame.name == 'galactic'):
-        print("\t'decals' image retrieval not supported for catalog in Galactic coordinates.")
+    elif (('decals' in surveys) or ('decaps' in surveys)) and (hi_pos_common.frame.name == 'galactic'):
+        print("\t'decals' and 'decaps' image retrieval not supported for catalog in Galactic coordinates.")
         surveys.remove('decals')
 
     # If requested, plot the HI contours on any number of survey images available through SkyView.
