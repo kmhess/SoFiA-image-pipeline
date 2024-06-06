@@ -447,7 +447,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # Convert moment map from Hz into units of km/s
 
             if line['rad_opt'] == 'Radio':
-                print("\WARNING: Velocity dispersion calculated in source restframe because 'radio velocity' convention has no physical meaning.")
+                print("\WARNING: Velocity dispersion calculated in source rest frame because 'radio velocity' convention has no physical meaning.")
             mom1[0].data = (const.c * (mom1[0].data - source['freq'])/source['freq']).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
@@ -462,7 +462,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                 freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id'])).to(u.Hz).value
             velmax = (const.c * (freqmin - source['freq'])/source['freq']).to(u.km / u.s).value
             velmin = (const.c * (freqmax - source['freq'])/source['freq']).to(u.km / u.s).value
-            cbar_label = "Restframe Velocity [km/s]"
+            cbar_label = "Rest Frame Velocity [km/s]"
         else:
             print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity has been applied!")
             # Convert moment map from m/s into units of km/s.
@@ -625,9 +625,10 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
             mom2[0].data = (const.c * mom2[0].data / (source['freq'])).to(u.km / u.s).value
-            cbar_label = "Restframe Velocity Dispersion [km/s]"
+            cbar_label = "Rest Frame Velocity Dispersion [km/s]"
         else:
-            print("WARNING: Input cube is in velocity units--no correction to source rest frame velocity dispersion has been applied!")
+            print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity " \
+                  "dispersion has been applied!")
             # Convert moment map from m/s into units of km/s.
             mom2[0].data = (mom2[0].data * u.m / u.s).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
@@ -882,7 +883,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 print("\tNo mask cubelet found to overlay mask on {} diagram.".format(pv_axis))
             ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
                      transform=ax1.get_transform('world'))
-            ax1.set_title(source['name'], fontsize=18)
+            ax1.set_title(source['name'], fontsize=20)
             ax1.tick_params(axis='both', which='major', labelsize=18)
             ax1.set_xlabel('Angular Offset [deg]', fontsize=18)
             pos_angle = source['kin_pa']
@@ -906,7 +907,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 vel1 = (const.c * (freq1 - source['freq'])/source['freq']).to(u.km / u.s).value
                 vel2 = (const.c * (freq2 - source['freq'])/source['freq']).to(u.km / u.s).value
                 ax2.set_ylim(vel1, vel2)
-                ax2.set_ylabel('Restframe velocity [km/s]', fontsize=18)
+                ax2.set_ylabel('Rest Frame Velocity [km/s]', fontsize=18)
                 ax2.tick_params(labelsize=16)
             else:
                 print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity has been applied!")
