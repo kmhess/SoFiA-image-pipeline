@@ -60,7 +60,7 @@ SIP works under the assumption that the user has run [SoFiA-2](https://github.co
 ```
 $ sofia_image_pipeline
 
-usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS ...]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]
+usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS ...]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]  [-line SPECTRAL_LINE]
 sofia_image_pipeline: error: the following arguments are required: -c/--catalog
 ```
 
@@ -90,6 +90,7 @@ OPTIONAL:
     -m     Make a combined image using ImageMagick.  If a path is provided after this option, it is assumed to be the path to the `convert` executable of ImageMagick. 
     -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
     -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
+    -l     Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO' which refers to CO(1-0).
 ```
 
 ### Examples
@@ -125,6 +126,8 @@ Advanced tips
 
 * If you have a large catalog of sources, start by testing SIP with the `-id N` option, where `N` is a source id number.  Make sure the image and text outputs from SIP for that source are as you expect.  Adjust optional variables as necessary.  Run on your larger catalog.
 
+* SIP is now capable of doing spectral lines other than HI.  So far `HI` and `CO` are the only allowed options, and CO refers only to CO(1-0).  This is work in progress.
+
 * Available surveys from `astroquery` can be found by running:
 ```
 from astroquery.skyview import SkyView
@@ -133,7 +136,7 @@ SkyView.list_surveys()
 SkyView.survey_dict
 ```
 
-* In addition to overlaying HI contours on survey images available through `astroquery`, a user can request WISE images (`'WISE W#'` where `#` is the band number); false color images from `'decals'` (DR10), `'decals-dr9'` (DR9), or `'panstarrs'`; or gray scale HST-ACS Mosaic images for sources within the COSMOS field with `'hst'`.  The HST image size is currently hardcoded to 40 arcsec on a side. 
+* In addition to overlaying HI contours on survey images available through `astroquery`, a user can request WISE images (`'WISE W#'` where `#` is the band number); false color images from `'decals'` (DR10), `'decals-dr9'` (DR9), `'panstarrs'`, or `'decaps'`; or gray-scale HST-ACS Mosaic images for sources within the COSMOS field with `'hst'`.  The HST image size is currently hardcoded to 40 arcsec on a side. 
 
 * Downloading survey images from `astroquery.SkyView` or other online sources is the greatest limiting factor in the speed of SIP.  To avoid this, for catalogs with a high source density, you may consider downloading one large image to disk before running SIP.  For this purpose, we have included the command line tool `download_usr_fig`. For example:
 ```
@@ -167,7 +170,7 @@ See the github repo for known bugs and desired enhancements.  We aim to fix seri
 In addition we are aware of the following issues:
 * Saving figures with .ps or .eps format has issues with transparency and background colors appearing black.
 * `download_usr_fig` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `sofia_image_pipeline`.
-* WISE images, PanSTARRS and DECaLS cannot (yet) be plotted with Galactic coordinates.
+* WISE images, PanSTARRS, DECaLS, and DECaPS cannot (yet?) be plotted with Galactic coordinates.
 * The mask (red line) on pv-diagram plots may not be perfectly aligned from left-to-right.  Please use this line only as a rough indication of the mask position.  Refer to actual data for the truth.  Any suggestions for how to improve this are welcome.
 * For data with channels that are not uniform in width (e.g. `SPECSYS = FELO-OPT`), SIP's conversion to km/s is off compared to SoFiA-2's: the programs use formula from [here](https://www.astro.rug.nl/software/kapteyn/spectralbackground.html#aips-axis-type-felo) or use wcslib to do the conversion, respectively.  We haven't tracked down the discrepancy.  To the best of our knowledge, only relatively old radio data observing nearby galaxies, might be in this `FELO` format. 
 * No exceptions are caught for `socket.timeout` during downloads (seen for `-s panstarrs` when image requested was 20.5 arcmin). We've noticed that simply rerunning the request at a later time has solved the issue.
