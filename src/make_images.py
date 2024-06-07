@@ -678,7 +678,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         # Don't know how to deal with CRPIX that's different between original data and subcubes (sofia issue; chan2freq, chan2vel)
         # vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
         vel_max = np.nanmax(mom2_d)
-        for vunit in [3, 5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
+        for vunit in [0.2, 0.5, 1, 3, 5, 10, 15, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
             n_contours = vel_max // vunit
             if n_contours <= 6:
                 break
