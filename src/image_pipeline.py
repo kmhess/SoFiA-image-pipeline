@@ -77,7 +77,7 @@ def main():
 
     parser.add_argument('-line', '--spectral-line', default=None,
                         help='Optional: Provide name of spectral line such as "CO" for "CO(1-0)". Default is "HI".\n'
-                            'Work in progress.')
+                            ' See github for more details on available lines.  Work in progress.')
 
     ###################################################################
 

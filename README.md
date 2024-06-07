@@ -90,7 +90,7 @@ OPTIONAL:
     -m     Make a combined image using ImageMagick.  If a path is provided after this option, it is assumed to be the path to the `convert` executable of ImageMagick. 
     -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
     -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
-    -l     Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO' which refers to CO(1-0).
+    -l     Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO' and 'OH'.
 ```
 
 ### Examples
@@ -126,7 +126,7 @@ Advanced tips
 
 * If you have a large catalog of sources, start by testing SIP with the `-id N` option, where `N` is a source id number.  Make sure the image and text outputs from SIP for that source are as you expect.  Adjust optional variables as necessary.  Run on your larger catalog.
 
-* SIP is now capable of doing spectral lines other than HI.  So far `HI` and `CO` are the only allowed options, and CO refers only to CO(1-0).  This is work in progress.
+* SIP is now capable of doing spectral lines other than HI.  So far `HI`, `CO`, and `OH` are the only allowed options. CO refers only to CO(1-0) and OH refers only to the 1667 MHz line.  This is work in progress.
 
 * Available surveys from `astroquery` can be found by running:
 ```

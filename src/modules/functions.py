@@ -415,23 +415,25 @@ def create_pv(source, filename, opt_view=6*u.arcmin, min_axis=False):
 def line_lookup(spec_line):
     """Return rest frequency and object to convert to optical velocities for requested line.
 
-    :param line:
-    :type line:
+    :param spec_line:
+    :type spec_line:
     :return:
     :rtype:
     """
 
+    rad_opt = 'Optical'
     if (spec_line == None) or (spec_line == 'HI'):
         spec_line == 'HI'
         restfreq_line = 1420405751.77 * u.Hz
         convention = u.doppler_optical(restfreq_line)
-        rad_opt = 'Optical'
     elif spec_line == 'CO':
         restfreq_line = 115.27120180 * u.GHz
         convention = u.doppler_optical(restfreq_line)
-        rad_opt = 'Optical'
+    elif spec_line == 'OH':
+        restfreq_line = 1.6673590 * u.GHz
+        convention = u.doppler_optical(restfreq_line)
     else:
-        print("ERROR: Unrecognized spectral line.  Try 'HI' or 'CO'.")
+        print("ERROR: Unrecognized spectral line.  Try 'HI', 'CO', or 'OH'.")
         exit()
 
     return {'name': spec_line, 'restfreq': restfreq_line, 'convention':convention, 'rad_opt':rad_opt}
