@@ -168,6 +168,7 @@ Known Issues
 See the github repo for known bugs and desired enhancements.  We aim to fix serious bugs as quickly as possible.
 
 In addition we are aware of the following issues:
+* SIP is not compatible with matplolib 3.8 due to some incompatibility with astropy or vice versa.
 * Saving figures with .ps or .eps format has issues with transparency and background colors appearing black.
 * `download_usr_fig` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `sofia_image_pipeline`.
 * WISE images, PanSTARRS, DECaLS, and DECaPS cannot (yet?) be plotted with Galactic coordinates.
