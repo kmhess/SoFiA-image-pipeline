@@ -169,6 +169,7 @@ See the github repo for known bugs and desired enhancements.  We aim to fix seri
 
 In addition we are aware of the following issues:
 * SIP is not compatible with matplolib 3.8 due to some incompatibility with astropy or vice versa.
+* If `'DSS2 Blue'` image doesn't exist and it is the only image requested (by default), the pipeline will crash.  Try `'WISE 3.4'` instead.
 * Saving figures with .ps or .eps format has issues with transparency and background colors appearing black.
 * `download_usr_fig` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `sofia_image_pipeline`.
 * WISE images, PanSTARRS, DECaLS, and DECaPS cannot (yet?) be plotted with Galactic coordinates.
