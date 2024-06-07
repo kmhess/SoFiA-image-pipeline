@@ -58,9 +58,9 @@ def main():
 
     parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
                         help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours. These\n'
-                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'panstarrs\',\'hst\'.\n'
-                            ' \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue" if no user provided\n' 
-                            ' image.')
+                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\n'
+                            ' \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue"\n' 
+                            ' if no user provided image.')
 
     parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
                         help='Optional: combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'
@@ -76,7 +76,8 @@ def main():
                         help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
 
     parser.add_argument('-line', '--spectral-line', default=None,
-                        help='Optional: Provide name of spectral line such as "CO(1-0)". Default is "HI".')
+                        help='Optional: Provide name of spectral line such as "CO" for "CO(1-0)". Default is "HI".\n'
+                            'Work in progress.')
 
     ###################################################################
 
