@@ -414,6 +414,7 @@ def create_pv(source, filename, opt_view=6*u.arcmin, min_axis=False):
 
 def line_lookup(spec_line):
     """Return rest frequency and object to convert to optical velocities for requested line.
+    https://www.narrabri.atnf.csiro.au/observing/spectral.html
 
     :param spec_line:
     :type spec_line:
