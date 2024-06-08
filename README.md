@@ -28,6 +28,14 @@ parameter.offset = True
 Installation
 ------------
 
+### Setting up an environment
+
+We recommend using a [virtual environment](https://docs.python.org/3/library/venv.html) to install and rup SIP so as to not conflict with other packages.  For example:
+```
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
 ### PyPI
 
 You can install the latest SIP released on [PyPI](https://pypi.org/project/sofia-image-pipeline/) by running pip install:
