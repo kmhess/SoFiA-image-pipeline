@@ -11,7 +11,7 @@ SIP takes a SoFiA generated source catalog and produce images for publication or
 
 Requirements
 ------------
-This code has been developed and tested with Python 3.9.7, and appears to work with up to Python 3.11, but not 3.12.
+This code has been developed and tested with Python 3.9.7, and appears to work with up to Python 3.12.
 
 Combining individual images with the `-m` option requires [ImageMagick](https://imagemagick.org) be installed.
 
