@@ -475,3 +475,29 @@ def plot_labels(source, ax, default_beam, x_color='k'):
                 alpha=0.5, ha='center', va='center', rotation=30, zorder=101)
 
     return
+
+
+def make_header(source, opt_view=6*u.arcmin):
+    """Return a dummy header when an ancillary image can't be retrieved.
+
+    :param source: source object
+    :type source: Astropy table
+    :param opt_view: requested size of the image for regriding
+    :type opt_view: quantity
+    :return:
+    :rtype: FITS HDU
+    """
+
+    npix = 16
+    hdu = fits.ImageHDU()
+    hdu.data = np.ones([npix, npix])
+    hdu.header['CTYPE1']  = 'RA---SIN'
+    hdu.header['CRPIX1'] = npix / 2 + 1
+    hdu.header['CRVAL1'] = source['pos_x']
+    hdu.header['CDELT1'] = -1 * opt_view[0].to(u.deg).value / npix
+    hdu.header['CTYPE2']  = 'DEC--SIN'
+    hdu.header['CRPIX2'] = npix / 2 + 1
+    hdu.header['CRVAL2'] = source['pos_y']
+    hdu.header['CDELT2'] = opt_view[0].to(u.deg).value / npix
+
+    return hdu.header
