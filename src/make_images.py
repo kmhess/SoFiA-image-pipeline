@@ -19,6 +19,7 @@ from src.modules.functions import get_info
 from src.modules.functions import chan2freq, chan2vel, sbr2nhi, line_lookup
 from src.modules.functions import create_pv
 from src.modules.functions import plot_labels
+from src.modules.functions import make_header
 from src.modules.get_ancillary import *
 from src.modules.get_hst_cosmos import get_hst_cosmos
 
@@ -1074,10 +1075,12 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             patch_hst = {'width': patch_width, 'height': patch_height}
             make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst',
                          spec_line=spec_line)
-        if surveys[0] == 'hst':
-            opt_head = hst_opt[0].header
-            opt_view = np.array([hst_opt_view.value,]) * u.arcsec
-            patch = patch_hst
+            if surveys[0] == 'hst':
+                opt_head = hst_opt[0].header
+                opt_view = np.array([hst_opt_view.value,]) * u.arcsec
+                patch = patch_hst
+        elif surveys[0] == 'hst':
+            opt_head = make_header(source, opt_view=opt_view)
         surveys.remove('hst')
 
     # Create a false color optical panstarrs overlay, if requested:
@@ -1086,8 +1089,10 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         if pstar_im:
             make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest,
                           suffix=suffix, survey='panstarrs', spec_line=spec_line)
-        if surveys[0] == 'panstarrs':
-            opt_head = pstar_head
+            if surveys[0] == 'panstarrs':
+                opt_head = pstar_head
+        elif surveys[0] == 'panstarrs':
+            opt_head = make_header(source, opt_view=opt_view)
         surveys.remove('panstarrs')
     elif ('panstarrs' in surveys) and (hi_pos_common.frame.name == 'galactic'):
         print("\t'panstarrs' image retrieval not supported for catalog in Galactic coordinates.")
@@ -1107,10 +1112,13 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         decals = 'decaps'
     if ('decals' in surveys) and (hi_pos_common.frame.name != 'galactic'):
         decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, decals=decals)
-        make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
-                      survey='decals', spec_line=spec_line)
-        if (surveys[0] == 'decals') or (surveys[0] == 'dr9') or (surveys[0] == 'decaps'):
-            opt_head = decals_head
+        if decals_im:
+            make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
+                        survey='decals', spec_line=spec_line)
+            if (surveys[0] == 'decals') or (surveys[0] == 'dr9') or (surveys[0] == 'decaps'):
+                opt_head = decals_head
+        elif surveys[0] == 'decals':
+            opt_head = make_header(source, opt_view=opt_view)
         surveys.remove('decals')
     elif (('decals' in surveys) or ('decaps' in surveys)) and (hi_pos_common.frame.name == 'galactic'):
         print("\t'decals' and 'decaps' image retrieval not supported for catalog in Galactic coordinates.")
@@ -1121,19 +1129,27 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         for survey in surveys:
             if ('wise' in survey) or ('WISE' in survey):
                 overlay_image = get_wise(hi_pos_common, opt_view=opt_view, survey=survey)
-                make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
-                             survey=survey, spec_line=spec_line)
-                if surveys[0] == survey:
-                    opt_head = overlay_image[0].header
+                if overlay_image:
+                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, 
+                                 suffix=suffix, survey=survey, spec_line=spec_line)
+                    if surveys[0] == survey:
+                        opt_head = overlay_image[0].header
+                else:
+                    if surveys[0] == survey:
+                        opt_head = make_header(source, opt_view=opt_view)
             else:
                 try:
                     overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
-                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix,
-                                 survey=survey, spec_line=spec_line)
-                    if surveys[0] == survey:
-                        opt_head = overlay_image[0].header
+                    if overlay_image:
+                        make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, 
+                                     suffix=suffix, survey=survey, spec_line=spec_line)
+                        if surveys[0] == survey:
+                            opt_head = overlay_image[0].header
+                    else:
+                        if surveys[0] == survey:
+                            opt_head = make_header(source, opt_view=opt_view)
                 except ValueError:
-                    print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized by "
+                    print("\tERROR: \"{}\" may not be among the survey hosted at skyview or survey names recognized by "
                           "astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery for valid "
                           "surveys.".format(survey))
                 except HTTPError:
@@ -1148,17 +1164,6 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
                     except:
                         print("\t\tSecond attempt failed. Either survey doesn't cover this area, or server failed."
                               " Try again later?")
-                # except:
-                #     print("\tERROR: general error attempting return image from SkyView query for {} survey. Trying with"
-                #           " cache=False.".format(survey))
-                #     try:
-                #         overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
-                #         make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, swapx,
-                #                      suffix=suffix, survey=survey, spec_line=spec_line)
-                #         if surveys[0] == survey:
-                #             opt_head = overlay_image[0].header
-                #     except:
-                #         print("\t\tSecond attempt failed. Try again later?")
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
