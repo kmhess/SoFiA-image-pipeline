@@ -1,7 +1,7 @@
 import requests
 from PIL import Image, ImageEnhance
 from io import BytesIO
-from urllib.error import HTTPError
+from urllib.error import HTTPError, URLError
 
 from astropy.io import ascii, fits
 from astropy import units as u
@@ -29,18 +29,22 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue', cache=True):
     # DSS2 Blue images have a 1 arc/pix pixel scale, but retrieving ~the pixel scale doesn't work.
     opt_pixels = (opt_view.to(u.arcsec).value * 2).astype(int)
 
-    # Get a survey image from SkyView:
-    if hi_pos.frame.name == 'galactic':
-        path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='galactic', width=opt_view[0],
-                                  height=opt_view[-1], survey=[survey], pixels=opt_pixels, cache=cache)
-    elif (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
-        path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS', width=opt_view[0],
-                                  height=opt_view[-1], survey=[survey], pixels=opt_pixels, cache=cache)
-    # Note that there seems to be a bug in SkyView that it sometimes won't retrieve non-J2000.0.  Keep an eye on this!
-    else:
-        path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates=hi_pos.equinox.value,
-                                  width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels,
-                                  cache=cache)
+    try:
+        # Get a survey image from SkyView:
+        if hi_pos.frame.name == 'galactic':
+            path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='galactic', width=opt_view[0],
+                                        height=opt_view[-1], survey=[survey], pixels=opt_pixels, cache=cache)
+        elif (not hi_pos.equinox) or (hi_pos.frame.name == 'icrs'):
+            path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates='ICRS', width=opt_view[0],
+                                        height=opt_view[-1], survey=[survey], pixels=opt_pixels, cache=cache)
+        # Note that there seems to be a bug in SkyView that it sometimes won't retrieve non-J2000.0.  Keep an eye on this!
+        else:
+            path = SkyView.get_images(position=hi_pos.to_string('hmsdms'), coordinates=hi_pos.equinox.value,
+                                        width=opt_view[0], height=opt_view[-1], survey=[survey], pixels=opt_pixels,
+                                        cache=cache)
+    except requests.exceptions.ConnectionError:
+        path = []
+        
     if len(path) != 0:
         print("\tSurvey image retrieved from {}.".format(survey))
         result = path[0]
@@ -66,8 +70,11 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
     if len(opt_view) > 1:
         print("\tWARNING: PanSTARRS only returns square images; taking largest dimension.")
         opt_view = np.max(opt_view)
-    path = geturl(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value / pstar_pixsc),
-                  filters="r", format="fits")
+    try:
+        path = geturl(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value / pstar_pixsc),
+                    filters="r", format="fits")
+    except URLError:
+        path = []
 
     if len(path) != 0:
         fits_head = fits.getheader(path[0])
@@ -75,7 +82,8 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
                               filters="gri")
         print("\tOptical false color image retrieved from PanSTARRS.")
     else:
-        print("\tWARNING: No PanSTARRS false color image retrieved.  Server error or no PanSTARRS coverage?")
+        print("\tWARNING: No PanSTARRS false color image retrieved.  Server or connection error," \
+              " or no PanSTARRS coverage?")
         fits_head = None
         color_im = None
 
@@ -122,6 +130,9 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
             print("\tWARNING: HTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR10 coverage?")
         fits_head = None
         color_im = None
+    except URLError:
+        fits_head = None
+        color_im = None
 
     return color_im, fits_head
 
@@ -145,17 +156,19 @@ def get_wise(hi_pos, opt_view=6*u.arcmin, survey='WISE W1'):
     params = {'POS': '{},{}'.format(hi_pos.ra.deg, hi_pos.dec.deg)}
 
     api_endpoint = "https://irsa.ipac.caltech.edu/ibe/search/wise/allwise/p3am_cdd"
-    r = requests.get(url=api_endpoint, params=params)
-    tab = ascii.read(r.content.decode(), header_start=44, data_start=48, format='fixed_width')
-
-    params['coadd_id'] = tab['coadd_id'][0]
-    params['coaddgrp'] = tab['coadd_id'][0][:2]
-    params['coadd_ra'] = tab['coadd_id'][0][:4]
-    params['band'] = int(survey[-1])
-    params['size'] = str(opt_view[0].value) + ',' + str(opt_view[-1].value) + str(opt_view[0].unit)
-
-    path = str.format("/{coaddgrp:s}/{coadd_ra:s}/{coadd_id:s}/{coadd_id:s}-w{band:1d}-int-3.fits?"
-                      "center={POS:s}&size={size:s}", **params)
+    
+    try:
+        r = requests.get(url=api_endpoint, params=params)
+        tab = ascii.read(r.content.decode(), header_start=44, data_start=48, format='fixed_width')
+        params['coadd_id'] = tab['coadd_id'][0]
+        params['coaddgrp'] = tab['coadd_id'][0][:2]
+        params['coadd_ra'] = tab['coadd_id'][0][:4]
+        params['band'] = int(survey[-1])
+        params['size'] = str(opt_view[0].value) + ',' + str(opt_view[-1].value) + str(opt_view[0].unit)
+        path = str.format("/{coaddgrp:s}/{coadd_ra:s}/{coadd_id:s}/{coadd_id:s}-w{band:1d}-int-3.fits?"
+                        "center={POS:s}&size={size:s}", **params)
+    except requests.exceptions.ConnectionError:
+        path = []
 
     try:
         result = fits.open(api_endpoint.replace('search', 'data') + path)

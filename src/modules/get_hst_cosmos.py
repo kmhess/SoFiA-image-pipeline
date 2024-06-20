@@ -25,8 +25,11 @@ def get_hst_cosmos(source, opt_view=40*u.arcsec):
               'ntable_cutouts': '1',
               'cutouttbl1': 'acs_mosaic_2.0'}
 
-    r = requests.get(url=api_endpoint, params=params)
-    data = xmltodict.parse(r.content)
+    try:
+        r = requests.get(url=api_endpoint, params=params)
+        data = xmltodict.parse(r.content)
+    except requests.exceptions.ConnectionError:
+        data = None
 
     try:
         result = fits.open(data['result']['images']['cutouts']['fits'])
