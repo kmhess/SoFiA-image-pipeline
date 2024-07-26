@@ -28,8 +28,8 @@ def main():
     parser.add_argument('-c', '--catalog', required=True,
                         help='Required: Specify the input XML or ascii catalog name. No default.')
 
-    parser.add_argument('-id', '--source-id', default=[], nargs='*', type=int,
-                        help='Space-separated list of sources to include in the plotting. Default all sources')
+    parser.add_argument('-id', '--source-id', default=[], nargs='*', #type=int,
+                        help='Space-separated list, or range of sources to include in the plotting. Default all sources')
 
     parser.add_argument('-x', '--suffix', default='png',
                         help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
@@ -87,10 +87,17 @@ def main():
     original = args.original
     imagemagick = args.imagemagick
 
+    if '-' in args.source_id[0]:
+        s_range = args.source_id[0].split('-')
+        args.source_id = np.array(range(int(s_range[1]) - int(s_range[0]) + 1)) + int(s_range[0])
+    else:
+        args.source_id = [int(s) for s in args.source_id]
+
     try:
         beam = [float(b) for b in args.beam.split(',')]
     except:
         beam = []
+
     opt_view = args.image_size * u.arcmin
 
     print("\n*****************************************************************")
