@@ -58,7 +58,7 @@ def main():
 
     parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
                         help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours. These\n'
-                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\n'
+                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\'sdss\',\n'
                             ' \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue"\n' 
                             ' if no user provided image.')
 

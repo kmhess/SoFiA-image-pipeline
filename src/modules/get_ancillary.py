@@ -113,6 +113,9 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
     elif decals == 'dr9':
         url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
               'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
+    elif decals == 'sdss':
+        url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=sdss&' \
+              'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
     else:
         url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr10&' \
               'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
@@ -131,6 +134,7 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
         fits_head = None
         color_im = None
     except URLError:
+        print("\tWARNING: URL Error. No false color image retrieved.")
         fits_head = None
         color_im = None
 
