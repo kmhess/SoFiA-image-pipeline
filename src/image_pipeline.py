@@ -87,11 +87,12 @@ def main():
     original = args.original
     imagemagick = args.imagemagick
 
-    if '-' in args.source_id[0]:
-        s_range = args.source_id[0].split('-')
-        args.source_id = np.array(range(int(s_range[1]) - int(s_range[0]) + 1)) + int(s_range[0])
-    else:
-        args.source_id = [int(s) for s in args.source_id]
+    if len(args.source_id) >= 1:
+        if '-' in args.source_id[0]:
+            s_range = args.source_id[0].split('-')
+            args.source_id = np.array(range(int(s_range[1]) - int(s_range[0]) + 1)) + int(s_range[0])
+        else:
+            args.source_id = [int(s) for s in args.source_id]
 
     try:
         beam = [float(b) for b in args.beam.split(',')]
