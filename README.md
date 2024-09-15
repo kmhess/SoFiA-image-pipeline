@@ -144,7 +144,7 @@ SkyView.list_surveys()
 SkyView.survey_dict
 ```
 
-* In addition to overlaying HI contours on survey images available through `astroquery`, a user can request WISE images (`'WISE W#'` where `#` is the band number); false color images from `'decals'` (DR10), `'decals-dr9'` (DR9), `'panstarrs'`, or `'decaps'`; or gray-scale HST-ACS Mosaic images for sources within the COSMOS field with `'hst'`.  The HST image size is currently hardcoded to 40 arcsec on a side. 
+* In addition to overlaying HI contours on survey images available through `astroquery`, a user can request WISE images (`'WISE W#'` where `#` is the band number); false color images from `'decals'` (DR10), `'decals-dr9'` (DR9), `'panstarrs'`, `'sdss'`, or `'decaps'`; or gray-scale HST-ACS Mosaic images for sources within the COSMOS field with `'hst'`.  The HST image size is currently hardcoded to 40 arcsec on a side. 
 
 * Downloading survey images from `astroquery.SkyView` or other online sources is the greatest limiting factor in the speed of SIP.  To avoid this, for catalogs with a high source density, you may consider downloading one large image to disk before running SIP.  For this purpose, we have included the command line tool `download_usr_fig`. For example:
 ```
@@ -176,8 +176,6 @@ Known Issues
 See the github repo for known bugs and desired enhancements.  We aim to fix serious bugs as quickly as possible.
 
 In addition we are aware of the following issues:
-* SIP is not compatible with matplolib 3.8 due to some incompatibility with astropy or vice versa.
-* If `'DSS2 Blue'` image doesn't exist and it is the only image requested (by default), the pipeline will crash.  Try `'WISE 3.4'` instead.
 * Saving figures with .ps or .eps format has issues with transparency and background colors appearing black.
 * `download_usr_fig` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `sofia_image_pipeline`.
 * WISE images, PanSTARRS, DECaLS, and DECaPS cannot (yet?) be plotted with Galactic coordinates.
