@@ -516,17 +516,18 @@ def make_source(catalog, fits_name):
 
     new_source = catalog[0]
     header = fits.getheader(fits_name)
+    wcs = WCS(header, fix=True, translate_units='shd')
 
     # Change the relevant catalog parameters ... prob need to deal with kin_pa and rms at some point.
     new_source['name'] = fits_name.split('/')[-1][:-5]
     new_source['id'] = 0
-    new_source['x'], new_source['y'], new_source['z'] = header['CRPIX1'], header['CRPIX2'], header['CRPIX3']
+    new_source['x'], new_source['y'], new_source['z'] = header['NAXIS1']/2, header['NAXIS2']/2, header['NAXIS3']/2
     new_source['x_min'], new_source['x_max'] = int(np.min(catalog['x_min'])), int(np.max(catalog['x_max']))
     new_source['y_min'], new_source['y_max'] = int(np.min(catalog['y_min'])), int(np.max(catalog['y_max']))
     new_source['z_min'], new_source['z_max'] = int(np.min(catalog['z_min'])), int(np.max(catalog['z_max']))
     new_source['rms'] = np.nanmin(catalog['rms'])
-    new_source['ra'], new_source['dec'] = header['CRVAL1'], header['CRVAL2']
-    new_source['pos_x'], new_source['pos_y'] = header['CRVAL1'], header['CRVAL2']
+    new_source['ra'], new_source['dec'] = wcs.celestial.wcs_pix2world(new_source['x'], new_source['y'], 0)
+    new_source['pos_x'], new_source['pos_y'] = wcs.celestial.wcs_pix2world(new_source['x'], new_source['y'], 0)
     if 'freq' in catalog.colnames:
         new_source['freq'] = (np.min(catalog['freq']) + np.max(catalog['freq'])) / 2
     elif 'vrad' in catalog.colnames:
