@@ -461,8 +461,9 @@ def plot_labels(source, ax, default_beam, x_color='k'):
         x_coord, y_coord = 'ra', 'dec'
         x_label, y_label = 'RA (ICRS)', 'Dec (ICRS)'
 
-    ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75,
-               transform=ax.get_transform('world'))
+    if source['id'] != 0:
+        ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75,
+                transform=ax.get_transform('world'))
     ax.set_title(source['name'], fontsize=20)
     ax.tick_params(axis='both', which='major', labelsize=18)
     ax.coords[x_coord].set_axislabel(x_label, fontsize=20)
@@ -517,7 +518,7 @@ def make_source(catalog, fits_name):
     header = fits.getheader(fits_name)
 
     # Change the relevant catalog parameters ... prob need to deal with kin_pa and rms at some point.
-    new_source['name'] = 'Summary'
+    new_source['name'] = fits_name.split('/')[-1][:-5]
     new_source['id'] = 0
     new_source['x'], new_source['y'], new_source['z'] = header['CRPIX1'], header['CRPIX2'], header['CRPIX3']
     new_source['x_min'], new_source['x_max'] = int(np.min(catalog['x_min'])), int(np.max(catalog['x_max']))
@@ -526,12 +527,12 @@ def make_source(catalog, fits_name):
     new_source['ra'], new_source['dec'] = header['CRVAL1'], header['CRVAL2']
     new_source['pos_x'], new_source['pos_y'] = header['CRVAL1'], header['CRVAL2']
     if 'freq' in catalog.colnames:
-        new_source['freq'] = header['CRVAL3']
+        new_source['freq'] = (np.min(catalog['freq']) + np.max(catalog['freq'])) / 2
     elif 'vrad' in catalog.colnames:
-        new_source['vrad'] = header['CRVAL3']
+        new_source['v_rad'] = (np.min(catalog['v_rad']) + np.max(catalog['v_rad'])) / 2
     elif 'v_opt' in catalog.colnames:
-        new_source['v_opt'] = header['CRVAL3']
+        new_source['v_opt'] = (np.min(catalog['v_opt']) + np.max(catalog['v_opt'])) / 2
     elif 'v_app' in catalog.colnames:
-        new_source['v_app'] = header['CRVAL3']
+        new_source['v_app'] = (np.min(catalog['v_app']) + np.max(catalog['v_app'])) / 2
 
     return new_source

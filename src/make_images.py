@@ -423,6 +423,9 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom1.{}'.format(suffix)
+    cube_end = '.fits'
+    if source['id'] != 0:
+        cube_end = '_cube.fits'
 
     if not os.path.isfile(outfile):
 
@@ -431,13 +434,6 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             mom1 = fits.open(src_basename + '_mom1.fits')
         except FileNotFoundError:
             print("\tNo mom1 fits file. Perhaps you ran SoFiA without generating moments?")
-            return
-
-        if not os.path.isfile(src_basename + '_cube.fits'):
-            print("\tERROR: No fits cube associated with source, so can't determine min & max velocities for mom1 figure.")
-            return
-        elif not os.path.isfile(src_basename + '_snr.fits'):
-            print("\tERROR: No fits snr map associated with source, so can't determine mask for mom1 figure.")
             return
 
         # Get frequency information for spectral line in question:
@@ -456,8 +452,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
             w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
             if sofia == 2:
-                freqmin = chan2freq(source['z_min'], src_basename + '_cube.fits').to(u.Hz).value
-                freqmax = chan2freq(source['z_max'], src_basename + '_cube.fits').to(u.Hz).value
+                freqmin = chan2freq(source['z_min'], src_basename + cube_end).to(u.Hz).value
+                freqmax = chan2freq(source['z_max'], src_basename + cube_end).to(u.Hz).value
             elif sofia == 1:
                 freqmin = chan2freq(source['z_min'], src_basename + '.fits').to(u.Hz).value
                 freqmax = chan2freq(source['z_max'], src_basename + '.fits').to(u.Hz).value
@@ -479,8 +475,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
             w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
             w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
-            velmin = chan2vel(source['z_min'], src_basename + '_cube.fits').to(u.km / u.s).value
-            velmax = chan2vel(source['z_max'], src_basename + '_cube.fits').to(u.km / u.s).value
+            velmin = chan2vel(source['z_min'], src_basename + cube_end).to(u.km / u.s).value
+            velmax = chan2vel(source['z_max'], src_basename + cube_end).to(u.km / u.s).value
             cbar_label = "{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt'])
 
         if velmin == velmax:
@@ -526,7 +522,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         # Don't know how to deal with CRPIX that's different between original data and subcubes (sofia issue; chan2freq, chan2vel)
         # vel_maxhalf = np.max([np.abs(velmax-v_sys), np.abs(v_sys-velmin)])
         vel_maxhalf = np.abs(velmax - velmin) / 2.
-        for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150]:
+        for vunit in [5, 10, 20, 25, 30, 40, 50, 60, 75, 100, 125, 150, 200, 250, 300, 400, 500]:
             n_contours = vel_maxhalf // vunit
             if n_contours <= 4:
                 break
@@ -537,36 +533,40 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
             cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=0.6, transform=ax1.get_transform(cubew))
-        v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
+        
+        v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
+        if source['id'] != 0:
+            v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
 
-        # Plot kin_pa from HI center of galaxy; calculate end points of line
-        p1x, p1y = (hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
-                   (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg
-        p2x, p2y = (hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
-                   (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg
-        # My one test data set in Galactic coords fails on savefig because of something weird happening in annotate.
-        if 'l' in source.colnames:
-            ax1.plot([p1x, p2x], [p1y, p2y], linestyle='--', color='k', transform=ax1.get_transform('world'))
-        else:
-            ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
-                         xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
-                         arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
-                                         linestyle='--'))
-        # Plot the minor axis if pv_min was created by SoFiA:
-        if os.path.isfile(src_basename + '_pv_min.fits'):
-            pa_min = kinpa + 90. * u.deg
-            p1x, p1y = (hi_pos.ra + 0.35 * opt_view[0] * np.sin(pa_min) / np.cos(hi_pos.dec)).deg,\
-                       (hi_pos.dec + 0.35 * opt_view[0] * np.cos(pa_min)).deg
-            p2x, p2y = (hi_pos.ra - 0.35 * opt_view[0] * np.sin(pa_min) / np.   cos(hi_pos.dec)).deg,\
-                       (hi_pos.dec - 0.35 * opt_view[0] * np.cos(pa_min)).deg
-            # Assume same issues with Galactic coordinates with plotting min PA as kinpa above
+        if source['id'] != 0:
+            # Plot kin_pa from HI center of galaxy; calculate end points of line
+            p1x, p1y = (hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
+                    (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg
+            p2x, p2y = (hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
+                    (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg
+            # My one test data set in Galactic coords fails on savefig because of something weird happening in annotate.
             if 'l' in source.colnames:
-                ax1.plot([p1x, p2x], [p1y, p2y], linestyle=':', color='k', transform=ax1.get_transform('world'))
+                ax1.plot([p1x, p2x], [p1y, p2y], linestyle='--', color='k', transform=ax1.get_transform('world'))
             else:
                 ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
                             xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
                             arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
-                                            linestyle=':'))
+                                            linestyle='--'))
+            # Plot the minor axis if pv_min was created by SoFiA:
+            if os.path.isfile(src_basename + '_pv_min.fits'):
+                pa_min = kinpa + 90. * u.deg
+                p1x, p1y = (hi_pos.ra + 0.35 * opt_view[0] * np.sin(pa_min) / np.cos(hi_pos.dec)).deg,\
+                        (hi_pos.dec + 0.35 * opt_view[0] * np.cos(pa_min)).deg
+                p2x, p2y = (hi_pos.ra - 0.35 * opt_view[0] * np.sin(pa_min) / np.   cos(hi_pos.dec)).deg,\
+                        (hi_pos.dec - 0.35 * opt_view[0] * np.cos(pa_min)).deg
+                # Assume same issues with Galactic coordinates with plotting min PA as kinpa above
+                if 'l' in source.colnames:
+                    ax1.plot([p1x, p2x], [p1y, p2y], linestyle=':', color='k', transform=ax1.get_transform('world'))
+                else:
+                    ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
+                                xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
+                                arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
+                                                linestyle=':'))
 
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
         if not singlechansource:
@@ -608,13 +608,6 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
             mom2 = fits.open(src_basename + '_mom2.fits')
         except FileNotFoundError:
             print("\tNo mom2 fits file. Perhaps you ran SoFiA without generating moments?")
-            return
-
-        if not os.path.isfile(src_basename + '_cube.fits'):
-            print("\tERROR: No fits cube associated with source, so can't determine min & max velocities for mom2 figure.")
-            return
-        elif not os.path.isfile(src_basename + '_snr.fits'):
-            print("\tERROR: No fits snr map associated with source, so can't determine mask for mom2 figure.")
             return
 
         # Get frequency information for spectral line in question:
