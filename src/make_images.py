@@ -976,7 +976,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
         if os.path.isfile(src_basename + '_{}_mom0.fits'.format(str(source['id']))):
             print("\tNo SNR fits file found. Will determine lowest contour based on rms in catalog,"
                   " min(user provided SNR), and user provided channel width.")
-            if cube_params['chan_width']:
+            if cube_params['chan_width'] != None:
                 HIlowest = source['rms'] * np.nanmin(snr_range) * np.abs(cube_params['chan_width'].value)
             # Assumes user gives chan_width in correct units of original data but SIP knows units from mom0 header!
             elif chan_width:
