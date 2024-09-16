@@ -524,6 +524,7 @@ def make_source(catalog, fits_name):
     new_source['x_min'], new_source['x_max'] = int(np.min(catalog['x_min'])), int(np.max(catalog['x_max']))
     new_source['y_min'], new_source['y_max'] = int(np.min(catalog['y_min'])), int(np.max(catalog['y_max']))
     new_source['z_min'], new_source['z_max'] = int(np.min(catalog['z_min'])), int(np.max(catalog['z_max']))
+    new_source['rms'] = np.nanmin(catalog['rms'])
     new_source['ra'], new_source['dec'] = header['CRVAL1'], header['CRVAL2']
     new_source['pos_x'], new_source['pos_y'] = header['CRVAL1'], header['CRVAL2']
     if 'freq' in catalog.colnames:
