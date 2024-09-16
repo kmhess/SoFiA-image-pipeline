@@ -501,3 +501,38 @@ def make_header(source, opt_view=6*u.arcmin):
     hdu.header['CDELT2'] = opt_view[0].to(u.deg).value / npix
 
     return hdu.header
+
+
+def make_source(catalog, fits_name):
+    """Return a dummy source when a summary image is requested.
+
+    :param catalog: source catalog
+    :type catalog: Astropy table
+    :param fits_name: name of the FITS file
+    :type fits_name: str
+    :return:
+    :rtype: Astropy table
+    """
+
+    new_source = catalog[0]
+    header = fits.getheader(fits_name)
+
+    # Change the relevant catalog parameters ... prob need to deal with kin_pa and rms at some point.
+    new_source['name'] = 'Summary'
+    new_source['id'] = 0
+    new_source['x'], new_source['y'], new_source['z'] = header['CRPIX1'], header['CRPIX2'], header['CRPIX3']
+    new_source['x_min'], new_source['x_max'] = int(np.min(catalog['x_min'])), int(np.max(catalog['x_max']))
+    new_source['y_min'], new_source['y_max'] = int(np.min(catalog['y_min'])), int(np.max(catalog['y_max']))
+    new_source['z_min'], new_source['z_max'] = int(np.min(catalog['z_min'])), int(np.max(catalog['z_max']))
+    new_source['ra'], new_source['dec'] = header['CRVAL1'], header['CRVAL2']
+    new_source['pos_x'], new_source['pos_y'] = header['CRVAL1'], header['CRVAL2']
+    if 'freq' in catalog.colnames:
+        new_source['freq'] = header['CRVAL3']
+    elif 'vrad' in catalog.colnames:
+        new_source['vrad'] = header['CRVAL3']
+    elif 'v_opt' in catalog.colnames:
+        new_source['v_opt'] = header['CRVAL3']
+    elif 'v_app' in catalog.colnames:
+        new_source['v_app'] = header['CRVAL3']
+
+    return new_source
