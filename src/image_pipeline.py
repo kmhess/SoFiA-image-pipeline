@@ -3,17 +3,15 @@
 # Import default Python libraries
 from argparse import ArgumentParser, RawTextHelpFormatter
 import os
-import sys
 
 # Import installed Python libraries
-from astropy.io import fits  # change to table.read?
 from astropy.table import Table
 from astropy import units as u
 import pkg_resources  # part of setuptools
 import numpy as np
 
 from src import make_images, make_spectra
-from src.modules.functions import get_radecfreq
+from src.modules.functions import get_radecfreq, make_source
 from src.combine_images import combine_images
 
 version = pkg_resources.require("SoFiA-image-pipeline")[0].version
@@ -29,7 +27,8 @@ def main():
                         help='Required: Specify the input XML or ascii catalog name. No default.')
 
     parser.add_argument('-id', '--source-id', default=[], nargs='*', #type=int,
-                        help='Space-separated list, or range of sources to include in the plotting. Default all sources')
+                        help='Space-separated list, or range of sources to include in the plotting. If set to 0, do summary figure. \n'
+                            ' Default all sources.')
 
     parser.add_argument('-x', '--suffix', default='png',
                         help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
@@ -211,6 +210,15 @@ def main():
                 combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), user_image=args.user_image)
 
             n_src += 1
+
+    if 0 in args.source_id:
+        print("\n\tMaking summary images of full field.")
+        new_source = make_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '.fits')
+        catalog.add_row(new_source)
+        src_basename = src_basename.split('_cubelets')[0]
+        make_images.main(catalog[-1], src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
+                    chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
+                    user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
 
     print("\n\tDONE! Made images for {} sources.".format(n_src))
     print("*****************************************************************\n")

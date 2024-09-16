@@ -57,7 +57,7 @@ def felo2vel(channels, fits_name):
 
     :param channels:
     :type channels: Iterable[int]
-    :param fits_name:
+    :param fits_name: name of the FITS file
     :type fits_name: str
     :return: calculated velocities
     :rtype: Iterable[float]
@@ -151,7 +151,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
     return nhi, nhi_label, nhi_labels
 
 
-def get_info(fits_name, beam=None):
+def get_info(fits_name, beam=None, source_id=0):
     """Get the beam info from a FITS file.
 
     :param fits_name: name of the FITS file
@@ -264,11 +264,10 @@ def get_info(fits_name, beam=None):
                 pass
 
     # Try to determine the spectral properties
-    if fits_name[-9:] != 'cube.fits':
+    if (fits_name[-9:] != 'cube.fits') and (source_id != 0):
         print("\tWARNING: Retrieving info from a moment map or other 2D image?")
         chan_width = None
         spec_axis = None
-
     else:
         spec_axis = header['CTYPE3']
         chan_width = header['CDELT3']
