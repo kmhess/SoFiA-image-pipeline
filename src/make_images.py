@@ -80,12 +80,12 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
     :type suffix: str, optional
     :return:
     """
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], 'usr', suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format(source['id'], 'usr', suffix)
 
     if not os.path.isfile(outfile):
         try:
             print("\tMaking HI contour overlay on {} image.".format('usr'))
-            hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+            hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
@@ -94,13 +94,13 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
                                              cube_params['bmin'].value, source, spec_line=spec_line)
 
         try:
-            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+            hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
             print("\tWARNING: No cubelet to match source {}."
                   " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
-                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+                hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
@@ -160,12 +160,12 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
     :type survey: str, optional
     """
     survey_nospace = survey.replace(" ", "").lower()
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], survey_nospace, suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format(survey_nospace, suffix)
 
     if not os.path.isfile(outfile):
         try:
             print("\tMaking HI contour overlay on {} image.".format(survey))
-            hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+            hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
@@ -173,13 +173,13 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value, source, spec_line=spec_line)
         try:
-            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+            hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
             print("\tWARNING: No cubelet to match source {}."
                   " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
-                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+                hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
@@ -248,25 +248,25 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
     :type suffix: str
     :return:
     """
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0.{}'.format(source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_mom0.{}'.format(suffix)
 
     if not os.path.isfile(outfile):
         try:
             print("\tMaking HI contour overlay on grey-scale HI image.")
-            hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+            hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             print("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
         mom0 = hdulist_hi[0].data
         try:
-            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+            hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
             print("\tWARNING: No cubelet to match source {}."
                   " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
-                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+                hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
@@ -334,26 +334,26 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
     :type suffix: str
     :return:
     """
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_snr.{}'.format(source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_snr.{}'.format(suffix)
 
     if not os.path.isfile(outfile):
         try:
             print("\tMaking SNR image.")
-            hdulist_snr = fits.open(src_basename + '_{}_snr.fits'.format(str(source['id'])))
+            hdulist_snr = fits.open(src_basename + '_snr.fits')
         except FileNotFoundError:
             print("\tNo SNR fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+        hdulist_hi = fits.open(src_basename + '_mom0.fits')
 
         try:
-            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+            hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
             print("\tWARNING: No cubelet to match source {}."
                   " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
-                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+                hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
@@ -422,21 +422,21 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
     :type sofia: int
     :return:
     """
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom1.{}'.format(source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_mom1.{}'.format(suffix)
 
     if not os.path.isfile(outfile):
 
         try:
             print("\tMaking velocity field.")
-            mom1 = fits.open(src_basename + '_{}_mom1.fits'.format(source['id']))
+            mom1 = fits.open(src_basename + '_mom1.fits')
         except FileNotFoundError:
             print("\tNo mom1 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        if not os.path.isfile(src_basename + '_{}_cube.fits'.format(source['id'])):
+        if not os.path.isfile(src_basename + '_cube.fits'):
             print("\tERROR: No fits cube associated with source, so can't determine min & max velocities for mom1 figure.")
             return
-        elif not os.path.isfile(src_basename + '_{}_snr.fits'.format(source['id'])):
+        elif not os.path.isfile(src_basename + '_snr.fits'):
             print("\tERROR: No fits snr map associated with source, so can't determine mask for mom1 figure.")
             return
 
@@ -456,11 +456,11 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
             w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
             if sofia == 2:
-                freqmin = chan2freq(source['z_min'], src_basename + '_{}_cube.fits'.format(source['id'])).to(u.Hz).value
-                freqmax = chan2freq(source['z_max'], src_basename + '_{}_cube.fits'.format(source['id'])).to(u.Hz).value
+                freqmin = chan2freq(source['z_min'], src_basename + '_cube.fits').to(u.Hz).value
+                freqmax = chan2freq(source['z_max'], src_basename + '_cube.fits').to(u.Hz).value
             elif sofia == 1:
-                freqmin = chan2freq(source['z_min'], src_basename + '_{}.fits'.format(source['id'])).to(u.Hz).value
-                freqmax = chan2freq(source['z_max'], src_basename + '_{}.fits'.format(source['id'])).to(u.Hz).value
+                freqmin = chan2freq(source['z_min'], src_basename + '.fits').to(u.Hz).value
+                freqmax = chan2freq(source['z_max'], src_basename + '.fits').to(u.Hz).value
             velmax = (const.c * (freqmin - source['freq'])/source['freq']).to(u.km / u.s).value
             velmin = (const.c * (freqmax - source['freq'])/source['freq']).to(u.km / u.s).value
             cbar_label = "Rest Frame Velocity [km/s]"
@@ -479,10 +479,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
             w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
             w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
-            velmin = chan2vel(source['z_min'], src_basename +
-                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
-            velmax = chan2vel(source['z_max'], src_basename +
-                              '_{}_cube.fits'.format(source['id'])).to(u.km / u.s).value
+            velmin = chan2vel(source['z_min'], src_basename + '_cube.fits').to(u.km / u.s).value
+            velmax = chan2vel(source['z_max'], src_basename + '_cube.fits').to(u.km / u.s).value
             cbar_label = "{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt'])
 
         if velmin == velmax:
@@ -491,20 +489,20 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             singlechansource = False
 
         try:
-            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+            hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
             print("\tWARNING: No cubelet to match source {}."
                   " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
-                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+                hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
 
         mom1_d = mom1[0].data
         # Only plot values above the lowest calculated HI value:
-        hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+        hdulist_hi = fits.open(src_basename + '_mom0.fits')
         mom0 = hdulist_hi[0].data
         if base_contour > 0.0 and np.isfinite(base_contour):
             mom1_d[mom0 < base_contour] = np.nan
@@ -555,7 +553,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                          arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                          linestyle='--'))
         # Plot the minor axis if pv_min was created by SoFiA:
-        if os.path.isfile(src_basename + '_{}_pv_min.fits'.format(source['id'])):
+        if os.path.isfile(src_basename + '_pv_min.fits'):
             pa_min = kinpa + 90. * u.deg
             p1x, p1y = (hi_pos.ra + 0.35 * opt_view[0] * np.sin(pa_min) / np.cos(hi_pos.dec)).deg,\
                        (hi_pos.dec + 0.35 * opt_view[0] * np.cos(pa_min)).deg
@@ -601,21 +599,21 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
     """
     :return:
     """
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom2.{}'.format(source['id'], suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_mom2.{}'.format(suffix)
 
     if not os.path.isfile(outfile):
 
         try:
             print("\tMaking velocity dispersion map.")
-            mom2 = fits.open(src_basename + '_{}_mom2.fits'.format(source['id']))
+            mom2 = fits.open(src_basename + '_mom2.fits')
         except FileNotFoundError:
             print("\tNo mom2 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        if not os.path.isfile(src_basename + '_{}_cube.fits'.format(source['id'])):
+        if not os.path.isfile(src_basename + '_cube.fits'):
             print("\tERROR: No fits cube associated with source, so can't determine min & max velocities for mom2 figure.")
             return
-        elif not os.path.isfile(src_basename + '_{}_snr.fits'.format(source['id'])):
+        elif not os.path.isfile(src_basename + '_snr.fits'):
             print("\tERROR: No fits snr map associated with source, so can't determine mask for mom2 figure.")
             return
 
@@ -643,20 +641,20 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
             singlechansource = False
 
         try:
-            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+            hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
             print("\tWARNING: No cubelet to match source {}."
                   " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
-                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+                hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
 
         mom2_d = mom2[0].data
         # Only plot values above the lowest calculated HI value:
-        hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+        hdulist_hi = fits.open(src_basename + '_mom0.fits')
         mom0 = hdulist_hi[0].data
         if base_contour > 0.0 and np.isfinite(base_contour):
             mom2_d[mom0 < base_contour] = np.nan
@@ -739,7 +737,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     :type survey: str
     :return:
     """
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_mom0_{}.{}'.format(source['id'], survey, suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format(survey, suffix)
 
     if survey == 'panstarrs': survey = 'PanSTARRS'
     elif (survey == 'decals') or (survey == 'dr9'): survey = 'DECaLS'
@@ -748,16 +746,16 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
     if not os.path.isfile(outfile):
         print("\tMaking HI contour overlay on {} false color image.".format(survey))
-        hdulist_hi = fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id'])))
+        hdulist_hi = fits.open(src_basename + '_mom0.fits')
 
         try:
-            hiwcs, cubew = get_wcs_info(src_basename + '_{}_cube.fits'.format(source['id']))
+            hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
             print("\tWARNING: No cubelet to match source {}."
                   " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
-                hiwcs, cubew = get_wcs_info(src_basename + '_{}_mom0.fits'.format(source['id']))
+                hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
@@ -826,12 +824,12 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     pv_axis = 'pv'
     if min_axis == True:
         pv_axis = 'pv_min'
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_{}.{}'.format(source['id'], pv_axis, suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_{}.{}'.format(pv_axis, suffix)
 
     if not os.path.isfile(outfile):
         try:
             print("\tMaking {} diagram.".format(pv_axis))
-            pv = fits.open(src_basename + '_{}_{}.fits'.format(str(source['id']), pv_axis))
+            pv = fits.open(src_basename + '_{}.fits'.format(pv_axis))
         except FileNotFoundError:
             print("\tNo {} fits file. Perhaps you ran source finding with an old version of SoFiA-2?".format(pv_axis))
             return
@@ -873,10 +871,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 3**np.arange(10, 0, -1), linestyles=['dashed', ])
 
             ax1.autoscale(False)
-            if os.path.isfile(src_basename + '_{}_mask.fits'.format(str(source['id']))):
+            if os.path.isfile(src_basename + '_mask.fits'):
                 print("\tAttempting to overlay mask boundaries on {} diagram ...".format(pv_axis))
-                mask_pv = create_pv(source, src_basename + '_{}_mask.fits'.format(str(source['id'])),
-                                    opt_view=opt_view[0], min_axis=min_axis)
+                mask_pv = create_pv(source, src_basename + '_mask.fits', opt_view=opt_view[0], min_axis=min_axis)
                 if mask_pv:
                     # Extract_pv has a header bug, reset the reference pixel:
                     mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
@@ -944,36 +941,40 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
     print("\tStart making spatial images.")
     swapx = False
+    cube_end = '.fits'
+    if source['id'] != 0:
+        src_basename = src_basename + '_{}'.format(source['id'])
+        cube_end = '_cube.fits'
 
     # Get beam information from the source cubelet
     if sofia == 2:
         try:
-            cube_params = get_info(src_basename + '_{}_cube.fits'.format(source['id']), beam)
+            cube_params = get_info(src_basename + cube_end, beam, source['id'])
         except FileNotFoundError:
             # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
             print("\tWARNING: No cubelet to match source {}."
                   " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
-                cube_params = get_info(src_basename + '_{}_mom0.fits'.format(source['id']), beam)
+                cube_params = get_info(src_basename + '_mom0.fits', beam, source['id'])
             except FileNotFoundError:
                 print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
                 exit()
     elif sofia == 1:
-        cube_params = get_info(src_basename + '_{}.fits'.format(source['id']), beam)
+        cube_params = get_info(src_basename + '.fits', beam, source['id'])
 
     opt_head = None
 
     # Calculate base contour from the SNR map and requested SNR range
     try:
-        with fits.open(src_basename + '_{}_snr.fits'.format(str(source['id']))) as hdulist_snr, \
-                fits.open(src_basename + '_{}_mom0.fits'.format(str(source['id']))) as hdulist_hi:
+        with fits.open(src_basename + '_snr.fits') as hdulist_snr, \
+                fits.open(src_basename + '_mom0.fits') as hdulist_hi:
             HIlowest = np.median(hdulist_hi[0].data[(np.abs(hdulist_snr[0].data) > snr_range[0]) *
                                                     (np.abs(hdulist_snr[0].data) < snr_range[1])])
         print("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
                                                                                                           HIlowest))
     # If no SNR map use the channel width of the original data (provided by user if necessary) for lowest HI contour.
     except FileNotFoundError:
-        if os.path.isfile(src_basename + '_{}_mom0.fits'.format(str(source['id']))):
+        if os.path.isfile(src_basename + '_mom0.fits'):
             print("\tNo SNR fits file found. Will determine lowest contour based on rms in catalog,"
                   " min(user provided SNR), and user provided channel width.")
             if cube_params['chan_width'] != None:
