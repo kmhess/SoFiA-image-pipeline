@@ -87,7 +87,7 @@ REQUIRED:
     -c     Catalog file. Can be the ascii file ending in .txt or the XML file from SoFiA-2.
     
 OPTIONAL:
-    -id    Select certain sources from catalog based on the source id number. Default is all sources.
+    -id    Select certain sources, or range of sources from catalog based on the source id number. Default is all sources. Include `0` to make summary image of all sources.
     -x     Output image file type. Any file type accepted by plt.savefig() is in theory valid.  Default is 'png'.
     -o     Path to the original data file on which source finding was conducted. This allows the spectrum with noise to be plotted over the full spectral range of the original cube.  
     -b     Synthesized beam dimensions. If the primary header of the FITS files do not contain the beam information, this can be provided by the user. Accepts 1 to 3 values in order (bmaj, bmin, bpa).
