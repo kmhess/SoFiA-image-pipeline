@@ -191,6 +191,8 @@ In addition we are aware of the following issues:
 
 Version history
 ---------------
+* SIP 1.3.5
+    * Released 31 October 2024
 * SIP 1.3.1
     * Released 13 June 2024
 * SIP 1.3.0
