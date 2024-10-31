@@ -1056,6 +1056,12 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
             opt_head['NAXIS2'] = usrim_cut.wcs.array_shape[1]
         except:
             print('\tWARNING: 2D cutout extraction failed. Source outside user image? Will try again with the next source.')
+            if not surveys:
+                print("\tOffline mode requested. Making HI images.")
+                opt_head = make_header(source, opt_view=opt_view)
+    elif not surveys:
+        print("\tNo user image given and offline mode requested. Making HI images.")
+        opt_head = make_header(source, opt_view=opt_view)
     else:
         print("\tNo user image given. Proceeding with the download of any requested archive images.")
 

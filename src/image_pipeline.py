@@ -58,8 +58,8 @@ def main():
     parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
                         help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours. These\n'
                             ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\'sdss\',\n'
-                            ' \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST (e.g. for CHILES). Default is "DSS2 Blue"\n' 
-                            ' if no user provided image.')
+                            ' \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST. Default is "DSS2 Blue"\n' 
+                            ' if no user provided image. If \'none\' is requested, work in offline mode.')
 
     parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
                         help='Optional: combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'
@@ -106,6 +106,12 @@ def main():
     if (len(args.surveys) == 0) and (not args.user_image):
         args.surveys = ['DSS2 Blue']
         print("\tNo user specified image and no survey specified: will default to {}.".format(args.surveys[0]))
+    elif ('none' in args.surveys):
+        args.surveys = []
+        if not args.user_image:
+            print("\tOffline mode requested: will not make ancillary data overlays.")
+        else:
+            print("\tOffline mode requested: will only try user specified image.")
     surveys = tuple(args.surveys)
 
     if (suffix == 'eps') | (suffix == 'ps'):
