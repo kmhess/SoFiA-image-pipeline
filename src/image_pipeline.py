@@ -30,8 +30,30 @@ def main():
                         help='Space-separated list, or range of sources to include in the plotting. If set to 0, do summary figure. \n'
                             ' Default all sources.')
 
-    parser.add_argument('-x', '--suffix', default='png',
-                        help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
+    parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
+                        help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours. These\n'
+                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\'sdss\',\n'
+                            ' \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST. Default is "DSS2 Blue"\n' 
+                            ' if no user provided image. If \'none\' is requested, work in offline mode.')
+
+    parser.add_argument('-ui', '--user-image', default=None,
+                        help='Optional: Full path to the FITS image on which to overlay HI contours.')
+
+    parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
+                        help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
+
+    parser.add_argument('-line', '--spectral-line', default=None,
+                        help='Optional: Provide name of spectral line such as "CO" for "CO(1-0)". Default is "HI".\n'
+                            ' See github for more details on available lines.  Work in progress.')
+
+    parser.add_argument('-i', '--image_size', default=[6], nargs=1, type=float,
+                        help='Optional: specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
+                            ' the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
+
+    parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float,
+                        help='Optional: specify which SNRmin and SNRmax values should be used to set the lowest reliable HI \n'
+                            ' contour in the figures. The contour level is calculated as the median value in the mom0 image\n'
+                            ' of all pixels whose SNR value is within the given range. Default is [2,3].')
 
     parser.add_argument('-o', '--original', default=None,
                         help='Optional: specify the original fits data: used for plotting HI spectra *with* noise over \n'
@@ -46,20 +68,8 @@ def main():
                         help='Optional: specify the channel width in native units of the original data (e.g. Hz or m/s).'
                              ' (No default).')
 
-    parser.add_argument('-i', '--image_size', default=[6], nargs=1, type=float,
-                        help='Optional: specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
-                            ' the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
-
-    parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float,
-                        help='Optional: specify which SNRmin and SNRmax values should be used to set the lowest reliable HI \n'
-                            ' contour in the figures. The contour level is calculated as the median value in the mom0 image\n'
-                            ' of all pixels whose SNR value is within the given range. Default is [2,3].')
-
-    parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
-                        help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours. These\n'
-                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\'sdss\',\n'
-                            ' \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST. Default is "DSS2 Blue"\n' 
-                            ' if no user provided image. If \'none\' is requested, work in offline mode.')
+    parser.add_argument('-x', '--suffix', default='png',
+                        help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
     parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
                         help='Optional: combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'
@@ -67,16 +77,6 @@ def main():
                             ' command. Otherwise, the argument of this option gives the full path to the CONVERT executable.\n'
                             ' Only the first multiwavelength image specified in "surveys" argument is plotted next to the\n'
                             ' spectral line data.')
-
-    parser.add_argument('-ui', '--user-image', default=None,
-                        help='Optional: Full path to the FITS image on which to overlay HI contours.')
-
-    parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
-                        help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
-
-    parser.add_argument('-line', '--spectral-line', default=None,
-                        help='Optional: Provide name of spectral line such as "CO" for "CO(1-0)". Default is "HI".\n'
-                            ' See github for more details on available lines.  Work in progress.')
 
     ###################################################################
 

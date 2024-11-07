@@ -68,7 +68,7 @@ SIP works under the assumption that the user has run [SoFiA-2](https://github.co
 ```
 $ sofia_image_pipeline
 
-usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS ...]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]  [-line SPECTRAL_LINE]
+usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-s [SURVEYS ...]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE] [-line SPECTRAL_LINE] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-x SUFFIX] [-m [IMAGEMAGICK]]
 sofia_image_pipeline: error: the following arguments are required: -c/--catalog
 ```
 
@@ -88,17 +88,17 @@ REQUIRED:
     
 OPTIONAL:
     -id    Select certain sources, or range of sources from catalog based on the source id number. Default is all sources. Include `0` to make summary image of all sources.
-    -x     Output image file type. Any file type accepted by plt.savefig() is in theory valid.  Default is 'png'.
+    -s     List of surveys on which to overlay HI contours. Only the first entry will be used in the combined image if `-m` option is used. If 'none', work in offline mode. Default is 'DSS2 Blue'.
+    -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
+    -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
+    -line  Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO' and 'OH'.
+    -i     Minimum image size (ARCMIN). Images will be square. If an HI source exceeds the requested size, a larger image to fit the HI contours will be generated. Default is 6 arcmin.
+    -snr   Specify the SNR range within which to plot the lowest HI contour. Requires 2 values. Default is [2.0, 3.0].
     -o     Path to the original data file on which source finding was conducted. This allows the spectrum with noise to be plotted over the full spectral range of the original cube.  
     -b     Synthesized beam dimensions. If the primary header of the FITS files do not contain the beam information, this can be provided by the user. Accepts 1 to 3 values in order (bmaj, bmin, bpa).
     -cw    Channel width. This is only necessary if a source cubelet is not available, for example if user only has a mom0.  Channel width must then be provided in the native units of the original data cube (typically Hz or m/s.)
-    -i     Minimum image size (ARCMIN). Images will be square. If an HI source exceeds the requested size, a larger image to fit the HI contours will be generated. Default is 6 arcmin.
-    -snr   Specify the SNR range within which to plot the lowest HI contour. Requires 2 values. Default is [2.0, 3.0].
-    -s     List of surveys on which to overlay HI contours. Only the first entry will be used in the combined image if `-m` option is used. If 'none', work in offline mode. Default is 'DSS2 Blue'.
+    -x     Output image file type. Any file type accepted by plt.savefig() is in theory valid.  Default is 'png'.
     -m     Make a combined image using ImageMagick.  If a path is provided after this option, it is assumed to be the path to the `convert` executable of ImageMagick. 
-    -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
-    -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
-    -l     Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO' and 'OH'.
 ```
 
 ### Examples
