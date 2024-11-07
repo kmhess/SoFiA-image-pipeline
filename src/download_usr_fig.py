@@ -25,15 +25,15 @@ def main():
                         help='Optional: specify the central DEC of the image to retrieve in DEGREES. '
                              ' (default: %(default)s).')
 
-    parser.add_argument('-i', '--image_size', default=[2.8, 2.3], nargs='+', type=float,
-                        help='Optional: specify the minimum survey image size to retrieve in DEGREES.'
-                             ' (default: %(default)s).')
-
     parser.add_argument('-s', '--surveys', default=['DSS2 Blue'], nargs='*', type=str, required=False,
                         help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
                              ' These additional non-SkyView options are also available:'
                              ' \'decals\',\'panstarrs\',\'hst\'.\n'
                              ' \'hst\' only refers to COSMOS HST (e.g. for CHILES).')
+
+    parser.add_argument('-i', '--image_size', default=[2.8, 2.3], nargs='+', type=float,
+                        help='Optional: specify the minimum survey image size to retrieve in DEGREES.'
+                             ' (default: %(default)s).')
 
     parser.add_argument('-o', '--outname', default=None, required=False,
                         help='Optional: specify the prefix for the resulting file. Will be appended by survey name.')
