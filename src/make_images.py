@@ -80,7 +80,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
     :type suffix: str, optional
     :return:
     """
-    outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format(source['id'], 'usr', suffix)
+    outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format('usr', suffix)
 
     if not os.path.isfile(outfile):
         try:
