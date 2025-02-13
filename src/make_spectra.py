@@ -6,7 +6,7 @@ from astropy import units as u
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, line_lookup
+from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, line_lookup, make_hist_arr
 
 
 ###################################################################
@@ -113,7 +113,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
             return fig2, ax2_spec, outfile2
 
         # Could be more clever about picking the size of the figure when there are a lot of channels. Leave for later.
-        if original or len(spec) >= 800:
+        if original or len(spec) >= 200:
             fig2 = plt.figure(figsize=(15, 4))
         else:
             fig2 = plt.figure(figsize=(8, 4))
@@ -121,11 +121,17 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec = fig2.add_subplot(111)
         ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
         # If there are lots of channels, don't plot errors (too crowded and can tell from noise.) Cut off currently arbitrary.
-        if len(spec) < 800:
-            ax2_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
-                              yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+        y_error = source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam'])
+        if len(spec) <= 100:
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
+                                                  yy_err=y_error)
+            ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
+        elif len(spec) <= 200:
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
+                                                  yy_err=y_error * 0)
+            ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=0)
         else:
-            print("\tInput *_specfull.txt is >=800 channels; expanding figure, not including error bars (noise should be indicative).")
+            print("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
             ax2_spec.plot(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'])
         ax2_spec.set_title(source['name'], fontsize=16)
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
@@ -212,12 +218,14 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         fig1 = plt.figure(figsize=(8, 4))
         ax1_spec = fig1.add_subplot(111)
         ax1_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
+        y_error = source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam'])
         if specunits == 'Jy/beam':
-            ax1_spec.errorbar(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'], elinewidth=0.75,
-                              yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
+                                                  yy_err=y_error)
+            ax1_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
         elif specunits == 'Jy':
-            ax1_spec.errorbar(optical_velocity, spec['f_sum'], elinewidth=0.75,
-                              yerr=source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam']), capsize=1)
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'], yy_err=y_error)
+            ax1_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
         ax1_spec.set_title(source['name'], fontsize=16)
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=14)
