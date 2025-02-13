@@ -364,7 +364,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
         nhi, nhi_label, nhi_labels = sbr2nhi(base_contour, hdulist_hi[0].header['bunit'], cube_params['bmaj'].value,
                                              cube_params['bmin'].value, source, spec_line=spec_line)
-        wa_cmap = colors.ListedColormap(['w', 'royalblue', 'limegreen', 'yellow', 'orange', 'r'])
+        wa_cmap = colors.ListedColormap(['gainsboro', 'royalblue', 'limegreen', 'yellow', 'orange', 'r'])
         boundaries = [0, 1, 2, 3, 4, 5, 6]
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
         fig = plt.figure(figsize=(8, 8))
