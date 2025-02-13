@@ -42,7 +42,7 @@ def main():
     parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
                         help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
 
-    parser.add_argument('-line', '--spectral-line', default=None,
+    parser.add_argument('-line', '--spectral-line', default="HI", type=str,
                         help='Optional: Provide name of spectral line such as "CO" for "CO(1-0)". Default is "HI".\n'
                             ' See github for more details on available lines.  Work in progress.')
 

@@ -422,7 +422,7 @@ def line_lookup(spec_line):
     """
 
     rad_opt = 'Optical'
-    if (spec_line == None) or (spec_line == 'HI'):
+    if (spec_line == '') or (spec_line == 'HI'):
         spec_line == 'HI'
         restfreq_line = 1420405751.77 * u.Hz
         convention = u.doppler_optical(restfreq_line)
