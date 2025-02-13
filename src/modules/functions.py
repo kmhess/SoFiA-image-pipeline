@@ -477,6 +477,38 @@ def plot_labels(source, ax, default_beam, x_color='k'):
     return
 
 
+def make_hist_arr(xx=None, yy=None, yy_err=None):
+    """Create arrays for plotting spectra as with square channel-like response.
+
+    :param x: x-axis parameter
+    :type x: array
+    :param y: y-axis parameter
+    :type y: array
+    :param y_err: y-axis error
+    :type y_err: array
+    :return:
+    """
+
+    i = 0
+    new_x, new_y, new_y_error = [], [], []
+    delta_xx = xx[i] - xx[i+1]
+    for x, y, y_err in zip(xx, yy, yy_err):
+        new_x.append(x + delta_xx / 2)
+        new_x.append(x)
+        new_x.append(x - delta_xx / 2)
+        new_y.append(y)
+        new_y.append(y)
+        new_y.append(y)
+        new_y_error.append(0)
+        new_y_error.append(y_err)
+        new_y_error.append(0)
+        i += 0
+        if x != xx[-1]:
+            delta_xx = xx[i] - xx[i+1]
+
+    return new_x, new_y, new_y_error
+
+
 def make_header(source, opt_view=6*u.arcmin):
     """Return a dummy header when an ancillary image can't be retrieved.
 
