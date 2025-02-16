@@ -26,25 +26,34 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     # Use terminal commands to assemble figures with imagemagick: https://imagemagick.org/index.php
     print("\tAssembling figures with imagemagick")
     new_file = "{}combo.{}".format(infile, suffix)
+    # Remove redundant y-axies for the 2D images:
+    for im in ['mom0', 'snr', 'mom1', 'mom2']:
+        os.system('{0} {1}{2}.{3} -gravity west -chop 38x0 {2}_{4}.{3}'.format(imgck, infile, im, suffix, code))
+
+    # Use imagemagick to append images together:
     if user_image and os.path.exists('{0}mom0_usr.{1}'.format(infile, suffix)):
-        os.system("{0} {1}mom0_usr.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2} {1}mom2.{2}"
-                  " +append temp{3}.{2}".format(imgck, infile, suffix, code))
+        os.system("{0} {1}mom0_usr.{2} mom0_{3}.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2}"
+                  " +append temp_{3}.{2}".format(imgck, infile, suffix, code))
     elif surveys:
-        os.system("{0} {1}mom0_{3}.{2} {1}mom0.{2} {1}snr.{2} {1}mom1.{2} {1}mom2.{2} +append"
-                  " temp{4}.{2}".format(imgck, infile, suffix,
+        os.system("{0} {1}mom0_{3}.{2} mom0_{4}.{2} snr_{4}.{2} mom1_{4}.{2} mom2_{4}.{2} +append"
+                  " temp_{4}.{2}".format(imgck, infile, suffix,
                                         surveys[0].replace(" ", "").lower().replace('decals-dev', 'decals'), code))
     else:
         print("\tWARNING: No ancillary data image available for source {}.".format(source['id']))
-        os.system("{0} {1}mom0.{2} {1}snr.{2} {1}mom1.{2} {1}mom2.{2} +append temp{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} {1}spec.{2} -resize 133% temp2{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} {1}specfull.{2} -resize 133% temp3{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} temp2{3}.{2} temp3{3}.{2} {1}pv.{2} {1}pv_min.{2} +append temp4{3}.{2}".format(imgck, infile,
+        os.system("{0} {1}mom0.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append temp_{3}.{2}".format(imgck, infile, 
+                                                                                                          suffix, code))
+    os.system("{0} {1}spec.{2} -resize 133% temp2_{3}.{2}".format(imgck, infile, suffix, code))
+    os.system("{0} {1}specfull.{2} -resize 133% temp3_{3}.{2}".format(imgck, infile, suffix, code))
+    os.system('{0} {1}pv_min.{2} -gravity west -chop 38x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
+    os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} pv_min_{3}.{2} +append temp4_{3}.{2}".format(imgck, infile,
                                                                                                   suffix, code))
-    os.system("{0} temp{3}.{2} temp4{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
+    os.system("{0} temp_{3}.{2} temp4_{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
     new_file_size = os.path.getsize(new_file)
+
     if new_file_size > file_size_limit:
-        print('\tReducing size of combined image to {0:.0f}% of original (it was {1:.1e}B)'.format(100*file_size_limit/new_file_size, new_file_size))
+        print('\tReducing size of combined image to {0:.0f}% of original (it was {1:.1e}B)'.format(100*file_size_limit/new_file_size, 
+                                                                                                   new_file_size))
         os.system("{0} {1} -resize {2:.0f}% {1}".format(imgck, new_file, 100*file_size_limit/new_file_size))
-    os.system('rm -rf temp*{1}.{0}'.format(suffix, code))
+    os.system('rm -rf *_{1}.{0}'.format(suffix, code))
 
     return
