@@ -536,7 +536,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         
         v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
         if source['id'] != 0:
-            v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}  $W_{{20}}$ = {} km/s".format(int(v_sys), int(w50), int(w20))
+            v_sys_label = "$v_{{sys}}$ = {} km/s".format(int(v_sys))
 
         if source['id'] != 0:
             # Plot kin_pa from HI center of galaxy; calculate end points of line
@@ -567,6 +567,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                                 xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
                                 arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                                 linestyle=':'))
+            v_sys_label += ", Kinematic PA = {:5.1f}$^\\circ$".format(source['kin_pa'])
 
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=20)
         if not singlechansource:
