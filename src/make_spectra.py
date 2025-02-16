@@ -1,9 +1,11 @@
 # from datetime import datetime
 import os
 
+from astropy import constants as const
 from astropy.io import ascii, fits
 from astropy import units as u
 import matplotlib.pyplot as plt
+from matplotlib.ticker import FormatStrFormatter
 import numpy as np
 
 from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, line_lookup, make_hist_arr
@@ -84,6 +86,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
 
     outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
 
+    long_format = 200
+
     if not os.path.isfile(outfile2):
 
         # Get frequency information for spectral line in question:
@@ -92,6 +96,14 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         try:
             print("\tMaking HI spectrum plot including noise.")
             if 'freq' in source.colnames:
+                # Calculate source quantities for labels
+                v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
+                spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
+                z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                # SoFiA-2 puts out frequency w20/w50 in Hz units
+                w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
+                w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
+                # Calculate spectral axes quantities for plotting
                 spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
                 optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
                 maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s,
@@ -99,24 +111,48 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
                                                                                     equivalencies=line['convention']).value
             else:
+                # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
                     line['rad_opt'] = 'Radio'
+                    v_sys = (source['v_rad'] * u.m / u.s).to(u.km / u.s).value
+                    spec_z = ''
+                    z_label = ''
+                elif 'v_opt' in source.colnames:
+                    v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
+                    spec_z = (source['v_opt'] * u.m / u.s / const.c).decompose()
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                else:
+                    v_sys = (source['v_app'] * u.m / u.s).to(u.km / u.s).value
+                    spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
+                    z_label = r"$z_\mathrm{{app}}$ = {:.5f}".format(spec_z.value)
+                # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
+                w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
+                w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
+                # Calculate spectral axes quantities for plotting. Force velocity column to common name.
                 spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
                 maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=line['convention']).value
+            v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}".format(int(v_sys), int(w50))
+            if original or len(spec) >= long_format:
+                v_sys_label += "  $W_{{20}}$ = {} km/s".format(int(w20))
+            else:
+                v_sys_label += " km/s"
+            if 'snr' in source.colnames:
+                v_sys_label += ",  SNR = {:.1f}".format(source['snr'])
+
         except FileNotFoundError:
             print("\tNo existing _specfull.txt file. Perhaps there is no cube to generate one, or need to specify original.")
             fig2, ax2_spec, outfile2 = None, None, None
             return fig2, ax2_spec, outfile2
 
         # Could be more clever about picking the size of the figure when there are a lot of channels. Leave for later.
-        if original or len(spec) >= 200:
-            fig2 = plt.figure(figsize=(15, 4))
+        if original or len(spec) >= long_format:
+            fig2 = plt.figure(figsize=(14, 4))
         else:
-            fig2 = plt.figure(figsize=(8, 4))
+            fig2 = plt.figure(figsize=(9, 4))
 
         ax2_spec = fig2.add_subplot(111)
         ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
@@ -133,6 +169,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         else:
             print("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
             ax2_spec.plot(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'])
+        ax2_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax2_spec.transAxes, color='black', fontsize=16)
+        ax2_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax2_spec.transAxes, color='black', fontsize=16)
         ax2_spec.set_title(source['name'], fontsize=20)
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=16)
@@ -152,6 +190,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
             ax2b_spec.set_xlim(freq1.value, freq2.value)
             ax2b_spec.tick_params(labelsize=16)
             ax2b_spec.ticklabel_format(style='plain', useOffset=False)
+            ax2b_spec.xaxis.set_major_formatter(FormatStrFormatter('%1.1f'))
+            ax2b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
         galspec_max = np.nanmax(spectrumJy[np.where(spec['chan'] == source['z_min'])[0][0]:
                                            np.where(spec['chan'] == source['z_max'])[0][0]+1])
@@ -194,15 +234,45 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         try:
             print("\tMaking HI SoFiA masked spectrum plot.")
             if 'freq' in source.colnames:
+                # Calculate source quantities for labels
+                v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
+                spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
+                z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                # SoFiA-2 puts out frequency w20/w50 in Hz units
+                w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
+                w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
+                # Calculate spectral axes quantities for plotting
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
             else:
+                # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
                     line['rad_opt'] = 'Radio'
+                    v_sys = (source['v_rad'] * u.m / u.s).to(u.km / u.s).value
+                    spec_z = ''
+                    z_label = ''
+                elif 'v_opt' in source.colnames:
+                    v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
+                    spec_z = (source['v_opt'] * u.m / u.s / const.c).decompose()
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                else:
+                    v_sys = (source['v_app'] * u.m / u.s).to(u.km / u.s).value
+                    spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
+                    z_label = r"$z_\mathrm{{app}}$ = {:.5f}".format(spec_z.value)
+                # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
+                w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
+                w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
+                # Calculate spectral axes quantities for plotting. Force velocity column to common name.
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
+            if 'snr' in source.colnames:
+                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50), 
+                                                                                             source['snr'])
+            else:
+                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s".format(int(v_sys), int(w50))
+
         except FileNotFoundError:
             print("\tNo *_spec.txt file.  Perhaps you ran SoFiA without generating moments?")
             fig1, ax1_spec, outfile1 = None, None, None
@@ -226,6 +296,8 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         elif specunits == 'Jy':
             opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'], yy_err=y_error)
             ax1_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
+        ax1_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax1_spec.transAxes, color='black', fontsize=16)
+        ax1_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax1_spec.transAxes, color='black', fontsize=16)
         ax1_spec.set_title(source['name'], fontsize=20)
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=16)
@@ -245,6 +317,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.set_xlim(freq1.value, freq2.value)
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
             ax1b_spec.tick_params(labelsize=16)
+            ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
 
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
