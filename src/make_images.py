@@ -874,7 +874,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 print("\t... done.")
             else:
                 print("\tNo mask cubelet found to overlay mask on {} diagram.".format(pv_axis))
-            ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
+            ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=1.0,
                      transform=ax1.get_transform('world'))
             ax1.set_title(source['name'], fontsize=24)
             ax1.tick_params(axis='both', which='major', labelsize=20)
@@ -885,14 +885,15 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 pos_angle += 90.
                 if (pos_angle >= 360.): pos_angle -= 360.
                 pa_label = 'Minor Axis PA'
-            ax1.text(0.5, 0.05, '{} = {:5.1f} deg'.format(pa_label, pos_angle), ha='center', va='center',
-                     transform=ax1.transAxes, color='orange', fontsize=18)
+            txt = ax1.text(0.5, 0.05, '{} = {:5.1f} deg'.format(pa_label, pos_angle), ha='center', va='center',
+                     transform=ax1.transAxes, color='red', fontsize=20)
+            txt.set_bbox(dict(facecolor='white', alpha=0.5, edgecolor='white'))
             ax1.coords[1].set_ticks_position('l')
 
             if 'freq' in source.colnames:
                 freq_sys = source['freq']
-                ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
-                         linewidth=0.75, transform=ax1.get_transform('world'))
+                ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--', linewidth=1.0, 
+                         transform=ax1.get_transform('world'))
                 ax1.set_ylabel('Frequency [MHz]', fontsize=22)
                 ax1.coords[1].set_format_unit(u.MHz)
                 # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
@@ -911,8 +912,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                     v_sys = source['v_opt']
                 elif 'v_app' in source.colnames:
                     v_sys = source['v_app']
-                ax1.plot([ang1, ang2], [v_sys, v_sys], c='orange', linestyle='--',
-                         linewidth=0.75, transform=ax1.get_transform('world'))
+                ax1.plot([ang1, ang2], [v_sys, v_sys], c='orange', linestyle='--', linewidth=1.0, 
+                         transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
                 ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), line['rad_opt']),
                                                               fontsize=20)
