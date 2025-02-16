@@ -95,7 +95,7 @@ OPTIONAL:
     -i     Minimum image size (ARCMIN). Images will be square. If an HI source exceeds the requested size, a larger image to fit the HI contours will be generated. Default is 6 arcmin.
     -snr   Specify the SNR range within which to plot the lowest HI contour. Requires 2 values. Default is [2.0, 3.0].
     -o     Path to the original data file on which source finding was conducted. This allows the spectrum with noise to be plotted over the full spectral range of the original cube.  
-    -b     Synthesized beam dimensions. If the primary header of the FITS files do not contain the beam information, this can be provided by the user. Accepts 1 to 3 values in order (bmaj, bmin, bpa).
+    -b     Synthesized beam dimensions. If the primary header of the FITS files do not contain the beam information, this can be provided by the user. Accepts 1 to 3 values in order (bmaj,bmin,bpa). Format is comma separated, with no spaces.
     -cw    Channel width. This is only necessary if a source cubelet is not available, for example if user only has a mom0.  Channel width must then be provided in the native units of the original data cube (typically Hz or m/s.)
     -x     Output image file type. Any file type accepted by plt.savefig() is in theory valid.  Default is 'png'.
     -m     Make a combined image using ImageMagick.  If a path is provided after this option, it is assumed to be the path to the `convert` executable of ImageMagick. 

@@ -61,7 +61,7 @@ def main():
                             ' in the cubelet.  Uses 2D mask to integrate. (No default).')
 
     parser.add_argument('-b', '--beam', default=None,
-                        help='Optional: specify the beam dimensions (bmaj,bmin,bpa) in arcsec, arcsec, deg. If only 1 value\n'
+                        help='Optional: specify the beam dimensions as "(bmaj,bmin,bpa)" in arcsec, arcsec, deg. If only 1 value\n'
                             ' is given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
 
     parser.add_argument('-cw', '--chan_width', default=[None], nargs=1, type=float,
