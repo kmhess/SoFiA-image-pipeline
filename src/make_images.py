@@ -540,10 +540,10 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
 
         if source['id'] != 0:
             # Plot kin_pa from HI center of galaxy; calculate end points of line
-            p1x, p1y = (hi_pos.ra + 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
-                    (hi_pos.dec + 0.45 * opt_view[0] * np.cos(kinpa)).deg
-            p2x, p2y = (hi_pos.ra - 0.45 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
-                    (hi_pos.dec - 0.45 * opt_view[0] * np.cos(kinpa)).deg
+            p1x, p1y = (hi_pos.ra + 0.42 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
+                    (hi_pos.dec + 0.42 * opt_view[0] * np.cos(kinpa)).deg
+            p2x, p2y = (hi_pos.ra - 0.42 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
+                    (hi_pos.dec - 0.42 * opt_view[0] * np.cos(kinpa)).deg
             # My one test data set in Galactic coords fails on savefig because of something weird happening in annotate.
             if 'l' in source.colnames:
                 ax1.plot([p1x, p2x], [p1y, p2y], linestyle='--', color='k', transform=ax1.get_transform('world'))
@@ -555,10 +555,10 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # Plot the minor axis if pv_min was created by SoFiA:
             if os.path.isfile(src_basename + '_pv_min.fits'):
                 pa_min = kinpa + 90. * u.deg
-                p1x, p1y = (hi_pos.ra + 0.35 * opt_view[0] * np.sin(pa_min) / np.cos(hi_pos.dec)).deg,\
-                        (hi_pos.dec + 0.35 * opt_view[0] * np.cos(pa_min)).deg
-                p2x, p2y = (hi_pos.ra - 0.35 * opt_view[0] * np.sin(pa_min) / np.   cos(hi_pos.dec)).deg,\
-                        (hi_pos.dec - 0.35 * opt_view[0] * np.cos(pa_min)).deg
+                p1x, p1y = (hi_pos.ra + 0.33 * opt_view[0] * np.sin(pa_min) / np.cos(hi_pos.dec)).deg,\
+                        (hi_pos.dec + 0.33 * opt_view[0] * np.cos(pa_min)).deg
+                p2x, p2y = (hi_pos.ra - 0.33 * opt_view[0] * np.sin(pa_min) / np.   cos(hi_pos.dec)).deg,\
+                        (hi_pos.dec - 0.33 * opt_view[0] * np.cos(pa_min)).deg
                 # Assume same issues with Galactic coordinates with plotting min PA as kinpa above
                 if 'l' in source.colnames:
                     ax1.plot([p1x, p2x], [p1y, p2y], linestyle=':', color='k', transform=ax1.get_transform('world'))
