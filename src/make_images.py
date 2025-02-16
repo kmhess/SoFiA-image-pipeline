@@ -120,7 +120,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
                         levels=-base_contour * 2 ** np.arange(10, -1, -1),
                         transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
-                 color='white', fontsize=18)
+                 color='white', fontsize=20)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
         if swapx:
@@ -198,7 +198,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
             # Plot positive contours
             ax1.contour(hdulist_hi[0].data, cmap='Blues_r', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(cubew))
-            ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
+            ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=20)
         else:
             plot_labels(source, ax1, cube_params['default_beam'])
             ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
@@ -212,7 +212,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
                 ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
                             levels=-base_contour * 2 ** np.arange(10, -1, -1),
                             transform=ax1.get_transform(cubew))
-            ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=18)
+            ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=20)
                 
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
@@ -292,13 +292,13 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         elif np.isfinite(base_contour):
             ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
                         levels=base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
-        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
+        ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=20)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=18)
-        cbar.ax.tick_params(labelsize=16)
+        cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=20)
+        cbar.ax.tick_params(labelsize=20)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -375,13 +375,13 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         im = ax1.imshow(np.abs(snr), cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(cubew))
         if np.isfinite(base_contour):
             ax1.contour(mom0, linewidths=2, levels=[base_contour, ], colors=['k', ], transform=ax1.get_transform(cubew))
-        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=18)
+        ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=20)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        cbar.set_label("Pixel SNR", fontsize=18)
-        cbar.ax.tick_params(labelsize=16)
+        cbar.set_label("Pixel SNR", fontsize=20)
+        cbar.ax.tick_params(labelsize=20)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -568,18 +568,18 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                                 arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                                 linestyle=':'))
 
-        ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
+        ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=20)
         if not singlechansource:
             ax1.text(0.95, 0.5, "$\Delta v_{{contours}}$ = {} km/s".format(int(vunit)), ha='center', va='center',
-                     transform=ax1.transAxes, color='black', fontsize=18, rotation=90)
+                     transform=ax1.transAxes, color='black', fontsize=20, rotation=90)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='darkred', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
-        cbar.set_label(cbar_label, fontsize=18)
-        cbar.ax.tick_params(labelsize=16)
+        cbar.set_label(cbar_label, fontsize=20)
+        cbar.ax.tick_params(labelsize=20)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -680,15 +680,15 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
             cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=0.6, transform=ax1.get_transform(cubew))
         v_disp_label = "$\Delta \sigma_{{contours}}$ = {} km/s".format(int(vunit))
 
-        ax1.text(0.5, 0.05, v_disp_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=18)
+        ax1.text(0.5, 0.05, v_disp_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=20)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='#4199B5', edgecolor='#D8424D', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
-        cbar.set_label(cbar_label, fontsize=18)
-        cbar.ax.tick_params(labelsize=16)
+        cbar.set_label(cbar_label, fontsize=20)
+        cbar.ax.tick_params(labelsize=20)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -778,7 +778,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
                 ax1.contour(mom0, cmap='YlOrBr', linewidths=1.2, linestyles='dashed',
                             levels=base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
-                 color='white', fontsize=18)
+                 color='white', fontsize=20)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='lightgray', linewidth=1))
 
@@ -876,9 +876,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 print("\tNo mask cubelet found to overlay mask on {} diagram.".format(pv_axis))
             ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=0.75,
                      transform=ax1.get_transform('world'))
-            ax1.set_title(source['name'], fontsize=20)
-            ax1.tick_params(axis='both', which='major', labelsize=18)
-            ax1.set_xlabel('Angular Offset [deg]', fontsize=18)
+            ax1.set_title(source['name'], fontsize=24)
+            ax1.tick_params(axis='both', which='major', labelsize=20)
+            ax1.set_xlabel('Angular Offset [deg]', fontsize=22)
             pos_angle = source['kin_pa']
             pa_label = 'Kinematic PA'
             if pv_axis == 'pv_min':
@@ -893,15 +893,15 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 freq_sys = source['freq']
                 ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--',
                          linewidth=0.75, transform=ax1.get_transform('world'))
-                ax1.set_ylabel('Frequency [MHz]', fontsize=18)
+                ax1.set_ylabel('Frequency [MHz]', fontsize=22)
                 ax1.coords[1].set_format_unit(u.MHz)
                 # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
                 ax2 = ax1.twinx()
                 vel1 = (const.c * (freq1 - source['freq'])/source['freq']).to(u.km / u.s).value
                 vel2 = (const.c * (freq2 - source['freq'])/source['freq']).to(u.km / u.s).value
                 ax2.set_ylim(vel1, vel2)
-                ax2.set_ylabel('Rest Frame Velocity [km/s]', fontsize=18)
-                ax2.tick_params(labelsize=16)
+                ax2.set_ylabel('Rest Frame Velocity [km/s]', fontsize=20)
+                ax2.tick_params(labelsize=20)
             else:
                 print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity has been applied!")
                 if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
@@ -915,7 +915,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                          linewidth=0.75, transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
                 ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), line['rad_opt']),
-                                                              fontsize=18)
+                                                              fontsize=20)
             if pv[0].header['cdelt2'] < 0:
                 ax1.set_ylim(ax1.get_ylim()[::-1])
                 ax1.set_xlim(ax1.get_xlim()[::-1])
