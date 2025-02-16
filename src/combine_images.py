@@ -27,7 +27,7 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     print("\tAssembling figures with imagemagick")
     new_file = "{}combo.{}".format(infile, suffix)
     # Remove redundant y-axies for the 2D images:
-    for im in ['mom0', 'snr', 'mom1', 'mom2']:
+    for im in ['mom0', 'snr', 'mom1', 'mom2', 'specfull']:
         os.system('{0} {1}{2}.{3} -gravity west -chop 38x0 {2}_{4}.{3}'.format(imgck, infile, im, suffix, code))
 
     # Use imagemagick to append images together:
@@ -36,18 +36,32 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
                   " +append temp_{3}.{2}".format(imgck, infile, suffix, code))
     elif surveys:
         os.system("{0} {1}mom0_{3}.{2} mom0_{4}.{2} snr_{4}.{2} mom1_{4}.{2} mom2_{4}.{2} +append"
-                  " temp_{4}.{2}".format(imgck, infile, suffix,
+                  " -gravity south -splice 0x20 temp_{4}.{2}".format(imgck, infile, suffix,
                                         surveys[0].replace(" ", "").lower().replace('decals-dev', 'decals'), code))
     else:
         print("\tWARNING: No ancillary data image available for source {}.".format(source['id']))
-        os.system("{0} {1}mom0.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append temp_{3}.{2}".format(imgck, infile, 
-                                                                                                          suffix, code))
+        os.system("{0} {1}mom0.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append"
+                  " -gravity south -splice 0x20 temp_{3}.{2}".format(imgck, infile, suffix, code))
     os.system("{0} {1}spec.{2} -resize 133% temp2_{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} {1}specfull.{2} -resize 133% temp3_{3}.{2}".format(imgck, infile, suffix, code))
-    os.system('{0} {1}pv_min.{2} -gravity west -chop 38x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
-    os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} pv_min_{3}.{2} +append temp4_{3}.{2}".format(imgck, infile,
-                                                                                                  suffix, code))
+    os.system("{0} specfull_{3}.{2} -resize 133% temp3_{3}.{2}".format(imgck, infile, suffix, code))
+
+    # Remove redundant y-axes for pv plots and create a little space between pv and spectra:
+    if os.path.isfile('{0}pv_min.{1}'.format(infile, suffix)):
+        if 'freq' in source.colnames:
+            os.system('{0} {1}pv_min.{2} -gravity west -chop 124x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
+            os.system('{0} {1}pv.{2} -gravity east -chop 122x0 -splice 40x0 pv_{3}.{2}'.format(imgck, infile, 
+                                                                                               suffix, code))
+            os.system("{0} temp2_{3}.{2} temp3_{3}.{2} pv_{3}.{2} -gravity west -splice 20x0 pv_min_{3}.{2}"
+                      " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+        else:
+            os.system('{0} {1}pv_min.{2} -gravity west -chop 38x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
+            os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} -gravity west -splice 20x0 pv_min_{3}.{2}"
+                      " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+    else:
+        os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} -gravity west -splice 20x0"
+                  " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
     os.system("{0} temp_{3}.{2} temp4_{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
+
     new_file_size = os.path.getsize(new_file)
 
     if new_file_size > file_size_limit:
