@@ -570,7 +570,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
 
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=20)
         if not singlechansource:
-            ax1.text(0.95, 0.5, "$\Delta v_{{contours}}$ = {} km/s".format(int(vunit)), ha='center', va='center',
+            ax1.text(0.95, 0.5, r"$\Delta v_{{contours}}$ = {} km/s".format(int(vunit)), ha='center', va='center',
                      transform=ax1.transAxes, color='black', fontsize=20, rotation=90)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='darkred', linewidth=1))
@@ -678,7 +678,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         # clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
             cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=0.6, transform=ax1.get_transform(cubew))
-        v_disp_label = "$\Delta \sigma_{{contours}}$ = {} km/s".format(int(vunit))
+        v_disp_label = r"$\Delta \sigma_{{contours}}$ = {} km/s".format(int(vunit))
 
         ax1.text(0.5, 0.05, v_disp_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=20)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
