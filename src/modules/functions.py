@@ -464,10 +464,10 @@ def plot_labels(source, ax, default_beam, x_color='k'):
     if source['id'] != 0:
         ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75,
                 transform=ax.get_transform('world'))
-    ax.set_title(source['name'], fontsize=20)
-    ax.tick_params(axis='both', which='major', labelsize=18)
-    ax.coords[x_coord].set_axislabel(x_label, fontsize=20)
-    ax.coords[y_coord].set_axislabel(y_label, fontsize=20)
+    ax.set_title(source['name'], fontsize=24)
+    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.coords[x_coord].set_axislabel(x_label, fontsize=22)
+    ax.coords[y_coord].set_axislabel(y_label, fontsize=22)
     if default_beam:
         ax.scatter(0.92, 0.9, marker='x', c='red', s=500, linewidth=5, transform=ax.transAxes, zorder=99)
         ax.plot([0.1, 0.9], [0.05, 0.05], c='red', linewidth=3, transform=ax.transAxes, zorder=100)
