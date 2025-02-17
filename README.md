@@ -7,7 +7,7 @@ Introduction
 ------------
 SIP takes a SoFiA generated source catalog and produce images for publication or quick inspection.  Images include HI contours overlaid on multiwavelength images, HI moment maps, pixel-by-pixel SNR maps, pv-diagrams with SoFiA mask, and spectra with and without noise.
 
-![](docs/sofia_test_output_5_combo.png)
+![](docs/sofia_test_output_3_combo.png)
 
 Requirements
 ------------
