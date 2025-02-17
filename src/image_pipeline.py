@@ -71,12 +71,12 @@ def main():
     parser.add_argument('-x', '--suffix', default='png',
                         help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
-    parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='convert',
-                        help='Optional: combine the main plots into single large image file using the IMAGEMAGICK CONVERT task.\n'
-                            ' If this option is given with no argument we simply assume that CONVERT is executed by the "convert"\n'
-                            ' command. Otherwise, the argument of this option gives the full path to the CONVERT executable.\n'
-                            ' Only the first multiwavelength image specified in "surveys" argument is plotted next to the\n'
-                            ' spectral line data.')
+    parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='magick',
+                        help='Optional: combine the main plots into single large image file using IMAGEMAGICK.  If this option is\n'
+                            ' given with no argument we simply assume that image combination is executed by the "magick" command.\n'
+                            ' Otherwise, the argument of this option gives the full path to the CONVERT executable (e.g. for older\n'
+                            ' versions of imagemagick).  Only the first multiwavelength image specified in "surveys" argument is\n'
+                            ' plotted next to the spectral line data.')
 
     ###################################################################
 
