@@ -818,6 +818,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     pv_axis = 'pv'
     if min_axis == True:
         pv_axis = 'pv_min'
+    maskfile = src_basename + '_{}_mask.fits'.format(pv_axis)
     outfile = src_basename.replace('cubelets', 'figures') + '_{}.{}'.format(pv_axis, suffix)
 
     if not os.path.isfile(outfile):
@@ -865,13 +866,18 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 3**np.arange(10, 0, -1), linestyles=['dashed', ])
 
             ax1.autoscale(False)
-            if os.path.isfile(src_basename + '_mask.fits'):
+            if os.path.isfile(maskfile):
+                print("\tOverlaying SoFiA-generated pv mask boundaries on {} diagram ...".format(pv_axis))
+                mask_pv = fits.open(maskfile)
+                ax1.contour(mask_pv[0].data, colors='red', levels=[0.5], transform=ax1.get_transform(WCS(mask_pv[0].header)))
+                mask_pv.close()
+            elif os.path.isfile(src_basename + '_mask.fits'):
                 print("\tAttempting to overlay mask boundaries on {} diagram ...".format(pv_axis))
                 mask_pv = create_pv(source, src_basename + '_mask.fits', opt_view=opt_view[0], min_axis=min_axis)
                 if mask_pv:
                     # Extract_pv has a header bug, reset the reference pixel:
                     mask_pv.header['CRPIX1'] = mask_pv.header['NAXIS1'] / 2 + 1
-                    ax1.contour(mask_pv.data, colors='red', levels=[0.01], transform=ax1.get_transform(WCS(mask_pv.header)))
+                    ax1.contour(mask_pv.data, colors='red', levels=[0.5], transform=ax1.get_transform(WCS(mask_pv.header)))
                 print("\t... done.")
             else:
                 print("\tNo mask cubelet found to overlay mask on {} diagram.".format(pv_axis))
