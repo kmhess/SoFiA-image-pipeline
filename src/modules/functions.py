@@ -465,7 +465,7 @@ def plot_labels(source, ax, default_beam, x_color='k'):
         ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75,
                 transform=ax.get_transform('world'))
     ax.set_title(source['name'], fontsize=24)
-    ax.tick_params(axis='both', which='major', labelsize=20)
+    ax.tick_params(axis='both', which='major', labelsize=22)
     ax.coords[x_coord].set_axislabel(x_label, fontsize=22)
     ax.coords[y_coord].set_axislabel(y_label, fontsize=22)
     if default_beam:
