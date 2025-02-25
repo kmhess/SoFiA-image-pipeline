@@ -390,8 +390,6 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
     fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
                                              suffix=suffix)
     if outfile1 and outfile2:
-        fig1.savefig(outfile1[:-4]+'_test.png', bbox_inches='tight')
-        fig2.savefig(outfile2[:-4]+'_test.png', bbox_inches='tight')
         ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
         ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
         ax1_spec.set_ylim([ymin, ymax])
