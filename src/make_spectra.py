@@ -85,6 +85,12 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 def make_specfull(source, src_basename, cube_params, original, spec_line=None, suffix='png'):
 
     outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
+    specfile = src_basename + '_{}_spec_aperture.txt'.format(source['id'])
+
+    if original or (not os.path.isfile(specfile)):
+        specfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
+
+    print('\tUsing {} to make aperture spectrum plot.'.format(specfile))
 
     long_format = 200
 
@@ -104,7 +110,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
                 w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
                 # Calculate spectral axes quantities for plotting
-                spec = ascii.read(outfile2[:-1*len(suffix)] + 'txt')
+                spec = ascii.read(specfile, names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
                 maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s,
                                                                                     equivalencies=line['convention']).value
@@ -129,7 +135,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
                 w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
                 # Calculate spectral axes quantities for plotting. Force velocity column to common name.
-                spec = ascii.read(outfile2[:-1 * len(suffix)] + 'txt', names=['chan', 'velo', 'f_sum', 'n_pix'])
+                spec = ascii.read(specfile, names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
                 maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=line['convention']).value
@@ -346,8 +352,9 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
 
     # Make text file of spectrum with noise; use full frequency range of original cube if provided:
     # Can be a bit more precise here in the output options/specification.
-    outfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
-    if original or (not os.path.isfile(outfile)):
+    sofia_aper_spec = src_basename + '_{}_spec_aperture.txt'.format(source['id'])
+    specfull_file = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
+    if original or ((not os.path.isfile(sofia_aper_spec)) and (not os.path.isfile(specfull_file))):
         get_noise_spec(source, src_basename, cube_params, original)
 
     # Make plot of spectrum with noise
