@@ -270,9 +270,10 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
-                z_w50 = chan2freq(source['z_w50'], fits_file)
-                w50_min_vel = (z_w50 - source['w50'] * u.Hz / 2).to(u.km / u.s, equivalencies=line['convention']).value
-                w50_max_vel = (z_w50 + source['w50'] * u.Hz / 2).to(u.km / u.s, equivalencies=line['convention']).value
+                if 'z_w50' in source.colnames:
+                    z_w50 = chan2freq(source['z_w50'], fits_file)
+                    w50_min_vel = (z_w50 - source['w50'] * u.Hz / 2).to(u.km / u.s, equivalencies=line['convention']).value
+                    w50_max_vel = (z_w50 + source['w50'] * u.Hz / 2).to(u.km / u.s, equivalencies=line['convention']).value
             else:
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
@@ -295,9 +296,10 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
-                z_w50 = chan2vel(source['z_w50'], fits_file)
-                w50_min_vel = (z_w50 - source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
-                w50_max_vel = (z_w50 + source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
+                if 'z_w50' in source.colnames:
+                    z_w50 = chan2vel(source['z_w50'], fits_file)
+                    w50_min_vel = (z_w50 - source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
+                    w50_max_vel = (z_w50 + source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
             if 'snr' in source.colnames:
                 v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50_vel), 
                                                                                              source['snr'])
@@ -352,8 +354,9 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
 
         # Plot limit of SoFiA mask
         ymin, ymax = ax1_spec.get_ylim()
-        ax1_spec.plot([w50_min_vel, w50_min_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
-        ax1_spec.plot([w50_max_vel, w50_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
+        if 'z_w50' in source.colnames:
+            ax1_spec.plot([w50_min_vel, w50_min_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
+            ax1_spec.plot([w50_max_vel, w50_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
