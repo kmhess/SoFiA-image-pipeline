@@ -144,8 +144,8 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
         nhi_label = r'$N_\mathrm{{HI}}$ = {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$'.format(nhi/10**nhi_ofm, nhi_ofm)
         nhi_labels = r'$N_\mathrm{{HI}}$ = $2^n$ x {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$ ($n$=0,1,...)'.format(nhi/10**nhi_ofm, nhi_ofm)
     else:
-        nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/beam Hz'.format(line['name'], nhi/10**nhi_ofm, nhi_ofm)
-        nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f} x $10^{{ {:d} }}$ Jy/beam Hz ($n$=0,1,...)'.format(line['name'],
+        nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(line['name'], nhi/10**nhi_ofm, nhi_ofm)
+        nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f} x $10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1,...)'.format(line['name'],
                                                                                              nhi/10**nhi_ofm, nhi_ofm)
 
     return nhi, nhi_label, nhi_labels
