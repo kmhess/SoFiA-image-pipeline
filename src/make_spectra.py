@@ -107,8 +107,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
                 z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
                 # SoFiA-2 puts out frequency w20/w50 in Hz units
-                w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
-                w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
+                w50_vel = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
+                w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(specfile, names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
@@ -132,8 +132,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                     spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
                     z_label = r"$z_\mathrm{{app}}$ = {:.5f}".format(spec_z.value)
                 # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
-                w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
-                w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
+                w50_vel = (source['w50'] * u.m / u.s).to(u.km / u.s).value
+                w20_vel = (source['w20'] * u.m / u.s).to(u.km / u.s).value
                 # Calculate spectral axes quantities for plotting. Force velocity column to common name.
                 spec = ascii.read(specfile, names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
@@ -141,9 +141,9 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                                                                                          equivalencies=line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=line['convention']).value
-            v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}".format(int(v_sys), int(w50))
+            v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}".format(int(v_sys), int(w50_vel))
             if original or len(spec) >= long_format:
-                v_sys_label += "  $W_{{20}}$ = {} km/s".format(int(w20))
+                v_sys_label += "  $W_{{20}}$ = {} km/s".format(int(w20_vel))
             else:
                 v_sys_label += " km/s"
             if 'snr' in source.colnames:
@@ -245,8 +245,8 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
                 z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
                 # SoFiA-2 puts out frequency w20/w50 in Hz units
-                w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
-                w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
+                w50_vel = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
+                w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
@@ -267,17 +267,17 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                     spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
                     z_label = r"$z_\mathrm{{app}}$ = {:.5f}".format(spec_z.value)
                 # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
-                w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
-                w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
+                w50_vel = (source['w50'] * u.m / u.s).to(u.km / u.s).value
+                w20_vel = (source['w20'] * u.m / u.s).to(u.km / u.s).value
                 # Calculate spectral axes quantities for plotting. Force velocity column to common name.
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
             if 'snr' in source.colnames:
-                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50), 
+                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50_vel), 
                                                                                              source['snr'])
             else:
-                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s".format(int(v_sys), int(w50))
+                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s".format(int(v_sys), int(w50_vel))
 
         except FileNotFoundError:
             print("\tNo *_spec.txt file.  Perhaps you ran SoFiA without generating moments?")
