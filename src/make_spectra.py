@@ -248,6 +248,9 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
 
     outfile1 = src_basename.replace('cubelets', 'figures') + '_{}_spec.{}'.format(source['id'], suffix)
 
+    # For estimating position of z_w20, z_w50, z_wm50 which are given in pixel space:
+    fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
+
     if not os.path.isfile(outfile1):
 
         # Get frequency information for spectral line in question:
@@ -267,6 +270,9 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
+                z_w50 = chan2freq(source['z_w50'], fits_file)
+                w50_min_vel = (z_w50 - source['w50'] * u.Hz / 2).to(u.km / u.s, equivalencies=line['convention']).value
+                w50_max_vel = (z_w50 + source['w50'] * u.Hz / 2).to(u.km / u.s, equivalencies=line['convention']).value
             else:
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
@@ -289,6 +295,9 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
+                z_w50 = chan2vel(source['z_w50'], fits_file)
+                w50_min_vel = (z_w50 - source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
+                w50_max_vel = (z_w50 + source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
             if 'snr' in source.colnames:
                 v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50_vel), 
                                                                                              source['snr'])
@@ -341,6 +350,10 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.tick_params(labelsize=16)
             # ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(8))
 
+        # Plot limit of SoFiA mask
+        ymin, ymax = ax1_spec.get_ylim()
+        ax1_spec.plot([w50_min_vel, w50_min_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
+        ax1_spec.plot([w50_max_vel, w50_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
@@ -377,6 +390,8 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
     fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
                                              suffix=suffix)
     if outfile1 and outfile2:
+        fig1.savefig(outfile1[:-4]+'_test.png', bbox_inches='tight')
+        fig2.savefig(outfile2[:-4]+'_test.png', bbox_inches='tight')
         ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
         ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
         ax1_spec.set_ylim([ymin, ymax])
