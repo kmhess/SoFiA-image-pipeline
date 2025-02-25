@@ -297,7 +297,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
+        cbar.set_label("Total Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
         cbar.ax.tick_params(labelsize=22)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
