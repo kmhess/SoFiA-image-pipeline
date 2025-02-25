@@ -7,9 +7,11 @@ from astropy import units as u
 import matplotlib.pyplot as plt
 from matplotlib.ticker import FormatStrFormatter
 import numpy as np
+import pkg_resources  # part of setuptools
 
 from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, line_lookup, make_hist_arr
 
+version = pkg_resources.require("SoFiA-image-pipeline")[0].version
 
 ###################################################################
 
@@ -51,7 +53,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 
         with open('temp.txt', 'w') as f:
             f.write("# Integrated source spectrum with noise\n")
-            f.write("# Creator: SoFiA-image-pipeline.py\n") #%s\n#\n" % sofia_version_full)
+            f.write("# Creator: SoFiA-image-pipeline (SIP) version {}\n".format(version))
             f.write("# \n")
             f.write("# The source spectrum, with noise, is calculated by integrating over\n")
             f.write("# the 2D mask of the source in every channel.  This means every row \n")
