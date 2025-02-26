@@ -182,12 +182,14 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec = fig2.add_subplot(111)
         ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
         # If there are lots of channels, don't plot errors (too crowded and can tell from noise.) Cut off currently arbitrary.
-        if len(spec) <= 200:
-            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=flux_dens, yy_err=y_error)
-            if len(spec) <= 100:
-                ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
-            else:
-                ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err * 0, capsize=0)
+        if len(spec) <= 100:
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
+                                                  yy_err=y_error)
+            ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
+        elif len(spec) <= 200:
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
+                                                  yy_err=y_error * 0)
+            ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=0)
         else:
             print("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
             ax2_spec.plot(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'])
@@ -327,6 +329,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                                                                        line['rad_opt']), fontsize=17)
         ax1_spec.tick_params(axis='both', which='major', labelsize=16)
         ax1_spec.autoscale(False)
+        ax1_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         if 'freq' in source.colnames:
             ax1b_spec = ax1_spec.twiny()
             freq1 = (spec['freq'][-1] * u.Hz).to(u.MHz)
@@ -339,8 +342,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.set_xlim(freq1.value, freq2.value)
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
             ax1b_spec.tick_params(labelsize=16)
-            # ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(8))
-
+            ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(6))
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
