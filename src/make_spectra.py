@@ -329,6 +329,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                                                                        line['rad_opt']), fontsize=17)
         ax1_spec.tick_params(axis='both', which='major', labelsize=16)
         ax1_spec.autoscale(False)
+        ax1_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         if 'freq' in source.colnames:
             ax1b_spec = ax1_spec.twiny()
             freq1 = (spec['freq'][-1] * u.Hz).to(u.MHz)
@@ -341,8 +342,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.set_xlim(freq1.value, freq2.value)
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
             ax1b_spec.tick_params(labelsize=16)
-            # ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(8))
-
+            ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(6))
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
