@@ -297,7 +297,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        cbar.set_label("HI Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
+        cbar.set_label("Total Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
         cbar.ax.tick_params(labelsize=22)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
@@ -922,7 +922,11 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 ax1.plot([ang1, ang2], [v_sys, v_sys], c='orange', linestyle='--', linewidth=1.0, 
                          transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
-                ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), line['rad_opt']), fontsize=22)
+                if line['rad_opt'] == 'Optical':
+                    ax1.set_ylabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=22)
+                else:
+                    ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), line['rad_opt']), 
+                                   fontsize=22)
             if pv[0].header['cdelt2'] < 0:
                 ax1.set_ylim(ax1.get_ylim()[::-1])
                 ax1.set_xlim(ax1.get_xlim()[::-1])

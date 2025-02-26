@@ -182,12 +182,14 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec = fig2.add_subplot(111)
         ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
         # If there are lots of channels, don't plot errors (too crowded and can tell from noise.) Cut off currently arbitrary.
-        if len(spec) <= 200:
-            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=flux_dens, yy_err=y_error)
-            if len(spec) <= 100:
-                ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
-            else:
-                ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err * 0, capsize=0)
+        if len(spec) <= 100:
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
+                                                  yy_err=y_error)
+            ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
+        elif len(spec) <= 200:
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
+                                                  yy_err=y_error * 0)
+            ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=0)
         else:
             print("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
             ax2_spec.plot(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'])
@@ -196,8 +198,11 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec.set_title(source['name'], fontsize=20)
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
-        ax2_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
-                                                                       line['rad_opt']), fontsize=17)
+        if line['rad_opt'] == 'Optical':
+            ax2_spec.set_xlabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=17)
+        else:
+            ax2_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
+                                                                           line['rad_opt']), fontsize=17)
         ax2_spec.tick_params(axis='both', which='major', labelsize=16)
         ax2_spec.autoscale(False)
         if 'freq' in source.colnames:
@@ -334,10 +339,14 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         ax1_spec.set_title(source['name'], fontsize=20)
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
-        ax1_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
-                                                                       line['rad_opt']), fontsize=17)
+        if line['rad_opt'] == 'Optical':
+            ax1_spec.set_xlabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=17)
+        else:
+            ax1_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
+                                                                           line['rad_opt']), fontsize=17)
         ax1_spec.tick_params(axis='both', which='major', labelsize=16)
         ax1_spec.autoscale(False)
+        ax1_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         if 'freq' in source.colnames:
             ax1b_spec = ax1_spec.twiny()
             freq1 = (spec['freq'][-1] * u.Hz).to(u.MHz)
@@ -357,6 +366,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         if 'z_w50' in source.colnames:
             ax1_spec.plot([w50_min_vel, w50_min_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
             ax1_spec.plot([w50_max_vel, w50_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
+            ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(6))
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
