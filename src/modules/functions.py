@@ -24,8 +24,8 @@ def chan2freq(channels, fits_name):
     """
     header = fits.getheader(fits_name)
     # Don't know how to deal with cubelets having diff CRPIX3 from orig data; catalog data is in ref to orig base 0
-    frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.Hz
-    # frequencies = (header['CDELT3'] * channels + header['CRVAL3']) * u.Hz
+    # frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.Hz  # parameter.offset=True ?
+    frequencies = (header['CDELT3'] * channels + header['CRVAL3']) * u.Hz     # parameter.offset=False ?
     return frequencies
 
 
@@ -428,6 +428,9 @@ def line_lookup(spec_line):
         convention = u.doppler_optical(restfreq_line)
     elif spec_line == 'CO':
         restfreq_line = 115.27120180 * u.GHz
+        convention = u.doppler_optical(restfreq_line)
+    elif spec_line == 'CO(2-1)':
+        restfreq_line = 230.538 * u.GHz
         convention = u.doppler_optical(restfreq_line)
     elif spec_line == 'OH':
         restfreq_line = 1.6673590 * u.GHz
