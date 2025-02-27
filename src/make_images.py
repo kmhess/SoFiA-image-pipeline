@@ -299,6 +299,12 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Total Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
         cbar.ax.tick_params(labelsize=22)
+        # Prevent cbar label from getting too wide e.g. when in Jy/beam Hz units
+        cbar.formatter.set_powerlimits((0, 3))
+        ot = cbar.ax.yaxis.get_offset_text()
+        ot.set_fontsize(22)
+        x, y = ot.get_position()
+        ot.set_position((x+3, y+0.3))
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -885,7 +891,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                      transform=ax1.get_transform('world'))
             ax1.set_title(source['name'], fontsize=24)
             ax1.tick_params(axis='both', which='major', labelsize=22)
-            ax1.set_xlabel('Angular Offset [deg]', fontsize=22)
+            ax1.coords[0].set_format_unit(u.arcmin)
+            ax1.coords[0].set_major_formatter('x.xx')   # Prevent crowding on x-axis
+            ax1.set_xlabel('Angular Offset [arcmin]', fontsize=22)
             pos_angle = source['kin_pa']
             pa_label = 'Kinematic PA'
             if pv_axis == 'pv_min':
@@ -903,7 +911,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                          transform=ax1.get_transform('world'))
                 ax1.set_ylabel('Frequency [MHz]', fontsize=22)
                 ax1.coords[1].set_format_unit(u.MHz)
-                # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
+                if freq_sys * u.Hz >= 2*u.GHz:
+                    ax1.set_ylabel('Frequency [GHz]', fontsize=22)
+                    ax1.coords[1].set_format_unit(u.GHz)
                 ax2 = ax1.twinx()
                 vel1 = (const.c * (freq1 - source['freq'])/source['freq']).to(u.km / u.s).value
                 vel2 = (const.c * (freq2 - source['freq'])/source['freq']).to(u.km / u.s).value
@@ -922,7 +932,11 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 ax1.plot([ang1, ang2], [v_sys, v_sys], c='orange', linestyle='--', linewidth=1.0, 
                          transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
-                ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), line['rad_opt']), fontsize=22)
+                if line['rad_opt'] == 'Optical':
+                    ax1.set_ylabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=22)
+                else:
+                    ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), line['rad_opt']), 
+                                   fontsize=22)
             if pv[0].header['cdelt2'] < 0:
                 ax1.set_ylim(ax1.get_ylim()[::-1])
                 ax1.set_xlim(ax1.get_xlim()[::-1])
