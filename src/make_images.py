@@ -450,7 +450,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # Convert moment map from Hz into units of km/s
 
             if line['rad_opt'] == 'Radio':
-                print("\tWARNING: Velocity dispersion calculated in source rest frame because 'radio velocity' convention has no physical meaning.")
+                print("\tWARNING: Velocity calculated in source rest frame because 'radio velocity' convention has no physical meaning.")
             mom1[0].data = (const.c * (source['freq'] - mom1[0].data)/source['freq']).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
@@ -463,8 +463,8 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             elif sofia == 1:
                 freqmin = chan2freq(source['z_min'], src_basename + '.fits').to(u.Hz).value
                 freqmax = chan2freq(source['z_max'], src_basename + '.fits').to(u.Hz).value
-            velmax = (const.c * (freqmin - source['freq'])/source['freq']).to(u.km / u.s).value
-            velmin = (const.c * (freqmax - source['freq'])/source['freq']).to(u.km / u.s).value
+            velmax = (const.c * (source['freq'] - freqmin)/source['freq']).to(u.km / u.s).value
+            velmin = (const.c * (source['freq'] - freqmax)/source['freq']).to(u.km / u.s).value
             cbar_label = "Rest Frame Velocity [km/s]"
         else:
             print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity has been applied!")
@@ -915,8 +915,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                     ax1.set_ylabel('Frequency [GHz]', fontsize=22)
                     ax1.coords[1].set_format_unit(u.GHz)
                 ax2 = ax1.twinx()
-                vel1 = (const.c * (freq1 - source['freq'])/source['freq']).to(u.km / u.s).value
-                vel2 = (const.c * (freq2 - source['freq'])/source['freq']).to(u.km / u.s).value
+                vel1 = (const.c * (source['freq'] - freq1)/source['freq']).to(u.km / u.s).value
+                vel2 = (const.c * (source['freq'] - freq2)/source['freq']).to(u.km / u.s).value
                 ax2.set_ylim(vel1, vel2)
                 ax2.set_ylabel('Rest Frame Velocity [km/s]', fontsize=22)
                 ax2.tick_params(labelsize=22)
