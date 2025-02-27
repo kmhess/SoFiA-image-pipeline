@@ -450,7 +450,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # Convert moment map from Hz into units of km/s
 
             if line['rad_opt'] == 'Radio':
-                print("\tWARNING: Velocity dispersion calculated in source rest frame because 'radio velocity' convention has no physical meaning.")
+                print("\tWARNING: Velocity calculated in source rest frame because 'radio velocity' convention has no physical meaning.")
             mom1[0].data = (const.c * (source['freq'] - mom1[0].data)/source['freq']).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
