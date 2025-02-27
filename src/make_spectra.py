@@ -362,6 +362,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         # Plot limit of SoFiA mask
         if 'z_w50' in source.colnames:
+            ymin, ymax = ax1_spec.get_ylim()
             ax1_spec.plot([w50_min_vel, w50_min_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
             ax1_spec.plot([w50_max_vel, w50_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
     else:
