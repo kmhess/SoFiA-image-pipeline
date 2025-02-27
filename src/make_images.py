@@ -299,6 +299,12 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Total Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
         cbar.ax.tick_params(labelsize=22)
+        # Prevent cbar label from getting too wide e.g. when in Jy/beam Hz units
+        cbar.formatter.set_powerlimits((0, 3))
+        ot = cbar.ax.yaxis.get_offset_text()
+        ot.set_fontsize(22)
+        x, y = ot.get_position()
+        ot.set_position((x+3, y+0.3))
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
