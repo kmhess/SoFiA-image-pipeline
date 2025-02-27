@@ -914,6 +914,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 if freq_sys * u.Hz >= 2*u.GHz:
                     ax1.set_ylabel('Frequency [GHz]', fontsize=22)
                     ax1.coords[1].set_format_unit(u.GHz)
+                    ax1.coords[1].set_major_formatter('x.x')
                 ax2 = ax1.twinx()
                 vel1 = (const.c * (source['freq'] - freq1)/source['freq']).to(u.km / u.s).value
                 vel2 = (const.c * (source['freq'] - freq2)/source['freq']).to(u.km / u.s).value
