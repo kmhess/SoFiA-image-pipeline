@@ -891,7 +891,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                      transform=ax1.get_transform('world'))
             ax1.set_title(source['name'], fontsize=24)
             ax1.tick_params(axis='both', which='major', labelsize=22)
-            ax1.set_xlabel('Angular Offset [deg]', fontsize=22)
+            ax1.coords[0].set_format_unit(u.arcmin)
+            ax1.coords[0].set_major_formatter('x.xx')   # Prevent crowding on x-axis
+            ax1.set_xlabel('Angular Offset [arcmin]', fontsize=22)
             pos_angle = source['kin_pa']
             pa_label = 'Kinematic PA'
             if pv_axis == 'pv_min':
