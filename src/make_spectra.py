@@ -205,6 +205,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                                                                            line['rad_opt']), fontsize=17)
         ax2_spec.tick_params(axis='both', which='major', labelsize=16)
         ax2_spec.autoscale(False)
+        if not original or len(spec) < long_format:
+            ax2_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         if 'freq' in source.colnames:
             ax2b_spec = ax2_spec.twiny()
             freq1 = (spec['freq'][-1] * u.Hz).to(u.MHz)
@@ -217,8 +219,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
             ax2b_spec.set_xlim(freq1.value, freq2.value)
             ax2b_spec.tick_params(labelsize=16)
             ax2b_spec.ticklabel_format(style='plain', useOffset=False)
-            # ax2b_spec.xaxis.set_major_formatter(FormatStrFormatter('%1.1f'))
-            # ax2b_spec.xaxis.set_major_locator(plt.MaxNLocator(9))
+            if not original or len(spec) < long_format:
+                ax2_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         spectrumJy = spec["f_sum"] / cube_params['pix_per_beam']
         galspec_max = np.nanmax(spectrumJy[np.where(spec['chan'] == source['z_min'])[0][0]:
                                            np.where(spec['chan'] == source['z_max'])[0][0]+1])
@@ -348,7 +350,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.set_xlim(freq1.value, freq2.value)
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
             ax1b_spec.tick_params(labelsize=16)
-            ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(6))
+            ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
