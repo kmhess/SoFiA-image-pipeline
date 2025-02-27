@@ -1090,6 +1090,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # For CHILES: plot HI contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
         hst_opt_view = np.array([40,]) * u.arcsec
+        if opt_view < hst_opt_view: hst_opt_view = opt_view.to(u.arcsec)
         if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
             hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
         hst_opt = get_hst_cosmos(source, opt_view=hst_opt_view)
