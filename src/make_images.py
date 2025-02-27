@@ -909,7 +909,9 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                          transform=ax1.get_transform('world'))
                 ax1.set_ylabel('Frequency [MHz]', fontsize=22)
                 ax1.coords[1].set_format_unit(u.MHz)
-                # freq_yticks = ax1.get_yticks()  # freq auto yticks from matplotlib
+                if freq_sys * u.Hz >= 2*u.GHz:
+                    ax1.set_ylabel('Frequency [GHz]', fontsize=22)
+                    ax1.coords[1].set_format_unit(u.GHz)
                 ax2 = ax1.twinx()
                 vel1 = (const.c * (freq1 - source['freq'])/source['freq']).to(u.km / u.s).value
                 vel2 = (const.c * (freq2 - source['freq'])/source['freq']).to(u.km / u.s).value
