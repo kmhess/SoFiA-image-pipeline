@@ -536,7 +536,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         
         v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
         if source['id'] != 0:
-            v_sys_label = "$v_{{sys}}$ = {} km/s".format(int(v_sys))
+            v_sys_label = "$cz_{{sys}}$ = {} km/s".format(int(v_sys))
 
         if source['id'] != 0:
             # Plot kin_pa from HI center of galaxy; calculate end points of line

@@ -143,7 +143,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                                                                                          equivalencies=line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=line['convention']).value
-            v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}".format(int(v_sys), int(w50_vel))
+            v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {}".format(int(v_sys), int(w50_vel))
             if original or len(spec) >= long_format:
                 v_sys_label += "  $W_{{20}}$ = {} km/s".format(int(w20_vel))
             else:
@@ -297,10 +297,10 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                                   names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
             if 'snr' in source.colnames:
-                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50_vel), 
+                v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50_vel), 
                                                                                              source['snr'])
             else:
-                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s".format(int(v_sys), int(w50_vel))
+                v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {} km/s".format(int(v_sys), int(w50_vel))
 
         except FileNotFoundError:
             print("\tNo *_spec.txt file.  Perhaps you ran SoFiA without generating moments?")
