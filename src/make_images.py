@@ -290,7 +290,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
-        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Total Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
         cbar.ax.tick_params(labelsize=22, length=6, width=2)
@@ -378,7 +378,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
-        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Pixel SNR", fontsize=22)
         cbar.ax.tick_params(labelsize=22, length=6, width=2)
@@ -532,7 +532,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=0.6, transform=ax1.get_transform(cubew))
+            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=1.0, transform=ax1.get_transform(cubew))
         
         v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
         if source['id'] != 0:
@@ -575,7 +575,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                      transform=ax1.transAxes, color='black', fontsize=22, rotation=90)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='darkred', linewidth=1))
-        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
@@ -678,13 +678,13 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         levels = np.arange(vunit,vel_max,vunit)
         # clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=0.6, transform=ax1.get_transform(cubew))
+            cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=1.0, transform=ax1.get_transform(cubew))
         v_disp_label = r"$\Delta \sigma_{{contours}}$ = {} km/s".format(int(vunit))
 
         ax1.text(0.5, 0.05, v_disp_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='#4199B5', edgecolor='#D8424D', linewidth=1))
-        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
