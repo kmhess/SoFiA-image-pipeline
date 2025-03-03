@@ -4,9 +4,7 @@ from astropy.nddata import Cutout2D
 from astropy import constants as const
 from astropy.coordinates import SkyCoord
 from astropy.io import fits
-from astropy.time import Time
 from astropy import units as u
-import astropy.wcs
 from astropy.wcs import WCS
 from matplotlib import colors
 from matplotlib.patches import Ellipse
@@ -117,8 +115,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         # Plot negative contours
         if np.nanmin(hdulist_hi[0].data) < -base_contour and np.isfinite(base_contour):
             ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
-                        levels=-base_contour * 2 ** np.arange(10, -1, -1),
-                        transform=ax1.get_transform(cubew))
+                        levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -190,8 +187,6 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
         ax1 = fig.add_subplot(111, projection=owcs)
         if survey == 'hst':
             plot_labels(source, ax1, cube_params['default_beam'], x_color='w')
-            # ax1.imshow(opt[0].data, origin='lower', cmap='twilight', norm=LogNorm(vmax=5))
-            # ax1.imshow(opt[0].data, origin='lower', cmap='Greys', norm=LogNorm(vmin=-0.003, vmax=30))
             ax1.imshow(opt[0].data, origin='lower', cmap='Greys',
                        norm=PowerNorm(gamma=0.4, vmin=np.percentile(opt[0].data, 20),
                                       vmax=np.percentile(opt[0].data, 99.5)))
@@ -295,10 +290,10 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
-        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Total Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
-        cbar.ax.tick_params(labelsize=22)
+        cbar.ax.tick_params(labelsize=22, length=6, width=2)
         # Prevent cbar label from getting too wide e.g. when in Jy/beam Hz units
         cbar.formatter.set_powerlimits((0, 3))
         ot = cbar.ax.yaxis.get_offset_text()
@@ -375,7 +370,6 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        # ax1 = fig.add_subplot(111, projection=hiwcs)
         plot_labels(source, ax1, cube_params['default_beam'])
         ax1.set(facecolor="white")  # Doesn't work with the color im
         im = ax1.imshow(np.abs(snr), cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(cubew))
@@ -384,10 +378,10 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
-        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Pixel SNR", fontsize=22)
-        cbar.ax.tick_params(labelsize=22)
+        cbar.ax.tick_params(labelsize=22, length=6, width=2)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -538,11 +532,11 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=0.6, transform=ax1.get_transform(cubew))
+            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=1.0, transform=ax1.get_transform(cubew))
         
         v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
         if source['id'] != 0:
-            v_sys_label = "$v_{{sys}}$ = {} km/s".format(int(v_sys))
+            v_sys_label = "$cz_{{sys}}$ = {} km/s".format(int(v_sys))
 
         if source['id'] != 0:
             # Plot kin_pa from HI center of galaxy; calculate end points of line
@@ -581,12 +575,12 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                      transform=ax1.transAxes, color='black', fontsize=22, rotation=90)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, edgecolor='darkred', linewidth=1))
-        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
         cbar.set_label(cbar_label, fontsize=22)
-        cbar.ax.tick_params(labelsize=22)
+        cbar.ax.tick_params(labelsize=22, length=6, width=2)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -684,18 +678,18 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         levels = np.arange(vunit,vel_max,vunit)
         # clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=0.6, transform=ax1.get_transform(cubew))
+            cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=1.0, transform=ax1.get_transform(cubew))
         v_disp_label = r"$\Delta \sigma_{{contours}}$ = {} km/s".format(int(vunit))
 
         ax1.text(0.5, 0.05, v_disp_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='#4199B5', edgecolor='#D8424D', linewidth=1))
-        cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
+        cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         if not singlechansource:
             cbar.add_lines(cf)
         cbar.set_label(cbar_label, fontsize=22)
-        cbar.ax.tick_params(labelsize=22)
+        cbar.ax.tick_params(labelsize=22, length=6, width=2)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -856,7 +850,6 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
         all_colors = np.vstack((colors_noise, colors_galaxy))
         pvd_map = colors.LinearSegmentedColormap.from_list('pvd_map', all_colors)
         divnorm = colors.TwoSlopeNorm(vmin=-3*pvd_rms, vcenter=+3*pvd_rms, vmax=15*pvd_rms)
-        # ax1.imshow(pvd, cmap='gray', aspect='auto', vmin=-3*pvd_rms, vmax=+3*pvd_rms)
         ax1.imshow(pvd, cmap=pvd_map, aspect='auto', norm=divnorm)
 
         if np.all(np.isnan(pv[0].data)):
@@ -890,7 +883,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
             ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=1.0,
                      transform=ax1.get_transform('world'))
             ax1.set_title(source['name'], fontsize=24)
-            ax1.tick_params(axis='both', which='major', labelsize=22)
+            ax1.tick_params(axis='both', which='major', labelsize=22, length=6, width=2)
             ax1.coords[0].set_format_unit(u.arcmin)
             ax1.coords[0].set_major_formatter('x.xx')   # Prevent crowding on x-axis
             ax1.set_xlabel('Angular Offset [arcmin]', fontsize=22)
@@ -920,7 +913,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 vel2 = (const.c * (source['freq'] - freq2)/source['freq']).to(u.km / u.s).value
                 ax2.set_ylim(vel1, vel2)
                 ax2.set_ylabel('Rest Frame Velocity [km/s]', fontsize=22)
-                ax2.tick_params(labelsize=22)
+                ax2.tick_params(labelsize=22, length=6, width=2)
             else:
                 print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity has been applied!")
                 if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
@@ -1090,6 +1083,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     # For CHILES: plot HI contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
         hst_opt_view = np.array([40,]) * u.arcsec
+        if opt_view < hst_opt_view: hst_opt_view = opt_view.to(u.arcsec)
         if np.any(Xsize > hst_opt_view.to(u.arcmin).value / 2) | np.any(Ysize > hst_opt_view.to(u.arcmin).value / 2):
             hst_opt_view = (np.max([Xsize, Ysize]) * 2 * 1.05 * u.arcmin).to(u.arcsec)
         hst_opt = get_hst_cosmos(source, opt_view=hst_opt_view)
