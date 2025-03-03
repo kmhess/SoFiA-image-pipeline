@@ -293,7 +293,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Total Intensity [{}]".format(hdulist_hi[0].header['bunit']), fontsize=22)
-        cbar.ax.tick_params(labelsize=22)
+        cbar.ax.tick_params(labelsize=22, length=6, width=2)
         # Prevent cbar label from getting too wide e.g. when in Jy/beam Hz units
         cbar.formatter.set_powerlimits((0, 3))
         ot = cbar.ax.yaxis.get_offset_text()
@@ -381,7 +381,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         cb_ax = fig.add_axes([0.91, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
         cbar.set_label("Pixel SNR", fontsize=22)
-        cbar.ax.tick_params(labelsize=22)
+        cbar.ax.tick_params(labelsize=22, length=6, width=2)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -580,7 +580,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         if not singlechansource:
             cbar.add_lines(cf)
         cbar.set_label(cbar_label, fontsize=22)
-        cbar.ax.tick_params(labelsize=22)
+        cbar.ax.tick_params(labelsize=22, length=6, width=2)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -689,7 +689,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         if not singlechansource:
             cbar.add_lines(cf)
         cbar.set_label(cbar_label, fontsize=22)
-        cbar.ax.tick_params(labelsize=22)
+        cbar.ax.tick_params(labelsize=22, length=6, width=2)
 
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
@@ -883,7 +883,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
             ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=1.0,
                      transform=ax1.get_transform('world'))
             ax1.set_title(source['name'], fontsize=24)
-            ax1.tick_params(axis='both', which='major', labelsize=22)
+            ax1.tick_params(axis='both', which='major', labelsize=22, length=6, width=2)
             ax1.coords[0].set_format_unit(u.arcmin)
             ax1.coords[0].set_major_formatter('x.xx')   # Prevent crowding on x-axis
             ax1.set_xlabel('Angular Offset [arcmin]', fontsize=22)
@@ -913,7 +913,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 vel2 = (const.c * (source['freq'] - freq2)/source['freq']).to(u.km / u.s).value
                 ax2.set_ylim(vel1, vel2)
                 ax2.set_ylabel('Rest Frame Velocity [km/s]', fontsize=22)
-                ax2.tick_params(labelsize=22)
+                ax2.tick_params(labelsize=22, length=6, width=2)
             else:
                 print("\tWARNING: Input cube is in velocity units--no correction to source rest frame velocity has been applied!")
                 if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):

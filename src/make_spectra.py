@@ -203,7 +203,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         else:
             ax2_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
                                                                            line['rad_opt']), fontsize=17)
-        ax2_spec.tick_params(axis='both', which='major', labelsize=16)
+        ax2_spec.tick_params(axis='both', which='major', labelsize=16, length=5, width=1.8)
         ax2_spec.autoscale(False)
         if not original or len(spec) < long_format:
             ax2_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
@@ -217,7 +217,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 freq2 = freq2.to(u.GHz)
                 ax2b_spec.set_xlabel('Frequency [GHz]', fontsize=17)
             ax2b_spec.set_xlim(freq1.value, freq2.value)
-            ax2b_spec.tick_params(labelsize=16)
+            ax2b_spec.tick_params(labelsize=16, length=5, width=1.8)
             ax2b_spec.ticklabel_format(style='plain', useOffset=False)
             if not original or len(spec) < long_format:
                 ax2b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
@@ -335,7 +335,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         else:
             ax1_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
                                                                            line['rad_opt']), fontsize=17)
-        ax1_spec.tick_params(axis='both', which='major', labelsize=16)
+        ax1_spec.tick_params(axis='both', which='major', labelsize=16, length=5, width=1.8)
         ax1_spec.autoscale(False)
         ax1_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         if 'freq' in source.colnames:
@@ -349,7 +349,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 ax1b_spec.set_xlabel('Frequency [GHz]', fontsize=17)
             ax1b_spec.set_xlim(freq1.value, freq2.value)
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
-            ax1b_spec.tick_params(labelsize=16)
+            ax1b_spec.tick_params(labelsize=16, length=5, width=1.8)
             ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
