@@ -233,6 +233,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec.plot([maskmin, maskmin], [0.95*ymin, 0.95*ymax], ':', color='gray')
         ax2_spec.plot([maskmax, maskmax], [0.95*ymin, 0.95*ymax], ':', color='gray')
 
+        ax2_spec.plot([v_sys, v_sys], np.array([-0.05, 0.05])*(ymax-ymin), color='gray')
+
         # # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
         # ax_margin_percent = 0.15
         # if (ymax > 5.*galspec_max) | (ymin < np.nanmin([-2.*np.abs(galspec_min), -5.*np.nanstd(spectrumJy).value])):
@@ -351,6 +353,8 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
             ax1b_spec.tick_params(labelsize=16, length=5, width=1.8)
             ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
+        ymin, ymax = ax1_spec.get_ylim()
+        ax1_spec.plot([v_sys, v_sys], np.array([-0.05, 0.05])*(ymax-ymin), color='gray')
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
