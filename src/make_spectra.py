@@ -364,12 +364,11 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
             ax1b_spec.tick_params(labelsize=16, length=5, width=1.8)
             ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
-        # Plot limit of SoFiA mask
+        # Plot limit of w50 width
+        ymin, ymax = ax1_spec.get_ylim()
         if 'z_w50' in source.colnames:
-            ymin, ymax = ax1_spec.get_ylim()
             ax1_spec.plot([w50_min_vel, w50_min_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
             ax1_spec.plot([w50_max_vel, w50_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
-        ymin, ymax = ax1_spec.get_ylim()
         ax1_spec.plot([v_sys, v_sys], np.array([-0.05, 0.05])*(ymax-ymin), color='gray')
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
