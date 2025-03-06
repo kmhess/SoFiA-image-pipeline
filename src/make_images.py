@@ -678,7 +678,11 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         levels = np.arange(vunit,vel_max,vunit)
         # clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=1.0, transform=ax1.get_transform(cubew))
+            mom2_cf = True
+            try:
+                cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=1.0, transform=ax1.get_transform(cubew))
+            except ValueError:
+                mom2_cf = False
         v_disp_label = r"$\Delta \sigma_{{contours}}$ = {} km/s".format(int(vunit))
 
         ax1.text(0.5, 0.05, v_disp_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=22)
@@ -686,7 +690,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
                               transform=ax1.transAxes, facecolor='#4199B5', edgecolor='#D8424D', linewidth=1))
         cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        if not singlechansource:
+        if not singlechansource and mom2_cf:
             cbar.add_lines(cf)
         cbar.set_label(cbar_label, fontsize=22)
         cbar.ax.tick_params(labelsize=22, length=6, width=2)
