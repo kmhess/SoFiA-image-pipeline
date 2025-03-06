@@ -37,7 +37,7 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     elif surveys:
         os.system("{0} {1}mom0_{3}.{2} mom0_{4}.{2} snr_{4}.{2} mom1_{4}.{2} mom2_{4}.{2} +append"
                   " -gravity south -splice 0x18 temp_{4}.{2}".format(imgck, infile, suffix,
-                                        surveys[0].replace(" ", "").lower().replace('decals-dev', 'decals'), code))
+                                        surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'), code))
     else:
         print("\tWARNING: No ancillary data image available for source {}.".format(source['id']))
         os.system("{0} {1}mom0.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append"
