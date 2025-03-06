@@ -143,7 +143,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                                                                                          equivalencies=line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=line['convention']).value
-            v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {}".format(int(v_sys), int(w50_vel))
+            v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {}".format(int(v_sys), int(w50_vel))
             if original or len(spec) >= long_format:
                 v_sys_label += "  $W_{{20}}$ = {} km/s".format(int(w20_vel))
             else:
@@ -203,7 +203,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         else:
             ax2_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
                                                                            line['rad_opt']), fontsize=17)
-        ax2_spec.tick_params(axis='both', which='major', labelsize=16)
+        ax2_spec.tick_params(axis='both', which='major', labelsize=16, length=5, width=1.8)
         ax2_spec.autoscale(False)
         if not original or len(spec) < long_format:
             ax2_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
@@ -217,7 +217,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 freq2 = freq2.to(u.GHz)
                 ax2b_spec.set_xlabel('Frequency [GHz]', fontsize=17)
             ax2b_spec.set_xlim(freq1.value, freq2.value)
-            ax2b_spec.tick_params(labelsize=16)
+            ax2b_spec.tick_params(labelsize=16, length=5, width=1.8)
             ax2b_spec.ticklabel_format(style='plain', useOffset=False)
             if not original or len(spec) < long_format:
                 ax2b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
@@ -232,6 +232,8 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ymin, ymax = ax2_spec.get_ylim()
         ax2_spec.plot([maskmin, maskmin], [0.95*ymin, 0.95*ymax], ':', color='gray')
         ax2_spec.plot([maskmax, maskmax], [0.95*ymin, 0.95*ymax], ':', color='gray')
+
+        ax2_spec.plot([v_sys, v_sys], np.array([-0.05, 0.05])*(ymax-ymin), color='gray')
 
         # # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
         # ax_margin_percent = 0.15
@@ -297,10 +299,10 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                                   names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
             if 'snr' in source.colnames:
-                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50_vel), 
+                v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50_vel), 
                                                                                              source['snr'])
             else:
-                v_sys_label = "$v_{{sys}}$ = {}  $W_{{50}}$ = {} km/s".format(int(v_sys), int(w50_vel))
+                v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {} km/s".format(int(v_sys), int(w50_vel))
 
         except FileNotFoundError:
             print("\tNo *_spec.txt file.  Perhaps you ran SoFiA without generating moments?")
@@ -335,7 +337,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         else:
             ax1_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
                                                                            line['rad_opt']), fontsize=17)
-        ax1_spec.tick_params(axis='both', which='major', labelsize=16)
+        ax1_spec.tick_params(axis='both', which='major', labelsize=16, length=5, width=1.8)
         ax1_spec.autoscale(False)
         ax1_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
         if 'freq' in source.colnames:
@@ -349,8 +351,10 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 ax1b_spec.set_xlabel('Frequency [GHz]', fontsize=17)
             ax1b_spec.set_xlim(freq1.value, freq2.value)
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
-            ax1b_spec.tick_params(labelsize=16)
+            ax1b_spec.tick_params(labelsize=16, length=5, width=1.8)
             ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
+        ymin, ymax = ax1_spec.get_ylim()
+        ax1_spec.plot([v_sys, v_sys], np.array([-0.05, 0.05])*(ymax-ymin), color='gray')
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
