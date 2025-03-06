@@ -858,11 +858,11 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
             return
         else:
             # Plot positive contours
-            if np.nanmax(pvd) > 3*pvd_rms:
-                ax1.contour(pvd, colors=['k', ], levels=3**np.arange(1, 10)*pvd_rms)
+            if np.nanmax(pvd) > 2*pvd_rms:
+                ax1.contour(pvd, colors=['k', ], levels=2**np.arange(1, 10)*pvd_rms)
             # Plot negative contours
-            if np.nanmin(pvd) < -3*pvd_rms:
-                ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 3**np.arange(10, 0, -1), linestyles=['dashed', ])
+            if np.nanmin(pvd) < -2*pvd_rms:
+                ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 2**np.arange(10, 0, -1), linestyles=['dashed', ])
 
             ax1.autoscale(False)
             if os.path.isfile(maskfile):
