@@ -113,11 +113,12 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(specfile, names=['chan', 'freq', 'f_sum', 'n_pix'])
-                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
-                maskmin = (spec['freq'][spec['chan'] == source['z_min']] * u.Hz).to(u.km / u.s,
-                                                                                    equivalencies=line['convention']).value
-                maskmax = (spec['freq'][spec['chan'] == source['z_max']] * u.Hz).to(u.km / u.s,
-                                                                                    equivalencies=line['convention']).value
+                optical_velocity = (source['freq'] - spec['freq'])/source['freq'] * const.c.to(u.km/u.s).value
+                maskmin = (source['freq'] - spec['freq'][spec['chan'] == source['z_min']]) / source['freq'] * \
+                                                                                            const.c.to(u.km / u.s).value
+                maskmax = (source['freq'] - spec['freq'][spec['chan'] == source['z_max']]) / source['freq'] * \
+                                                                                            const.c.to(u.km / u.s).value
+                v_sys = 0
             else:
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
@@ -143,7 +144,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                                                                                          equivalencies=line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=line['convention']).value
-            v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {}".format(int(v_sys), int(w50_vel))
+            v_sys_label = "$W_{{50}}$ = {}".format(int(w50_vel))
             if original or len(spec) >= long_format:
                 v_sys_label += "  $W_{{20}}$ = {} km/s".format(int(w20_vel))
             else:
@@ -256,6 +257,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
 def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
 
     outfile1 = src_basename.replace('cubelets', 'figures') + '_{}_spec.{}'.format(source['id'], suffix)
+    fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
 
     # For estimating position of z_w20, z_w50, z_wm50 which are given in pixel space:
     fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
@@ -278,11 +280,13 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
-                optical_velocity = (spec['freq'] * u.Hz).to(u.km / u.s, equivalencies=line['convention']).value
+                optical_velocity = (source['freq'] - spec['freq'])/source['freq'] * const.c.to(u.km/u.s).value
+                v_sys = 0
                 if 'z_w50' in source.colnames:
                     z_w50 = chan2freq(source['z_w50'], fits_file)
-                    w50_min_vel = (z_w50 - source['w50'] * u.Hz / 2).to(u.km / u.s, equivalencies=line['convention']).value
-                    w50_max_vel = (z_w50 + source['w50'] * u.Hz / 2).to(u.km / u.s, equivalencies=line['convention']).value
+                    z_w50_vel = ((source['freq'] * u.Hz - z_w50) / source['freq'] * const.c.to(u.km / u.s)).value
+                    w50_min_vel = z_w50_vel - ((source['w50'] * u.Hz / 2) / (source['freq'] * u.Hz) * const.c.to(u.km / u.s)).value
+                    w50_max_vel = z_w50_vel + ((source['w50'] * u.Hz / 2) / (source['freq'] * u.Hz) * const.c.to(u.km / u.s)).value
             else:
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
@@ -310,10 +314,9 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                     w50_min_vel = (z_w50 - source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
                     w50_max_vel = (z_w50 + source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
             if 'snr' in source.colnames:
-                v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(v_sys), int(w50_vel), 
-                                                                                             source['snr'])
+                v_sys_label = "$W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(w50_vel), source['snr'])
             else:
-                v_sys_label = "$cz_{{sys}}$ = {}  $W_{{50}}$ = {} km/s".format(int(v_sys), int(w50_vel))
+                v_sys_label = "$W_{{50}}$ = {} km/s".format(int(w50_vel))
 
         except FileNotFoundError:
             print("\tNo *_spec.txt file.  Perhaps you ran SoFiA without generating moments?")
