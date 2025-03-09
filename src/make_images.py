@@ -934,6 +934,14 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                     v_sys = source['v_app']
                 ax1.plot([ang1, ang2], [v_sys, v_sys], c='orange', linestyle='--', linewidth=1.0, 
                          transform=ax1.get_transform('world'))
+                if 'z_w20' in source.colnames:
+                    z_w20 = chan2vel(source['z_w20'], fits_file)
+                    w20_min = (z_w20 - source['w20'] * u.m / u.s / 2).value
+                    w20_max = (z_w20 + source['w20'] * u.m / u.s / 2).value
+                    ax1.plot([ang1, ang2], [w20_min, w20_min], c='red', linestyle='--', linewidth=1.0, 
+                            transform=ax1.get_transform('world'))
+                    ax1.plot([ang1, ang2], [w20_max, w20_max], c='red', linestyle='--', linewidth=1.0, 
+                            transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
                 if line['rad_opt'] == 'Optical':
                     ax1.set_ylabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=22)
