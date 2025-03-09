@@ -144,11 +144,11 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                                                                                          equivalencies=line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=line['convention']).value
-            v_sys_label = "$W_{{50}}$ = {}".format(int(w50_vel))
-            if original or len(spec) >= long_format:
-                v_sys_label += "  $W_{{20}}$ = {} km/s".format(int(w20_vel))
-            else:
-                v_sys_label += " km/s"
+            v_sys_label = "$W_{{20}}$ = {} km/s".format(int(w20_vel))
+            # if original or len(spec) >= long_format:
+            #     v_sys_label += "  $W_{{20}}$ = {} km/s".format(int(w20_vel))
+            # else:
+            #     v_sys_label += " km/s"
             if 'snr' in source.colnames:
                 v_sys_label += ",  SNR = {:.1f}".format(source['snr'])
 
@@ -282,11 +282,11 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (source['freq'] - spec['freq'])/source['freq'] * const.c.to(u.km/u.s).value
                 v_sys = 0
-                if 'z_w50' in source.colnames:
-                    z_w50 = chan2freq(source['z_w50'], fits_file)
-                    z_w50_vel = ((source['freq'] * u.Hz - z_w50) / source['freq'] * const.c.to(u.km / u.s)).value
-                    w50_min_vel = z_w50_vel - ((source['w50'] * u.Hz / 2) / (source['freq'] * u.Hz) * const.c.to(u.km / u.s)).value
-                    w50_max_vel = z_w50_vel + ((source['w50'] * u.Hz / 2) / (source['freq'] * u.Hz) * const.c.to(u.km / u.s)).value
+                if 'z_w20' in source.colnames:
+                    z_w20 = chan2freq(source['z_w20'], fits_file)
+                    z_w20_vel = ((source['freq'] * u.Hz - z_w20) / source['freq'] * const.c.to(u.km / u.s)).value
+                    w20_min_vel = z_w20_vel - ((source['w20'] * u.Hz / 2) / (source['freq'] * u.Hz) * const.c.to(u.km / u.s)).value
+                    w20_max_vel = z_w20_vel + ((source['w20'] * u.Hz / 2) / (source['freq'] * u.Hz) * const.c.to(u.km / u.s)).value
             else:
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
@@ -309,14 +309,14 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
-                if 'z_w50' in source.colnames:
-                    z_w50 = chan2vel(source['z_w50'], fits_file)
-                    w50_min_vel = (z_w50 - source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
-                    w50_max_vel = (z_w50 + source['w50'] * u.m / u.s / 2).to(u.km / u.s).value
+                if 'z_w20' in source.colnames:
+                    z_w20 = chan2vel(source['z_w20'], fits_file)
+                    w20_min_vel = (z_w20 - source['w20'] * u.m / u.s / 2).to(u.km / u.s).value
+                    w20_max_vel = (z_w20 + source['w20'] * u.m / u.s / 2).to(u.km / u.s).value
             if 'snr' in source.colnames:
-                v_sys_label = "$W_{{50}}$ = {} km/s,  SNR = {:.1f}".format(int(w50_vel), source['snr'])
+                v_sys_label = "$W_{{20}}$ = {} km/s,  SNR = {:.1f}".format(int(w20_vel), source['snr'])
             else:
-                v_sys_label = "$W_{{50}}$ = {} km/s".format(int(w50_vel))
+                v_sys_label = "$W_{{20}}$ = {} km/s".format(int(w20_vel))
 
         except FileNotFoundError:
             print("\tNo *_spec.txt file.  Perhaps you ran SoFiA without generating moments?")
@@ -367,11 +367,11 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1b_spec.ticklabel_format(style='plain', useOffset=False)
             ax1b_spec.tick_params(labelsize=16, length=5, width=1.8)
             ax1b_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
-        # Plot limit of w50 width
+        # Plot limit of w20 width
         ymin, ymax = ax1_spec.get_ylim()
-        if 'z_w50' in source.colnames:
-            ax1_spec.plot([w50_min_vel, w50_min_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
-            ax1_spec.plot([w50_max_vel, w50_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
+        if 'z_w20' in source.colnames:
+            ax1_spec.plot([w20_min_vel, w20_min_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
+            ax1_spec.plot([w20_max_vel, w20_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
         ax1_spec.plot([v_sys, v_sys], np.array([-0.05, 0.05])*(ymax-ymin), color='gray')
     else:
         print('\t{} already exists. Will not overwrite.'.format(outfile1))

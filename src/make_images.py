@@ -903,13 +903,13 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 freq_sys = source['freq']
                 ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--', linewidth=1.0, 
                          transform=ax1.get_transform('world'))
-                if 'z_w50' in source.colnames:
-                    z_w50 = chan2freq(source['z_w50'], fits_file)
-                    w50_min = (z_w50 - source['w50'] * u.Hz / 2).value
-                    w50_max = (z_w50 + source['w50'] * u.Hz / 2).value
-                    ax1.plot([ang1, ang2], [w50_min, w50_min], c='red', linestyle='--', linewidth=1.0, 
+                if 'z_w20' in source.colnames:
+                    z_w20 = chan2freq(source['z_w20'], fits_file)
+                    w20_min = (z_w20 - source['w20'] * u.Hz / 2).value
+                    w20_max = (z_w20 + source['w20'] * u.Hz / 2).value
+                    ax1.plot([ang1, ang2], [w20_min, w20_min], c='red', linestyle='--', linewidth=1.0, 
                             transform=ax1.get_transform('world'))
-                    ax1.plot([ang1, ang2], [w50_max, w50_max], c='red', linestyle='--', linewidth=1.0, 
+                    ax1.plot([ang1, ang2], [w20_max, w20_max], c='red', linestyle='--', linewidth=1.0, 
                             transform=ax1.get_transform('world'))
                 ax1.set_ylabel('Frequency [MHz]', fontsize=22)
                 ax1.coords[1].set_format_unit(u.MHz)
