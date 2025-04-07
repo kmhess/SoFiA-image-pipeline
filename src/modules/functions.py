@@ -264,7 +264,7 @@ def get_info(fits_name, beam=None, source_id=0):
                 pass
 
     # Try to determine the spectral properties
-    if (fits_name[-9:] != 'cube.fits') and (source_id != 0):
+    if ((fits_name[-9:] != 'cube.fits') and (source_id != 0)) or ('mom' in fits_name):
         print("\tWARNING: Retrieving info from a moment map or other 2D image?")
         chan_width = None
         spec_axis = None
@@ -556,7 +556,7 @@ def make_source(catalog, fits_name):
     # Change the relevant catalog parameters ... prob need to deal with kin_pa and rms at some point.
     new_source['name'] = fits_name.split('/')[-1][:-5]
     new_source['id'] = 0
-    new_source['x'], new_source['y'], new_source['z'] = header['NAXIS1']/2, header['NAXIS2']/2, header['NAXIS3']/2
+    new_source['x'], new_source['y'], new_source['z'] = header['NAXIS1']/2, header['NAXIS2']/2, 0
     new_source['x_min'], new_source['x_max'] = int(np.min(catalog['x_min'])), int(np.max(catalog['x_max']))
     new_source['y_min'], new_source['y_max'] = int(np.min(catalog['y_min'])), int(np.max(catalog['y_max']))
     new_source['z_min'], new_source['z_max'] = int(np.min(catalog['z_min'])), int(np.max(catalog['z_max']))

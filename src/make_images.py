@@ -396,8 +396,8 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 
 # Make velocity map for object
-def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base_contour, spec_line=None, suffix='png',
-              sofia=2):
+def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, base_contour, spec_line=None, 
+              suffix='png'):
     """
 
     :param source: source object
@@ -418,8 +418,6 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
     :type spec_line: str
     :param suffix: image file type
     :type suffix: str
-    :param sofia: major sofia version number
-    :type sofia: int
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom1.{}'.format(suffix)
@@ -451,12 +449,12 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
             w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
             w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
-            if sofia == 2:
+            if (source['id'] == 0) and original:
+                freqmin = chan2freq(source['z_min'], original).to(u.Hz).value
+                freqmax = chan2freq(source['z_max'], original).to(u.Hz).value
+            else:
                 freqmin = chan2freq(source['z_min'], src_basename + cube_end).to(u.Hz).value
                 freqmax = chan2freq(source['z_max'], src_basename + cube_end).to(u.Hz).value
-            elif sofia == 1:
-                freqmin = chan2freq(source['z_min'], src_basename + '.fits').to(u.Hz).value
-                freqmax = chan2freq(source['z_max'], src_basename + '.fits').to(u.Hz).value
             velmax = (const.c * (source['freq'] - freqmin)/source['freq']).to(u.km / u.s).value
             velmin = (const.c * (source['freq'] - freqmax)/source['freq']).to(u.km / u.s).value
             cbar_label = "Rest Frame Velocity [km/s]"
@@ -965,7 +963,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=None, chan_width=None, surveys=None,
+def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam=None, chan_width=None, surveys=None,
          snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None):
 
     print("\tStart making spatial images.")
@@ -974,22 +972,21 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     if source['id'] != 0:
         src_basename = src_basename + '_{}'.format(source['id'])
         cube_end = '_cube.fits'
+    elif original:
+        chan_width = fits.getheader(original)['CDELT3']
 
     # Get beam information from the source cubelet
-    if sofia == 2:
+    try:
+        cube_params = get_info(src_basename + cube_end, beam, source['id'])
+    except FileNotFoundError:
+        # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
+        print("\tWARNING: No cubelet to match source {}."
+                " Try retrieving coordinate info from moment 0 map.".format(source['id']))
         try:
-            cube_params = get_info(src_basename + cube_end, beam, source['id'])
+            cube_params = get_info(src_basename + '_mom0.fits', beam, source['id'])
         except FileNotFoundError:
-            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            print("\tWARNING: No cubelet to match source {}."
-                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
-            try:
-                cube_params = get_info(src_basename + '_mom0.fits', beam, source['id'])
-            except FileNotFoundError:
-                print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
-                exit()
-    elif sofia == 1:
-        cube_params = get_info(src_basename + '.fits', beam, source['id'])
+            print("\tERROR: No cubelet or mom0 to match source {}.\n".format(source['id']))
+            exit()
 
     opt_head = None
 
@@ -1218,7 +1215,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
     if opt_head:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
-        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix, sofia=2,
+        make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix,
                   spec_line=spec_line)
         make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
 
@@ -1235,4 +1232,4 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', sofia=2, beam=
 
 if __name__ == '__main__':
 
-    main(source, src_basename, opt_view=6*u.arcmin, suffix='png', snr_range=[2, 3], user_image=None)
+    main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', snr_range=[2, 3], user_image=None)
