@@ -184,16 +184,14 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec.plot([np.min(optical_velocity) - 10, np.max(optical_velocity) + 10], [0, 0], '--', color='gray')
         # If there are lots of channels, don't plot errors (too crowded and can tell from noise.) Cut off currently arbitrary.
         if len(spec) <= 100:
-            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
-                                                  yy_err=y_error)
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=flux_dens, yy_err=y_error)
             ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
         elif len(spec) <= 200:
-            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=spec['f_sum'] / cube_params['pix_per_beam'], 
-                                                  yy_err=y_error * 0)
+            opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=flux_dens, yy_err=y_error * 0)
             ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=0)
         else:
             print("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
-            ax2_spec.plot(optical_velocity, spec['f_sum'] / cube_params['pix_per_beam'])
+            ax2_spec.plot(optical_velocity, flux_dens)
         ax2_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         ax2_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         ax2_spec.set_title(source['name'], fontsize=20)
