@@ -199,7 +199,9 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec.set_title(source['name'], fontsize=20)
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
-        if line['rad_opt'] == 'Optical':
+        if 'freq' in source.colnames:
+            ax2_spec.set_xlabel("Rest frame velocity [km/s]", fontsize=17)
+        elif line['rad_opt'] == 'Optical':
             ax2_spec.set_xlabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=17)
         else:
             ax2_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
@@ -346,7 +348,9 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         ax1_spec.set_title(source['name'], fontsize=20)
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
-        if line['rad_opt'] == 'Optical':
+        if 'freq' in source.colnames:
+            ax1_spec.set_xlabel("Rest frame velocity [km/s]", fontsize=17)
+        elif line['rad_opt'] == 'Optical':
             ax1_spec.set_xlabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=17)
         else:
             ax1_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
