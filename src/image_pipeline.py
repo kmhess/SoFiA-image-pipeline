@@ -219,7 +219,7 @@ def main():
 
     if 0 in args.source_id:
         print("\n\tMaking summary images of full field.")
-        new_source = make_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '.fits')
+        new_source = make_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '_mom0.fits')
         catalog.add_row(new_source)
         src_basename = src_basename.split('_cubelets')[0]
         make_images.main(catalog[-1], src_basename, opt_view=opt_view, suffix=suffix, beam=beam,
