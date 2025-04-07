@@ -536,7 +536,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
         
         v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
         if source['id'] != 0:
-            v_sys_label = "$cz_{{sys}}$ = {} km/s".format(int(v_sys))
+            v_sys_label = ""
 
         if source['id'] != 0:
             # Plot kin_pa from HI center of galaxy; calculate end points of line
@@ -567,7 +567,7 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
                                 xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
                                 arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
                                                 linestyle=':'))
-            v_sys_label += ", Kin. PA = {:5.1f}$^\\circ$".format(source['kin_pa'])
+            v_sys_label += "Kinematic PA = {:5.1f}$^\\circ$".format(source['kin_pa'])
 
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=22)
         if not singlechansource:
@@ -824,6 +824,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
         pv_axis = 'pv_min'
     maskfile = src_basename + '_{}_mask.fits'.format(pv_axis)
     outfile = src_basename.replace('cubelets', 'figures') + '_{}.{}'.format(pv_axis, suffix)
+    fits_file = src_basename + '_cube.fits'
 
     if not os.path.isfile(outfile):
         try:
@@ -862,11 +863,11 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
             return
         else:
             # Plot positive contours
-            if np.nanmax(pvd) > 3*pvd_rms:
-                ax1.contour(pvd, colors=['k', ], levels=3**np.arange(1, 10)*pvd_rms)
+            if np.nanmax(pvd) > 2*pvd_rms:
+                ax1.contour(pvd, colors=['k', ], levels=2**np.arange(1, 10)*pvd_rms)
             # Plot negative contours
-            if np.nanmin(pvd) < -3*pvd_rms:
-                ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 3**np.arange(10, 0, -1), linestyles=['dashed', ])
+            if np.nanmin(pvd) < -2*pvd_rms:
+                ax1.contour(pvd, colors=['w', ], levels=-pvd_rms * 2**np.arange(10, 0, -1), linestyles=['dashed', ])
 
             ax1.autoscale(False)
             if os.path.isfile(maskfile):
@@ -906,6 +907,14 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 freq_sys = source['freq']
                 ax1.plot([ang1, ang2], [freq_sys, freq_sys], c='orange', linestyle='--', linewidth=1.0, 
                          transform=ax1.get_transform('world'))
+                if 'z_w20' in source.colnames:
+                    z_w20 = chan2freq(source['z_w20'], fits_file)
+                    w20_min = (z_w20 - source['w20'] * u.Hz / 2).value
+                    w20_max = (z_w20 + source['w20'] * u.Hz / 2).value
+                    ax1.plot([ang1, ang2], [w20_min, w20_min], c='red', linestyle='--', linewidth=1.0, 
+                            transform=ax1.get_transform('world'))
+                    ax1.plot([ang1, ang2], [w20_max, w20_max], c='red', linestyle='--', linewidth=1.0, 
+                            transform=ax1.get_transform('world'))
                 ax1.set_ylabel('Frequency [MHz]', fontsize=22)
                 ax1.coords[1].set_format_unit(u.MHz)
                 if freq_sys * u.Hz >= 2*u.GHz:
@@ -929,6 +938,14 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                     v_sys = source['v_app']
                 ax1.plot([ang1, ang2], [v_sys, v_sys], c='orange', linestyle='--', linewidth=1.0, 
                          transform=ax1.get_transform('world'))
+                if 'z_w20' in source.colnames:
+                    z_w20 = chan2vel(source['z_w20'], fits_file)
+                    w20_min = (z_w20 - source['w20'] * u.m / u.s / 2).value
+                    w20_max = (z_w20 + source['w20'] * u.m / u.s / 2).value
+                    ax1.plot([ang1, ang2], [w20_min, w20_min], c='red', linestyle='--', linewidth=1.0, 
+                            transform=ax1.get_transform('world'))
+                    ax1.plot([ang1, ang2], [w20_max, w20_max], c='red', linestyle='--', linewidth=1.0, 
+                            transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
                 if line['rad_opt'] == 'Optical':
                     ax1.set_ylabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=22)
