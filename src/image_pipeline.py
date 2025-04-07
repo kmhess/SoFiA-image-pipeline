@@ -197,6 +197,8 @@ def main():
 
     # Make all the images on a source-by-source basis.  In future, could parallelize this.
     n_src = 0
+    n_fail = 0
+    failed_srcs = []
 
     for source in catalog:
 
@@ -204,18 +206,19 @@ def main():
 
         if not len(args.source_id) or source['id'] in args.source_id:
             print("\n\t-Source {}: {}.".format(source['id'], source['name']))
-            make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
-                             chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                             user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
-            make_spectra.main(source, src_basename, original, spec_line=args.spectral_line, suffix=suffix, beam=beam)
-
-            if imagemagick:
-                if 'decals-dr9' in surveys:
-                    surveys=list(surveys)
-                    surveys[surveys.index('decals-dr9')] = 'decals'
-                combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), user_image=args.user_image)
-
-            n_src += 1
+            try:
+                make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, sofia=sofia, beam=beam,
+                                chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
+                                user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
+                make_spectra.main(source, src_basename, original, spec_line=args.spectral_line, suffix=suffix, 
+                                  beam=beam)
+                if imagemagick:
+                    combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), 
+                                   user_image=args.user_image)
+                n_src += 1
+            except:
+                failed_srcs.append(int(source['id']))
+                n_fail += 1
 
     if 0 in args.source_id:
         print("\n\tMaking summary images of full field.")
@@ -227,6 +230,8 @@ def main():
                     user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
 
     print("\n\tDONE! Made images for {} sources.".format(n_src))
+    if n_fail > 0:
+        print("\tWARNING: Failed for {} sources with id number: {}".format(n_fail, failed_srcs))
     print("*****************************************************************\n")
 
 
