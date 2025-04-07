@@ -113,7 +113,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(specfile, names=['chan', 'freq', 'f_sum', 'n_pix'])
-                optical_velocity = (source['freq'] - spec['freq'])/source['freq'] * const.c.to(u.km/u.s).value
+                optical_velocity = (source['freq'] - spec['freq'])/spec['freq'] * const.c.to(u.km/u.s).value
                 maskmin = (source['freq'] - spec['freq'][spec['chan'] == source['z_min']]) / source['freq'] * \
                                                                                             const.c.to(u.km / u.s).value
                 maskmax = (source['freq'] - spec['freq'][spec['chan'] == source['z_max']]) / source['freq'] * \
@@ -282,7 +282,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
                                   names=['chan', 'freq', 'f_sum', 'n_pix'])
-                optical_velocity = (source['freq'] - spec['freq'])/source['freq'] * const.c.to(u.km/u.s).value
+                optical_velocity = (source['freq'] - spec['freq'])/spec['freq'] * const.c.to(u.km/u.s).value
                 v_sys = 0
                 if 'z_w20' in source.colnames:
                     z_w20 = chan2freq(source['z_w20'], fits_file)
