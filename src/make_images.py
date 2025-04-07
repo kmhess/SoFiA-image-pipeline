@@ -396,7 +396,8 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 
 # Make velocity map for object
-def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base_contour, spec_line=None, suffix='png'):
+def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, base_contour, spec_line=None, 
+              suffix='png'):
     """
 
     :param source: source object
@@ -448,8 +449,12 @@ def make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, base
             # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
             w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
             w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
-            freqmin = chan2freq(source['z_min'], src_basename + cube_end).to(u.Hz).value
-            freqmax = chan2freq(source['z_max'], src_basename + cube_end).to(u.Hz).value
+            if (source['id'] == 0) and original:
+                freqmin = chan2freq(source['z_min'], original).to(u.Hz).value
+                freqmax = chan2freq(source['z_max'], original).to(u.Hz).value
+            else:
+                freqmin = chan2freq(source['z_min'], src_basename + cube_end).to(u.Hz).value
+                freqmax = chan2freq(source['z_max'], src_basename + cube_end).to(u.Hz).value
             velmax = (const.c * (source['freq'] - freqmin)/source['freq']).to(u.km / u.s).value
             velmin = (const.c * (source['freq'] - freqmax)/source['freq']).to(u.km / u.s).value
             cbar_label = "Rest Frame Velocity [km/s]"
@@ -958,7 +963,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     return
 
 
-def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', beam=None, chan_width=None, surveys=None,
+def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam=None, chan_width=None, surveys=None,
          snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None):
 
     print("\tStart making spatial images.")
@@ -967,6 +972,8 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', beam=None, cha
     if source['id'] != 0:
         src_basename = src_basename + '_{}'.format(source['id'])
         cube_end = '_cube.fits'
+    elif original:
+        chan_width = fits.getheader(original)['CDELT3']
 
     # Get beam information from the source cubelet
     try:
@@ -1208,7 +1215,7 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', beam=None, cha
     if opt_head:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
-        make_mom1(source, src_basename, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix,
+        make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix,
                   spec_line=spec_line)
         make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
 
@@ -1225,4 +1232,4 @@ def main(source, src_basename, opt_view=6*u.arcmin, suffix='png', beam=None, cha
 
 if __name__ == '__main__':
 
-    main(source, src_basename, opt_view=6*u.arcmin, suffix='png', snr_range=[2, 3], user_image=None)
+    main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', snr_range=[2, 3], user_image=None)

@@ -264,7 +264,7 @@ def get_info(fits_name, beam=None, source_id=0):
                 pass
 
     # Try to determine the spectral properties
-    if (fits_name[-9:] != 'cube.fits') and (source_id != 0):
+    if ((fits_name[-9:] != 'cube.fits') and (source_id != 0)) or ('mom' in fits_name):
         print("\tWARNING: Retrieving info from a moment map or other 2D image?")
         chan_width = None
         spec_axis = None

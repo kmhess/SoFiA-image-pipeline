@@ -204,7 +204,7 @@ def main():
         if not len(args.source_id) or source['id'] in args.source_id:
             print("\n\t-Source {}: {}.".format(source['id'], source['name']))
             try:
-                make_images.main(source, src_basename, opt_view=opt_view, suffix=suffix, beam=beam,
+                make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                                 chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
                                 user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
                 make_spectra.main(source, src_basename, original, spec_line=args.spectral_line, suffix=suffix, 
@@ -222,7 +222,7 @@ def main():
         new_source = make_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '_mom0.fits')
         catalog.add_row(new_source)
         src_basename = src_basename.split('_cubelets')[0]
-        make_images.main(catalog[-1], src_basename, opt_view=opt_view, suffix=suffix, beam=beam,
+        make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
                     user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
 
