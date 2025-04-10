@@ -3,6 +3,7 @@
 # Import default Python libraries
 from argparse import ArgumentParser, RawTextHelpFormatter
 import os
+import traceback
 
 # Import installed Python libraries
 from astropy.table import Table
@@ -216,6 +217,7 @@ def main():
             except:
                 failed_srcs.append(int(source['id']))
                 n_fail += 1
+                traceback.print_exc()
 
     if 0 in args.source_id:
         print("\n\tMaking summary images of full field.")
