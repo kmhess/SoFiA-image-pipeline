@@ -215,9 +215,12 @@ def main():
                 failed_srcs.append(int(source['id']))
                 n_fail += 1
                 traceback.print_exc()
-            if imagemagick:
-                combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), 
-                               user_image=args.user_image)
+            try:
+                if imagemagick:
+                    combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), 
+                                   user_image=args.user_image)
+            except:
+                pass
 
     if 0 in args.source_id:
         print("\n\tMaking summary images of full field.")
