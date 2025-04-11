@@ -210,14 +210,14 @@ def main():
                                 user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
                 make_spectra.main(source, src_basename, original, spec_line=args.spectral_line, suffix=suffix, 
                                   beam=beam)
-                if imagemagick:
-                    combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), 
-                                   user_image=args.user_image)
                 n_src += 1
             except:
                 failed_srcs.append(int(source['id']))
                 n_fail += 1
                 traceback.print_exc()
+            if imagemagick:
+                combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), 
+                               user_image=args.user_image)
 
     if 0 in args.source_id:
         print("\n\tMaking summary images of full field.")
