@@ -1061,7 +1061,9 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         with fits.open(user_image) as usrim:
             usrim_d = usrim[0].data
             usrim_h = usrim[0].header
-            if ('cdelt1' in usrim_h) and ('cdelt2' in usrim_h):
+            if ('cdelt1' in usrim_h) and ('cdelt2' in usrim_h) and ('cd1_1' in usrim_h) and ('cd2_2' in usrim_h):
+                usrim_pix_x, usrim_pix_y = usrim_h['cd1_1'], np.abs(usrim_h['cd2_2'])
+            elif ('cdelt1' in usrim_h) and ('cdelt2' in usrim_h):
                 usrim_pix_x, usrim_pix_y = usrim_h['cdelt1'], np.abs(usrim_h['cdelt2'])
             elif ('cd1_1' in usrim_h) and ('cd2_2' in usrim_h):
                 usrim_pix_x, usrim_pix_y = usrim_h['cd1_1'], np.abs(usrim_h['cd2_2'])
