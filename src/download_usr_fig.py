@@ -9,6 +9,9 @@ from astropy.coordinates import SkyCoord
 from astropy import units as u
 
 from src.modules.get_ancillary import *
+from src.modules.logger import Logger
+
+logger = Logger.get_logger()
 
 
 def main():
@@ -52,8 +55,11 @@ def main():
 
     opt_view = args.image_size * u.deg
     if len(opt_view) > 2:
-        print("ERROR: -i image_size expects one or two arguments. Exiting.")
+        logger.error("\t-i image_size expects one or two arguments. Exiting.")
         exit()
+
+    # Set up logger
+    logger = Logger.get_logger(log_path='sip_temp.log')#, clear_logs=False)
 
     # Can make this more flexible to include hmsdms entries.
     hi_pos = SkyCoord(ra=args.right_ascension, dec=args.declination, unit='deg')
@@ -69,7 +75,7 @@ def main():
                 survey_string += ' PanSTARRS'
             surveys.remove('panstarrs')
         else:
-            print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
+            logger.error("\t{} already exists; will not overwrite. Choose a different outname prefix"
                   " with `-o` flag. Continuing to next requested survey".format(outname + 'panstarrs.jpg'))
             surveys.remove('panstarrs')
 
@@ -84,7 +90,7 @@ def main():
                 survey_string += ' DECaLS'
             surveys.remove('decals')
         else:
-            print("\tERROR: {} already exists; will not overwrite. Choose a different outname prefix"
+            logger.error("\t{} already exists; will not overwrite. Choose a different outname prefix"
                   " with `-o` flag. Continuing to next requested survey".format(outname + 'decals.jpg'))
             surveys.remove('decals')
 
@@ -100,25 +106,27 @@ def main():
                         overlay_image = get_skyview(hi_pos, opt_view=opt_view, survey=survey)
                     # THESE EXCEPTS MAY BE UNNECESSARY/PREEMPTED BY GET_SKYVIEW AT TIMES.
                     except ValueError:
-                        print("\tERROR: \"{}\" may not among the survey hosted at skyview or survey names recognized"
+                        logger.error("\t\"{}\" may not among the survey hosted at skyview or survey names recognized"
                               " by astroquery. \n\t\tSee SkyView.list_surveys or SkyView.survey_dict from astroquery"
                               " for valid surveys.".format(survey))
                         overlay_image = None
                     except HTTPError:
-                        print("\tERROR: http error 404 returned from SkyView query.  Skipping {}.".format(survey))
+                        logger.error("\thttp error 404 returned from SkyView query.  Skipping {}.".format(survey))
                         overlay_image = None
                 if overlay_image:
                     overlay_image.writeto(outname + survey.replace(' ', '_') + '.fits', overwrite=True)
                     survey_string += ' {}'.format(survey)
             else:
-                print("\tWARNING: {} already exists; will not overwrite. Choose a different outname prefix"
+                logger.warning("\t{} already exists; will not overwrite. Choose a different outname prefix"
                       " with `-o` flag. Continuing to next requested survey.".format(outfile))
 
     if len(survey_string) > 0:
-        print("\n\tDONE! Saved survey images to disk for{}.".format(survey_string))
+        logger.info("\n")
+        logger.info("\tDONE! Saved survey images to disk for{}.".format(survey_string))
     else:
-        print("\n\tDONE! No survey images saved to disk.  Adjust input and try again?")
-    print("*****************************************************************\n")
+        logger.info("\n")
+        logger.info("\tDONE! No survey images saved to disk.  Adjust input and try again?")
+    logger.info("*****************************************************************\n")
 
 
 if __name__ == '__main__':

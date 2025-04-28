@@ -2,6 +2,10 @@ import os
 import random
 import string
 
+from src.modules.logger import Logger
+
+logger = Logger.get_logger()
+
 
 # Note, although this has been generalized, it seems to work best with png's!
 
@@ -24,7 +28,7 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
 
     # Use terminal commands to assemble figures with imagemagick: https://imagemagick.org/index.php
-    print("\tAssembling figures with imagemagick")
+    logger.info("\tAssembling figures with imagemagick")
     new_file = "{}combo.{}".format(infile, suffix)
     # Remove redundant y-axies for the 2D images:
     for im in ['mom0', 'snr', 'mom1', 'mom2', 'specfull']:
@@ -39,7 +43,7 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
                   " -gravity south -splice 0x18 temp_{4}.{2}".format(imgck, infile, suffix,
                                         surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'), code))
     else:
-        print("\tWARNING: No ancillary data image available for source {}.".format(source['id']))
+        logger.warning("\tNo ancillary data image available for source {}.".format(source['id']))
         os.system("{0} {1}mom0.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append"
                   " -gravity south -splice 0x18 temp_{3}.{2}".format(imgck, infile, suffix, code))
     os.system("{0} {1}spec.{2} -resize 133% temp2_{3}.{2}".format(imgck, infile, suffix, code))
@@ -65,7 +69,7 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     new_file_size = os.path.getsize(new_file)
 
     if new_file_size > file_size_limit:
-        print('\tReducing size of combined image to {0:.0f}% of original (it was {1:.1e}B)'.format(100*file_size_limit/new_file_size, 
+        logger.info('\tReducing size of combined image to {0:.0f}% of original (it was {1:.1e}B)'.format(100*file_size_limit/new_file_size, 
                                                                                                    new_file_size))
         os.system("{0} {1} -resize {2:.0f}% {1}".format(imgck, new_file, 100*file_size_limit/new_file_size))
     os.system('rm -rf *_{1}.{0}'.format(suffix, code))

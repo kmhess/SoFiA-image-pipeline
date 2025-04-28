@@ -10,6 +10,9 @@ from astroquery.skyview import SkyView
 import numpy as np
 
 from src.modules.panstarrs_fcns import getcolorim, geturl
+from src.modules.logger import Logger
+
+logger = Logger.get_logger()
 
 
 def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue', cache=True):
@@ -46,10 +49,10 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue', cache=True):
         path = []
         
     if len(path) != 0:
-        print("\tSurvey image retrieved from {}.".format(survey))
+        logger.info("\tSurvey image retrieved from {}.".format(survey))
         result = path[0]
     else:
-        print("\tWARNING: No {} image retrieved.  Bug, or server error?  Try again later?".format(survey))
+        logger.warning("\tNo {} image retrieved.  Bug, or server error?  Try again later?".format(survey))
         result = None
 
     return result
@@ -68,7 +71,7 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
     #  Get PanSTARRS false color image and r-band fits (for the WCS).
     pstar_pixsc = 0.25
     if len(opt_view) > 1:
-        print("\tWARNING: PanSTARRS only returns square images; taking largest dimension.")
+        logger.warning("\tPanSTARRS only returns square images; taking largest dimension.")
         opt_view = np.max(opt_view)
     try:
         path = geturl(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value / pstar_pixsc),
@@ -80,9 +83,9 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
         fits_head = fits.getheader(path[0])
         color_im = getcolorim(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value / pstar_pixsc),
                               filters="gri")
-        print("\tOptical false color image retrieved from PanSTARRS.")
+        logger.info("\tOptical false color image retrieved from PanSTARRS.")
     else:
-        print("\tWARNING: No PanSTARRS false color image retrieved.  Server or connection error," \
+        logger.warning("\tNo PanSTARRS false color image retrieved.  Server or connection error," \
               " or no PanSTARRS coverage?")
         fits_head = None
         color_im = None
@@ -126,15 +129,15 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
         color_im = Image.open(BytesIO(r.content))
     except HTTPError:
         if decals == 'decaps':
-            print("\tWARNING: HTTP Error, no DECaPS false color image retrieved. Server error or no DECaPS coverage?")
+            logger.warning("\tHTTP Error, no DECaPS false color image retrieved. Server error or no DECaPS coverage?")
         elif decals == 'dr9':
-            print("\tWARNING: HTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR9 coverage?")
+            logger.warning("\tHTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR9 coverage?")
         else:
-            print("\tWARNING: HTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR10 coverage?")
+            logger.warning("\tHTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR10 coverage?")
         fits_head = None
         color_im = None
     except URLError:
-        print("\tWARNING: URL Error. No false color image retrieved.")
+        logger.warning("\tURL Error. No false color image retrieved.")
         fits_head = None
         color_im = None
 

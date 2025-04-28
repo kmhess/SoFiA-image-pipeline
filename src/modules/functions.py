@@ -6,6 +6,10 @@ from astropy.wcs import WCS
 import numpy as np
 from pvextractor import extract_pv_slice, PathFromCenter
 
+from src.modules.logger import Logger
+
+logger = Logger.get_logger()
+
 HI_restfreq = 1420405751.77 * u.Hz
 
 
@@ -42,7 +46,7 @@ def chan2vel(channels, fits_name):
     :return: calculated velocities
     :rtype: Iterable[float]
     """
-    print("\tWARNING: Assuming channels are uniform width in velocity.")
+    logger.warning("\tAssuming channels are uniform width in velocity.")
     header = fits.getheader(fits_name)
     # Don't know how to deal with cubelets having diff CRPIX3 from orig data; catalog data is in ref to orig base 0
     velocities = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.m / u.s
@@ -63,7 +67,7 @@ def felo2vel(channels, fits_name):
     :rtype: Iterable[float]
     """
     # Formula taken from here: https://www.astro.rug.nl/software/kapteyn/spectralbackground.html#aips-axis-type-felo
-    print("\tWARNING: Axis type FELO...this conversion may not be precise (may be off by ~10 km/s).")
+    logger.warning("\tAxis type FELO...this conversion may not be precise (may be off by ~10 km/s).")
     c = const.c.to(u.m/u.s).value
     header = fits.getheader(fits_name)
     fr = header['RESTFREQ'] / (1 + header['CRVAL3'] / c)
@@ -94,12 +98,12 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
     line = line_lookup(spec_line)
     
     if (bunit == 'Jy/beam*m/s') or (bunit == 'Jy/beam*M/S'):
-        print("\tWARNING: Assumes velocity axis of cube is in the *observed* frame. If cube is in source rest frame, "
+        logger.warning("\tAssumes velocity axis of cube is in the *observed* frame. If cube is in source rest frame, "
               "the column density is (1+z) times greater than shown.")
         if ('v_rad' in source.colnames): # or (cube_params['spec_axis'] == 'VRAD'): # Taken from make_images.py.
             # First convert to observed frequency, then to redshift following these equations:
             # https://web-archives.iram.fr/ARN/may95/node4.html
-            print("\tWARNING: HI column density calculation assumes optical velocity convention. Data is in radio convention!")
+            logger.warning("\tHI column density calculation assumes optical velocity convention. Data is in radio convention!")
             vel_sys = source['v_rad']
             freq_sys = HI_restfreq * (1 - vel_sys/c)
             z = (HI_restfreq - freq_sys) / freq_sys
@@ -113,7 +117,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
         if (spec_line == None) or (spec_line == 'HI'):
             nhi = 1.104e+21 * (1 + z) ** 2 * sbr / bmaj / bmin
         else:
-            print("\tWARNING: Mom0 units not corrected for non-HI lines in units of Jy/beam*m/s.")
+            logger.warning("\tMom0 units not corrected for non-HI lines in units of Jy/beam*m/s.")
             nhi = sbr
 
     elif (bunit == 'Jy/beam*Hz') or (bunit == 'beam-1 Jy*Hz'):
@@ -130,9 +134,9 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
         
     else:
         if (spec_line == None) or (spec_line == 'HI'):
-            print("\tWARNING: Mom0 image units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
+            logger.warning("\tMom0 image units are not Jy/beam*m/s or Jy/beam*Hz. Cannot convert to HI column density.")
         else:
-            print("\tWARNING: Mom0 image units are not Jy/beam*m/s or Jy/beam*Hz.")
+            logger.warning("\tMom0 image units are not Jy/beam*m/s or Jy/beam*Hz.")
         nhi = sbr
     
     if np.isfinite(nhi):
@@ -174,17 +178,17 @@ def get_info(fits_name, beam=None, source_id=0):
 
     default_beam = False
     if len(beam) == 3:
-        print(f"\tUsing user specified beam: {beam[0]} arcsec by {beam[1]} arcsec; PA: {beam[2]} deg")
+        logger.info(f"\t\tUsing user specified beam: {beam[0]} arcsec by {beam[1]} arcsec; PA: {beam[2]} deg")
         bmaj = beam[0] * u.arcsec
         bmin = beam[1] * u.arcsec
         bpa = beam[2]
     elif len(beam) == 2:
-        print(f"\tWARNING: assuming PA = 0. Using user specified beam: {beam[0]} arcsec by {beam[1]} arcsec.")
+        logger.warning(f"\tAssuming PA = 0. Using user specified beam: {beam[0]} arcsec by {beam[1]} arcsec.")
         bmaj = beam[0] * u.arcsec
         bmin = beam[1] * u.arcsec
         bpa = 0
     elif len(beam) == 1:
-        print(f"\tWARNING: using user specified circular beam size of {beam[0]} arcsec.")
+        logger.warning(f"\tUsing user specified circular beam size of {beam[0]} arcsec.")
         bmaj = bmin = beam[0] * u.arcsec
         bpa = 0
     else:
@@ -193,19 +197,18 @@ def get_info(fits_name, beam=None, source_id=0):
             bmin = header['BMIN'] * 3600. * u.arcsec
             bpa = header['BPA']
             if bmaj * bmin == 0.0:
-                print("\tWARNING: BMAJ and/or BMIN in header = 0! "
-                      "Assuming beam is 3.5x3.5 pixels"
-                      "\n\t\tColumn density and beam plotted as order of magnitude estimate ONLY. "
-                      "\n\t\tRerun with -b and provide beam info to remove red strikethroughs on plots.")
+                logger.warning("\tBMAJ and/or BMIN in header = 0! Assuming beam is 3.5x3.5 pixels")
+                logger.warning("\t\tColumn density and beam plotted as order of magnitude estimate ONLY. ")
+                logger.warning("\t\tRerun with -b and provide beam info to remove red strikethroughs on plots.")
                 bmaj, bmin, bpa = 3.5 * cellsize, 3.5 * cellsize, 0
                 default_beam = True
             else:
-                print(f"\tFound {bmaj:.1f} by {bmin:.1f} beam with PA={bpa:.1f} deg in primary header.")
+                logger.info(f"\t\tFound {bmaj:.1f} by {bmin:.1f} beam with PA={bpa:.1f} deg in primary header.")
         except:
-            print("\tWARNING: Couldn't find beam in primary header information; in other extension? "
-                  "Assuming beam is 3.5x3.5 pixels"
-                  "\n\t\tColumn density and beam plotted as order of magnitude estimate ONLY. "
-                  "\n\t\tRerun with -b and provide beam info to remove red strikethroughs on plots.")
+            logger.warning("\tCouldn't find beam in primary header information; in other extension? "
+                  "Assuming beam is 3.5x3.5 pixels")
+            logger.warning("\t\tColumn density and beam plotted as order of magnitude estimate ONLY. ")
+            logger.warning("\t\tRerun with -b and provide beam info to remove red strikethroughs on plots.")
             bmaj, bmin, bpa = 3.5 * cellsize, 3.5 * cellsize, 0
             default_beam = True
 
@@ -213,7 +216,7 @@ def get_info(fits_name, beam=None, source_id=0):
 
     # Try catching cubes in Galactic coordinates first
     if 'GLON' in header['CTYPE1']:
-        print("\tFound data is in Galactic spatial frame.")
+        logger.info("\t\tFound data is in Galactic spatial frame.")
         equinox = None
         frame = 'galactic'
     # If not Galacticc, try to determine the equinox of the observations
@@ -226,7 +229,7 @@ def get_info(fits_name, beam=None, source_id=0):
             else:
                 equinox = 'J' + str(equinox)
                 frame = 'fk5'
-            print("\tFound {} equinox in header.".format(equinox))
+            logger.info("\t\tFound {} equinox in header.".format(equinox))
         except KeyError:
             try:
                 equinox = header['EPOCH']
@@ -236,9 +239,9 @@ def get_info(fits_name, beam=None, source_id=0):
                 else:
                     equinox = 'J' + str(equinox)
                     frame = 'fk5'
-                print("\tWARNING: Using deprecated EPOCH in header for equinox: {}.".format(equinox))
+                logger.warning("\tUsing deprecated EPOCH in header for equinox: {}.".format(equinox))
             except KeyError:
-                print("\tWARNING: No equinox information in header; assuming ICRS frame.")
+                logger.warning("\tNo equinox information in header; assuming ICRS frame.")
                 equinox = None
                 frame = 'icrs'
 
@@ -246,26 +249,26 @@ def get_info(fits_name, beam=None, source_id=0):
     spec_sys = False
     try:
         spec_sys = header['SPECSYS']
-        print("\tFound {} reference frame specified in SPECSYS in header.".format(spec_sys))
+        logger.info("\t\tFound {} reference frame specified in SPECSYS in header.".format(spec_sys))
     except:
         try:
             spec_sys = header['SPECSYS3']
-            print("\tFound {} reference frame specified in SPECSYS3 in header.".format(spec_sys))
+            logger.info("\t\tFound {} reference frame specified in SPECSYS3 in header.".format(spec_sys))
         except:
             try:
                 velref = header['VELREF']
                 if velref == 1: spec_sys = 'LSR'
                 if velref == 2: spec_sys = 'HELIOCEN'
                 if velref == 3: spec_sys = 'TOPOCENT'
-                print("\tDerived {} reference frame from VELREF in header using AIPS convention.".format(spec_sys))
+                logger.info("\t\tDerived {} reference frame from VELREF in header using AIPS convention.".format(spec_sys))
             except:
                 # Comment this message out for now...program checks later.
-                print("\tNo SPECSYS, SPECSYS3, or VELREF in header to define reference frame, will check CTYPE3.")
+                logger.info("\t\tNo SPECSYS, SPECSYS3, or VELREF in header to define reference frame, will check CTYPE3.")
                 pass
 
     # Try to determine the spectral properties
     if ((fits_name[-9:] != 'cube.fits') and (source_id != 0)) or ('mom' in fits_name):
-        print("\tWARNING: Retrieving info from a moment map or other 2D image?")
+        logger.warning("\tRetrieving info from a moment map or other 2D image?")
         chan_width = None
         spec_axis = None
     else:
@@ -277,18 +280,18 @@ def get_info(fits_name, beam=None, source_id=0):
             units = u.m / u.s
         chan_width = chan_width * units
 
-        print("\tFound CTYPE3 spectral axis type {} in header.".format(spec_axis))
+        logger.info("\t\tFound CTYPE3 spectral axis type {} in header.".format(spec_axis))
         if ("-" in spec_axis) and spec_sys:
-            print("\tWARNING: dropping end of spectral axis type. Using SPECSYS/VELREF for reference frame.")
+            logger.warning("\tDropping end of spectral axis type. Using SPECSYS/VELREF for reference frame.")
             spec_axis = spec_axis.split ("-")[0]
         elif ("-" in spec_axis) and (not spec_sys):
             spec_sys = spec_axis.split("-")[1]
             spec_axis = spec_axis.split("-")[0]
             if spec_sys == 'HEL': spec_sys = 'HELIOCEN'
-            print("\tWARNING: attempting to use end of CTYPE3 for reference frame: {}".format(spec_sys))
+            logger.warning("\tAttempting to use end of CTYPE3 for reference frame: {}".format(spec_sys))
 
     if not spec_sys:
-        print("\tNo SPECSYS, VELREF, or reference frame in CTYPE3, assuming data in TOPOCENT reference frame.")
+        logger.info("\t\tNo SPECSYS, VELREF, or reference frame in CTYPE3, assuming data in TOPOCENT reference frame.")
         spec_sys = 'TOPOCENT'
 
     return {'bmaj': bmaj, 'bmin': bmin, 'bpa': bpa, 'pix_per_beam': pix_per_beam, 'default_beam': default_beam,
@@ -366,7 +369,7 @@ def get_subcube(source, original):
     elif len(cubeDim) == 3:
         subcube = hdu_orig[0].data[:, int(YminNew):int(YmaxNew) + 1, int(XminNew):int(XmaxNew) + 1]
     else:
-        print("WARNING: Original cube does not have 3-4 dimensions.")
+        logger.warning("Original cube does not have 3-4 dimensions.")
         subcube = None
 
     hdu_orig.close()
@@ -398,13 +401,13 @@ def create_pv(source, filename, opt_view=6*u.arcmin, min_axis=False):
     try:
         mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'))
     except ValueError:
-        print('\tWARNING: pvextractor is complaining about non-square pixels, try with assert_square = False')
+        logger.warning('\tpvextractor is complaining about non-square pixels, try with assert_square = False')
         try:
             mask_pv = extract_pv_slice(mask[0].data, slice, wcs=WCS(mask[0].header, fix=True, translate_units='shd'),
                                        assert_square=False)
         except:
-            print('\tERROR: Cannot extract pv slice of mask. Try upgrading to latest version of pvextractor (v>=0.4) from github:\n'
-                  '\t\t"python3 -m pip install git+https://github.com/radio-astro-tools/pvextractor"')
+            logger.error('\tCannot extract pv slice of mask. Try upgrading to latest version of pvextractor (v>=0.4) from github:')
+            logger.error('\t\t"python3 -m pip install git+https://github.com/radio-astro-tools/pvextractor"')
             mask_pv = None
     mask.close()
 
@@ -436,7 +439,7 @@ def line_lookup(spec_line):
         restfreq_line = 1.6673590 * u.GHz
         convention = u.doppler_optical(restfreq_line)
     else:
-        print("ERROR: Unrecognized spectral line.  Try 'HI', 'CO', or 'OH'.")
+        logger.error("Unrecognized spectral line.  Try 'HI', 'CO', or 'OH'.")
         exit()
 
     return {'name': spec_line, 'restfreq': restfreq_line, 'convention':convention, 'rad_opt':rad_opt}
