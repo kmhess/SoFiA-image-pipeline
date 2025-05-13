@@ -108,7 +108,7 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
         dimen = [3000]
 
     if decals == 'decaps':
-        url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=decaps9&' \
+        url = 'https://legacysurvey.org/viewer/jpeg-cutout/?ra={}&dec={}&layer=decaps2&' \
               'pixscale={}&width={}&height={}&bands=g'.format(hi_pos.ra.deg, hi_pos.dec.deg, pixscale, dimen[0], dimen[-1])
     elif decals == 'dr9':
         url = 'https://www.legacysurvey.org/viewer/cutout.fits?ra={}&dec={}&layer=ls-dr9&' \
