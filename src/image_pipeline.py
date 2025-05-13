@@ -2,7 +2,6 @@
 
 # Import default Python libraries
 from argparse import ArgumentParser, RawTextHelpFormatter
-import logging
 import os
 import traceback
 
@@ -188,7 +187,7 @@ def main():
     # Set up some directories
     cubelet_dir = catalog_file.split("_cat.")[0] + '_cubelets/'
     if not os.path.isdir(cubelet_dir):
-        print("\tERROR: Cubelet directory does not exist. Expecting {}. Need to run SoFiA-2 or restructure your"
+        logger.error("\tCubelet directory does not exist. Expecting {}. Need to run SoFiA-2 or restructure your"
             " directories.\n".format(cubelet_dir))
         exit()
 
