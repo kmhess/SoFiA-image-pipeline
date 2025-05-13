@@ -196,6 +196,8 @@ def main():
         logger.info("\tMaking figure directory.")
         os.system('mkdir {}'.format(figure_dir))
 
+    logger.info("\tAssuming all requested sources are associated with {} line transition".format(args.spectral_line))    
+
     src_basename = cubelet_dir + catalog_file.split("/")[-1].split("_cat.")[0]
 
     # Make all the images on a source-by-source basis.  In future, could parallelize this.
@@ -243,7 +245,6 @@ def main():
     if n_fail > 0:
         logger.warning("\tFailed for {} sources with id number: {}".format(n_fail, failed_srcs))
     logger.info("*****************************************************************\n")
-
 
 if __name__ == '__main__':
     main()

@@ -18,7 +18,7 @@ logger = Logger.get_logger()
 def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue', cache=True):
     """Retrieve the optical image from a certain pointing.
 
-    :param hi_pos: position in the HI data
+    :param hi_pos: position in the radio spectral line data
     :type hi_pos: astropy SkyCoord object
     :param opt_view: size of the optical image, defaults to 6*u.arcmin
     :type opt_view: astropy.units.arcmin, optional
@@ -61,7 +61,7 @@ def get_skyview(hi_pos, opt_view=6*u.arcmin, survey='DSS2 Blue', cache=True):
 def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
     """Get PanSTARRS false color image and r-band fits (for the WCS).
 
-    :param hi_pos: position in the HI data
+    :param hi_pos: position in the radio spectral line data
     :type hi_pos: astropy SkyCoord object
     :param opt_view: size of the optical image, defaults to 6*u.arcmin
     :type opt_view: astropy.units.arcmin, optional
@@ -96,7 +96,7 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
 def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
     """Get DECaLS false color image and g-band fits (for the WCS).
 
-    :param hi_pos: position in the HI data
+    :param hi_pos: position in the radio spectral line data
     :type hi_pos: astropy SkyCoord object
     :param opt_view: size of the optical image, defaults to 6*u.arcmin
     :type opt_view: astropy.units.arcmin, optional
@@ -147,7 +147,7 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
 def get_wise(hi_pos, opt_view=6*u.arcmin, survey='WISE W1'):
     """Retrieve a WISE image from a certain pointing.
 
-    :param hi_pos: position in the HI data
+    :param hi_pos: position in the radio spectral line data data
     :type hi_pos: astropy SkyCoord object
     :param opt_view: size of the optical image, defaults to 6*u.arcmin
     :type opt_view: astropy.units.arcmin, optional

@@ -54,10 +54,10 @@ def get_wcs_info(fits_name):
     return hiwcs, cubew
 
 
-# Overlay HI contours on user image
+# Overlay radio spectral line contours on user image
 def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, spec_line=None,
                      suffix='png'):
-    """Overlay HI contours on top of a user provided image
+    """Overlay radio spectral line contours on top of a user provided image
 
     :param source: source object
     :type source: Astropy data object?
@@ -85,7 +85,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
     if not os.path.isfile(outfile):
         try:
-            logger.info("\tMaking HI contour overlay on {} image.".format('usr'))
+            logger.info("\tMaking {} contour overlay on {} image.".format(spec_line, 'usr'))
             hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             logger.error("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -135,10 +135,10 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
     return
 
 
-# Overlay HI contours on another image
+# Overlay contours on another image
 def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, spec_line=None, suffix='png',
                  survey='DSS2 Blue'):
-    """Overlay HI contours on top of an optical image
+    """Overlay contours on top of an optical image
 
     :param source: source object
     :type source: Astropy data object?
@@ -164,7 +164,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
 
     if not os.path.isfile(outfile):
         try:
-            logger.info("\tMaking HI contour overlay on {} image.".format(survey))
+            logger.info("\tMaking {} contour overlay on {} image.".format(spec_line, survey))
             hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             logger.error("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -224,9 +224,9 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
     return
 
 
-# Make HI grey scale image
+# Make moment 0 grey scale image
 def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png'):
-    """Overlay HI contours on the HI gray scale image.
+    """Overlay radio spectral contours on the moment 0 gray scale image.
 
     :param source: source object
     :type source: Astropy table
@@ -238,7 +238,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
     :type patch: dict
     :param opt_head: Header for the color image
     :type opt_head: FITS header
-    :param base_contour: lowest HI contour
+    :param base_contour: lowest contour
     :type base_contour: float
     :param spec_line: name of spectral line
     :type spec_line: str
@@ -250,7 +250,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
     if not os.path.isfile(outfile):
         try:
-            logger.info("\tMaking HI contour overlay on grey-scale HI image.")
+            logger.info("\tMaking {} contour overlay on grey-scale mom0 total intensity image.".format(spec_line))
             hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             logger.error("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -316,7 +316,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
     return
 
 
-# Make HI significance image
+# Make radio spectral line significance image
 def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png'):
     """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
@@ -330,7 +330,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
     :type patch: dict
     :param opt_head: Header for the color image
     :type opt_head: FITS header
-    :param base_contour: lowest HI contour
+    :param base_contour: lowest contour
     :type base_contour: float
     :param spec_line: name of spectral line
     :type spec_line: str
@@ -415,7 +415,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
     :type opt_head: FITS header
     :param opt_view: requested size of the image for regriding
     :type opt_view: quantity
-    :param base_contour: lowest HI contour
+    :param base_contour: lowest contour
     :type base_contour: float
     :param spec_line: name of spectral line
     :type spec_line: str
@@ -498,7 +498,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
                 exit()
 
         mom1_d = mom1[0].data
-        # Only plot values above the lowest calculated HI value:
+        # Only plot values above the lowest calculated contour value:
         hdulist_hi = fits.open(src_basename + '_mom0.fits')
         mom0 = hdulist_hi[0].data
         if base_contour > 0.0 and np.isfinite(base_contour):
@@ -540,7 +540,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             v_sys_label = ""
 
         if source['id'] != 0:
-            # Plot kin_pa from HI center of galaxy; calculate end points of line
+            # Plot kin_pa from (HI) center of galaxy; calculate end points of line
             p1x, p1y = (hi_pos.ra + 0.42 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
                     (hi_pos.dec + 0.42 * opt_view[0] * np.cos(kinpa)).deg
             p2x, p2y = (hi_pos.ra - 0.42 * opt_view[0] * np.sin(kinpa) / np.cos(hi_pos.dec)).deg,\
@@ -648,7 +648,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
                 exit()
 
         mom2_d = mom2[0].data
-        # Only plot values above the lowest calculated HI value:
+        # Only plot values above the lowest calculated contour value:
         hdulist_hi = fits.open(src_basename + '_mom0.fits')
         mom0 = hdulist_hi[0].data
         if base_contour > 0.0 and np.isfinite(base_contour):
@@ -709,10 +709,10 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
     return
 
 
-# Overlay HI contours on false color optical image
+# Overlay radio spectral line contours on false color optical image
 def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, spec_line=None,
                   suffix='png', survey='panstarrs'):
-    """Overlay HI contours on a false color image.
+    """Overlay radio spectral line contours on a false color image.
 
     :param source: source object
     :type source: Astropy table
@@ -726,7 +726,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     :type color_im: NDarray?
     :param opt_head: Header for the color image
     :type opt_head: FITS header
-    :param base_contour: lowest HI contour
+    :param base_contour: lowest contour
     :type base_contour: float
     :param spec_line: name of spectral line
     :type spec_line: str
@@ -744,7 +744,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     elif survey == 'sdss': survey = 'SDSS'
 
     if not os.path.isfile(outfile):
-        logger.info("\tMaking HI contour overlay on {} false color image.".format(survey))
+        logger.info("\tMaking {} contour overlay on {} false color image.".format(spec_line, survey))
         hdulist_hi = fits.open(src_basename + '_mom0.fits')
 
         try:
@@ -999,9 +999,9 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                 fits.open(src_basename + '_mom0.fits') as hdulist_hi:
             HIlowest = np.median(np.abs(hdulist_hi[0].data[(np.abs(hdulist_snr[0].data) > snr_range[0]) *
                                                            (np.abs(hdulist_snr[0].data) < snr_range[1])]))
-        logger.info("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
-                                                                                                          HIlowest))
-    # If no SNR map use the channel width of the original data (provided by user if necessary) for lowest HI contour.
+        logger.info("\tThe first {0} contour defined at SNR = {1} has level = {2:.3e} (mom0 data units).".format(spec_line, snr_range,
+                                                                                                                HIlowest))
+    # If no SNR map use the channel width of the original data (provided by user if necessary) for lowest contour.
     except FileNotFoundError:
         if os.path.isfile(src_basename + '_mom0.fits'):
             logger.info("\tNo SNR fits file found. Will determine lowest contour based on rms in catalog,"
@@ -1015,8 +1015,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                 logger.warning("\tNo user provided channel width. Check figures! Either provide channel width,"
                       " or rms in mom0 map units.")
                 HIlowest = source['rms'] * np.nanmin(snr_range)
-            logger.info("\tThe first HI contour defined at SNR = {0} has level = {1:.3e} (mom0 data units)."
-                  " ".format(np.nanmin(snr_range), HIlowest))
+            logger.info("\tThe first {0} contour defined at SNR = {1} has level = {2:.3e} (mom0 data units)."
+                  " ".format(np.nanmin(spec_line, snr_range), HIlowest))
         else:
             logger.error("\tNo mom0 to match source {}.\n".format(source['id']))
             return
@@ -1095,15 +1095,15 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         except:
             logger.warning('\t2D cutout extraction failed. Source outside user image? Will try again with the next source.')
             if not surveys:
-                logger.info("\tOffline mode requested. Making HI images.")
+                logger.info("\tOffline mode requested. Making {} images.".format(spec_line))
                 opt_head = make_header(source, opt_view=opt_view)
     elif not surveys:
-        logger.info("\tNo user image given and offline mode requested. Making HI images.")
+        logger.info("\tNo user image given and offline mode requested. Making {} images.".format(spec_line))
         opt_head = make_header(source, opt_view=opt_view)
     else:
         logger.info("\tNo user image given. Proceeding with the download of any requested archive images.")
 
-    # For CHILES: plot HI contours on HST image if desired.
+    # For CHILES: plot radio spectral line contours on HST image if desired.
     if ('hst' in surveys) | ('HST' in surveys):
         hst_opt_view = np.array([40,]) * u.arcsec
         if opt_view < hst_opt_view: hst_opt_view = opt_view.to(u.arcsec)
@@ -1139,7 +1139,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         logger.info("\t'panstarrs' image retrieval not supported for catalog in Galactic coordinates.")
         surveys.remove('panstarrs')
 
-    # If requested plot HI contours on DECaLS, DECaPS, or SDSS false color imaging
+    # If requested plot radio spectral line contours on DECaLS, DECaPS, or SDSS false color imaging
     decals_url = 'decals'
     if 'decals' in surveys and 'decals-dr9' in surveys:
         # Only decals and decals-dr9 have common overlap; decaps shouldn't be called at the same time.
@@ -1175,7 +1175,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         except:
             surveys.remove('sdss')
 
-    # If requested, plot the HI contours on any number of survey images available through SkyView.
+    # If requested, plot the radio spectral line contours on any number of survey images available through SkyView.
     if len(surveys) > 0:
         for survey in surveys:
             if ('wise' in survey) or ('WISE' in survey):

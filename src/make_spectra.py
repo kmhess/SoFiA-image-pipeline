@@ -105,7 +105,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         line = line_lookup(spec_line)
 
         try:
-            logger.info("\tMaking HI spectrum plot including noise.")
+            logger.info("\tMaking {} spectrum plot including noise.".format(spec_line))
             if 'freq' in source.colnames:
                 # Calculate source quantities for labels
                 v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
@@ -271,7 +271,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         line = line_lookup(spec_line)
 
         try:
-            logger.info("\tMaking HI SoFiA masked spectrum plot.")
+            logger.info("\tMaking {} SoFiA masked spectrum plot.".format(spec_line))
             if 'freq' in source.colnames:
                 # Calculate source quantities for labels
                 v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
