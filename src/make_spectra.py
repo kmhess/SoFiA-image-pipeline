@@ -10,6 +10,9 @@ import numpy as np
 import pkg_resources  # part of setuptools
 
 from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, line_lookup, make_hist_arr
+from src.modules.logger import Logger
+
+logger = Logger.get_logger()
 
 version = pkg_resources.require("SoFiA-image-pipeline")[0].version
 
@@ -25,7 +28,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 
         try:
             if not original:
-                print("\tWARNING: Original data cube not provided: making spectrum of subcube with noise.")
+                logger.warning("\tOriginal data cube not provided: making spectrum of subcube with noise.")
                 fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
                 cube = fits.getdata(fits_file)
                 mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
@@ -36,15 +39,15 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
                 fits_file = original
                 cube = get_subcube(source, original)
                 if os.path.isfile(original) and os.path.isfile(original[:-5] + '_mask.fits'):
-                    print("\tOriginal data cube provided: making full spectrum image with noise.")
+                    logger.info("\tOriginal data cube provided: making full spectrum image with noise.")
                     mask = get_subcube(source, original[:-5] + '_mask.fits')
                 elif os.path.isfile(original) and os.path.isfile(src_basename.split('_cubelets')[0] + '_mask.fits'):
-                    print("\tOriginal data cube provided, original file name differs from catalog file: Making full spectrum image with noise.")
+                    logger.info("\tOriginal data cube provided, original file name differs from catalog file: Making full spectrum image with noise.")
                     mask = get_subcube(source, src_basename.split('_cubelets')[0] + '_mask.fits')
                 spec_template = None
                 channels = np.asarray(range(cube.shape[0]))
         except:
-            print("\tWrong name provided for original file, or original mask file doesn't exist, so can't generate a *_specfull.txt with noise.")
+            logger.warning("\tWrong name provided for original file, or original mask file doesn't exist, so can't generate a *_specfull.txt with noise.")
             return
 
         mask2d = np.sum(mask, axis=0)
@@ -92,7 +95,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
     if original or (not os.path.isfile(specfile)):
         specfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
 
-    print('\tUsing {} to make aperture spectrum plot.'.format(specfile))
+    logger.info('\tUsing {} to make aperture spectrum plot.'.format(specfile))
 
     long_format = 200
 
@@ -102,7 +105,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         line = line_lookup(spec_line)
 
         try:
-            print("\tMaking HI spectrum plot including noise.")
+            logger.info("\tMaking {} spectrum plot including noise.".format(spec_line))
             if 'freq' in source.colnames:
                 # Calculate source quantities for labels
                 v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
@@ -153,7 +156,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 v_sys_label += ",  SNR = {:.1f}".format(source['snr'])
 
         except FileNotFoundError:
-            print("\tNo existing _specfull.txt file. Perhaps there is no cube to generate one, or need to specify original.")
+            logger.warning("\tNo existing _specfull.txt file. Perhaps there is no cube to generate one, or need to specify original.")
             fig2, ax2_spec, outfile2 = None, None, None
             return fig2, ax2_spec, outfile2
 
@@ -190,7 +193,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
             opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=flux_dens, yy_err=y_error * 0)
             ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=0)
         else:
-            print("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
+            logger.info("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
             ax2_spec.plot(optical_velocity, flux_dens)
         ax2_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         ax2_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
@@ -247,7 +250,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         #     ax2_spec.set_ylim(ax_margin)
 
     else:
-        print('\t{} already exists. Will not overwrite.'.format(outfile2))
+        logger.warning('\t{} already exists. Will not overwrite.'.format(outfile2))
         fig2, ax2_spec, outfile2 = None, None, None
 
     return fig2, ax2_spec, outfile2
@@ -268,7 +271,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         line = line_lookup(spec_line)
 
         try:
-            print("\tMaking HI SoFiA masked spectrum plot.")
+            logger.info("\tMaking {} SoFiA masked spectrum plot.".format(spec_line))
             if 'freq' in source.colnames:
                 # Calculate source quantities for labels
                 v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
@@ -319,7 +322,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
                 v_sys_label = "$W_{{20}}$ = {} km/s".format(int(w20_vel))
 
         except FileNotFoundError:
-            print("\tNo *_spec.txt file.  Perhaps you ran SoFiA without generating moments?")
+            logger.warning("\tNo *_spec.txt file.")
             fig1, ax1_spec, outfile1 = None, None, None
             return fig1, ax1_spec, outfile1
 
@@ -376,7 +379,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1_spec.plot([w20_max_vel, w20_max_vel], [0.95*ymin, 0.95*ymax], ':', color='red')
         ax1_spec.plot([v_sys, v_sys], np.array([-0.05, 0.05])*(ymax-ymin), color='gray')
     else:
-        print('\t{} already exists. Will not overwrite.'.format(outfile1))
+        logger.warning('\t{} already exists. Will not overwrite.'.format(outfile1))
         fig1, ax1_spec, outfile1 = None, None, None
 
     return fig1, ax1_spec, outfile1
@@ -384,7 +387,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
 
 def main(source, src_basename, original=None, spec_line=None, suffix='png', beam=None):
 
-    print("\tStart making spectral profiles")
+    logger.info("\tStart making spectral profiles")
 
     # Get beam information from the source cubelet
     try:
@@ -393,7 +396,7 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
         try:
             cube_params = get_info(src_basename + '_{}_mom0.fits'.format(source['id']), beam)
         except FileNotFoundError:
-            print("\tERROR: No cubelet or mom0 to match source {}."
+            logger.error("\tNo cubelet or mom0 to match source {}."
                   " Can't determine coordinate system to plot spectrum.\n".format(source['id']))
             return
 
@@ -421,7 +424,7 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
         fig2.savefig(outfile2, bbox_inches='tight')
     plt.close('all')
 
-    print("\tDone making spectral profiles.")
+    logger.info("\tDone making spectral profiles.")
 
     return
 
