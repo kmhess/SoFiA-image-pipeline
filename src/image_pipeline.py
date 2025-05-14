@@ -11,9 +11,7 @@ from astropy import units as u
 import pkg_resources  # part of setuptools
 import numpy as np
 
-from src import make_images, make_spectra
-from src.modules.functions import get_radecfreq, make_source
-from src.combine_images import combine_images
+# Other imports from src are in code below so logger is initialized correctly
 from src.modules.logger import Logger
 
 version = pkg_resources.require("SoFiA-image-pipeline")[0].version
@@ -84,6 +82,7 @@ def main():
 
     # Parse the arguments above
     args = parser.parse_args()
+    catalog_file = args.catalog
     suffix = args.suffix
     original = args.original
     imagemagick = args.imagemagick
@@ -103,7 +102,8 @@ def main():
     opt_view = args.image_size * u.arcmin
 
     # Set up logger
-    logger = Logger.get_logger(log_path='sip_temp.log')#, clear_logs=False)
+    log_basename = catalog_file.split('_cat')[0]
+    logger = Logger.get_logger(log_path=log_basename+'.log')#, clear_logs=False))
 
     print("\n")
     logger.info("*****************************************************************")
@@ -127,8 +127,6 @@ def main():
         logger.info("\tWill only process selected sources: {}".format(args.source_id))
 
     # Read in the catalog file:
-    catalog_file = args.catalog
-
     if catalog_file.split(".")[-1] == "xml":
         logger.info("\tReading catalog in XML format.")
         logger.info("\tAlways assumes an xml file comes from SoFiA-2.")
@@ -171,6 +169,9 @@ def main():
         logger.info("*****************************************************************\n")
         exit()
     elif ('ra' not in catalog.colnames) and (original):
+        # Try to calculate an ra dec if not in the catalog. Deprecated?
+        from src.modules.functions import get_radecfreq
+
         # This may be deprecated given that we insistence on running parameter.wcs, physical, offset = True
         logger.warning("\tLooks like catalog doesn't contain 'ra' and 'dec' columns. But can derive them with \n" \
             "\t\tthe pixel positions in the catalog provided.")
@@ -205,6 +206,10 @@ def main():
     n_fail = 0
     failed_srcs = []
 
+    # Do the hard work
+    from src import make_images, make_spectra
+    from src.combine_images import combine_images
+
     for source in catalog:
 
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
@@ -231,6 +236,9 @@ def main():
                 pass
 
     if 0 in args.source_id:
+        # Make a source object for the overview image
+        from src.modules.functions import make_source
+
         logger.info(" ")
         logger.info("\tMaking summary images of full field.")
         new_source = make_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '_mom0.fits')
