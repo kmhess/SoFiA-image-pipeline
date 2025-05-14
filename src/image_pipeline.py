@@ -244,6 +244,7 @@ def main():
     logger.info("\tDONE! Made images for {} sources.".format(n_src))
     if n_fail > 0:
         logger.warning("\tFailed for {} sources with id number: {}".format(n_fail, failed_srcs))
+    logger.info("\tCreated log file: {}".format(Logger._log_path))
     logger.info("*****************************************************************\n")
 
 if __name__ == '__main__':
