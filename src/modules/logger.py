@@ -3,7 +3,6 @@ import logging
 from pathlib import Path
 
 
-
 class ColoredFormatter(logging.Formatter):
     COLORS = {
         logging.DEBUG: "\033[34m",  # BLUE
@@ -26,6 +25,7 @@ class ColoredFormatter(logging.Formatter):
 
 class Logger:
     _logger_instance = None 
+    _log_path = None
 
     @classmethod
     def setup_logger(cls, log_path="sip.log"):
@@ -54,6 +54,7 @@ class Logger:
         logger.addHandler(console_handler)
 
         cls._logger_instance = logger
+        cls._log_path = log_path
 
         return log_path
     
