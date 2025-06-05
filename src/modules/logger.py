@@ -35,7 +35,7 @@ class Logger:
         timestamp = datetime.now().strftime("%d%m%y_%H%M%S")
 
         original_path = Path(log_path)
-        new_stem = f"{original_path.stem}_{timestamp}"
+        new_stem = f"{original_path.stem}_{timestamp}_sip"
         log_path = original_path.with_name(new_stem).with_suffix(original_path.suffix)
 
         file_handler = logging.FileHandler(log_path, encoding='utf-8')
