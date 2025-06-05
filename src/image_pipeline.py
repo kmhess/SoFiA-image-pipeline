@@ -27,14 +27,14 @@ def main():
                         help='Required: Specify the input XML or ascii catalog name. No default.')
 
     parser.add_argument('-id', '--source-id', default=[], nargs='*', #type=int,
-                        help='Space-separated list, or range of sources to include in the plotting. If set to 0, do summary figure. \n'
-                            ' Default all sources.')
+                        help='Optional: Space-separated list, or range of sources to include in the plotting. If set to 0, do\n'
+                             'summary figure. Default all sources.')
 
     parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
-                        help='Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours. These\n'
-                            ' additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\'sdss\',\n'
-                            ' \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST. Default is "DSS2 Blue"\n' 
-                            ' if no user provided image. If \'none\' is requested, work in offline mode.')
+                        help='Optional: Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
+                             'These additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\n'
+                             '\'sdss\', \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST. Default is "DSS2 Blue"\n' 
+                             'if no user provided image. If \'none\' is requested, work in offline mode.')
 
     parser.add_argument('-ui', '--user-image', default=None,
                         help='Optional: Full path to the FITS image on which to overlay HI contours.')
@@ -44,39 +44,39 @@ def main():
 
     parser.add_argument('-line', '--spectral-line', default="HI", type=str,
                         help='Optional: Provide name of spectral line such as "CO" for "CO(1-0)". Default is "HI".\n'
-                            ' See github for more details on available lines.  Work in progress.')
+                             'See github for more details on available lines.  Work in progress.')
 
     parser.add_argument('-i', '--image_size', default=[6], nargs=1, type=float,
                         help='Optional: specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
-                            ' the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
+                             'the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
 
     parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float,
                         help='Optional: specify which SNRmin and SNRmax values should be used to set the lowest reliable HI \n'
-                            ' contour in the figures. The contour level is calculated as the median value in the mom0 image\n'
-                            ' of all pixels whose SNR value is within the given range. Default is [2,3].')
+                             'contour in the figures. The contour level is calculated as the median value in the mom0 image\n'
+                             'of all pixels whose SNR value is within the given range. Default is [2,3].')
 
     parser.add_argument('-o', '--original', default=None,
                         help='Optional: specify the original fits data: used for plotting HI spectra *with* noise over \n'
-                            ' the full frequency range of the cube. Otherwise, plot with noise over frequency range\n'
-                            ' in the cubelet.  Uses 2D mask to integrate. (No default).')
+                             'the full frequency range of the cube. Otherwise, plot with noise over frequency range\n'
+                             'in the cubelet.  Uses 2D mask to integrate. (No default).')
 
     parser.add_argument('-b', '--beam', default=None,
                         help='Optional: specify the beam dimensions as "(bmaj,bmin,bpa)" in arcsec, arcsec, deg. If only 1 value\n'
-                            ' is given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
+                             'is given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
 
     parser.add_argument('-cw', '--chan_width', default=[None], nargs=1, type=float,
                         help='Optional: specify the channel width in native units of the original data (e.g. Hz or m/s).'
-                             ' (No default).')
+                              '(No default).')
 
     parser.add_argument('-x', '--suffix', default='png',
                         help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
     parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='magick',
                         help='Optional: combine the main plots into single large image file using IMAGEMAGICK.  If this option is\n'
-                            ' given with no argument we simply assume that image combination is executed by the "magick" command.\n'
-                            ' Otherwise, the argument of this option gives the full path to the CONVERT executable (e.g. for older\n'
-                            ' versions of imagemagick).  Only the first multiwavelength image specified in "surveys" argument is\n'
-                            ' plotted next to the spectral line data.')
+                             'given with no argument we simply assume that image combination is executed by the "magick" command.\n'
+                             'Otherwise, the argument of this option gives the full path to the CONVERT executable (e.g. for older\n'
+                             'versions of imagemagick).  Only the first multiwavelength image specified in "surveys" argument is\n'
+                             'plotted next to the spectral line data.')
     
     parser.add_argument('-log', '--logfile-name', type=str, default=None,
                         help='Optional: Set name of the output log file. If not provided, log is named with catalog name and date\n'
