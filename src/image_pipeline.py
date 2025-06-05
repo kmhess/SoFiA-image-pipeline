@@ -77,6 +77,11 @@ def main():
                             ' Otherwise, the argument of this option gives the full path to the CONVERT executable (e.g. for older\n'
                             ' versions of imagemagick).  Only the first multiwavelength image specified in "surveys" argument is\n'
                             ' plotted next to the spectral line data.')
+    
+    parser.add_argument('-log', '--logfile-name', type=str, default=None,
+                        help='Optional: Set name of the output log file. If not provided, log is named with catalog name and date\n'
+                             'time stamp. Output will always have the ".log" suffix.  (No default).')
+
 
     ###################################################################
 
@@ -103,7 +108,11 @@ def main():
 
     # Set up logger
     log_basename = catalog_file.split('_cat')[0]
-    logger = Logger.get_logger(log_path=log_basename+'.log')#, clear_logs=False))
+    auto_logname = True
+    if args.logfile_name:
+        log_basename = (args.logfile_name).split('.log')[0]
+        auto_logname = False
+    logger = Logger.get_logger(log_path=log_basename+'.log', auto_logname=auto_logname)#, clear_logs=False))
 
     print("\n")
     logger.info("*****************************************************************")

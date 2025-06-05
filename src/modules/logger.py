@@ -28,16 +28,16 @@ class Logger:
     _log_path = None
 
     @classmethod
-    def setup_logger(cls, log_path="sip.log"):
+    def setup_logger(cls, log_path="sip.log", auto_logname=True):
         logger = logging.getLogger("sip_logger")
         logger.setLevel(logging.INFO)
 
         timestamp = datetime.now().strftime("%d%m%y_%H%M%S")
 
         original_path = Path(log_path)
-        new_stem = f"{original_path.stem}_{timestamp}_sip"
-        log_path = original_path.with_name(new_stem).with_suffix(original_path.suffix)
-
+        if auto_logname:
+            new_stem = f"{original_path.stem}_{timestamp}_sip"
+            log_path = original_path.with_name(new_stem).with_suffix(original_path.suffix)
         file_handler = logging.FileHandler(log_path, encoding='utf-8')
         file_handler.setLevel(logging.INFO)
         file_handler.setFormatter(
@@ -60,7 +60,7 @@ class Logger:
     
 
     @classmethod
-    def get_logger(cls, log_path="sip.log"): #, clear_logs=False, queue=None):
+    def get_logger(cls, log_path="sip.log", auto_logname=True): #, clear_logs=False, queue=None):
         if cls._logger_instance is None:
-            log_path = cls.setup_logger(log_path=log_path)#, clear_logs=clear_logs, queue=queue)
+            log_path = cls.setup_logger(log_path=log_path, auto_logname=auto_logname)#, clear_logs=clear_logs, queue=queue)
         return cls._logger_instance
