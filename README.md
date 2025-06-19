@@ -91,7 +91,7 @@ OPTIONAL:
     -s     List of surveys on which to overlay HI contours. Only the first entry will be used in the combined image if `-m` option is used. If 'none', work in offline mode. Default is 'DSS2 Blue'.
     -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
     -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
-    -line  Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO' and 'OH'.
+    -line  Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO(1-0)' up to (3-2) and 'OH_1667' and the 3 other OH lines which may fall within L-band observations.
     -i     Minimum image size (ARCMIN). Images will be square. If an HI source exceeds the requested size, a larger image to fit the HI contours will be generated. Default is 6 arcmin.
     -snr   Specify the SNR range within which to plot the lowest HI contour. Requires 2 values. Default is [2.0, 3.0].
     -o     Path to the original data file on which source finding was conducted. This allows the spectrum with noise to be plotted over the full spectral range of the original cube.  
@@ -134,7 +134,7 @@ Advanced tips
 
 * If you have a large catalog of sources, start by testing SIP with the `-id N` option, where `N` is a source id number.  Make sure the image and text outputs from SIP for that source are as you expect.  Adjust optional variables as necessary.  Run on your larger catalog.
 
-* SIP is now capable of doing spectral lines other than HI.  So far `HI`, `CO`, and `OH` are the only allowed options. CO refers only to CO(1-0) and OH refers only to the 1667 MHz line.  This is work in progress.
+* SIP is now capable of doing spectral lines other than HI.  So far `HI`, `CO(1-0)`, `CO(2-1)`, `CO(3-2)`, and `OH_1667`, `OH_1665`, `OH_1720`, `OH_1612` are the only allowed options.  This is work in progress.
 
 * SIP can now be run in 'offline' mode, by setting `-s none`.  In this case no survey archive data will be downloaded, and SIP will only generate the HI images.  Any surveys in a list in which `none` appears will be ignored.
 
