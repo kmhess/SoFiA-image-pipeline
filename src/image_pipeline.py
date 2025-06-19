@@ -43,8 +43,8 @@ def main():
                         help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
 
     parser.add_argument('-line', '--spectral-line', default="HI", type=str,
-                        help='Optional: Provide name of spectral line such as "CO" for "CO(1-0)". Default is "HI".\n'
-                             'See github for more details on available lines.  Work in progress.')
+                        help='Optional: Provide name of spectral line such as "HI"; "CO(1-0)" up to (3-2); or "OH_1667" or\n'
+                             'other L-band accessible OH lines. Default is "HI". See github for more details. Work in progress.')
 
     parser.add_argument('-i', '--image_size', default=[6], nargs=1, type=float,
                         help='Optional: specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
