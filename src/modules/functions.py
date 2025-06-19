@@ -417,6 +417,7 @@ def create_pv(source, filename, opt_view=6*u.arcmin, min_axis=False):
 def line_lookup(spec_line):
     """Return rest frequency and object to convert to optical velocities for requested line.
     https://www.narrabri.atnf.csiro.au/observing/spectral.html
+    https://splatalogue.online/#/basic
 
     :param spec_line:
     :type spec_line:
@@ -429,17 +430,29 @@ def line_lookup(spec_line):
         spec_line == 'HI'
         restfreq_line = 1420405751.77 * u.Hz
         convention = u.doppler_optical(restfreq_line)
-    elif spec_line == 'CO':
+    elif spec_line == 'CO(1-0)':
         restfreq_line = 115.27120180 * u.GHz
         convention = u.doppler_optical(restfreq_line)
     elif spec_line == 'CO(2-1)':
         restfreq_line = 230.538 * u.GHz
         convention = u.doppler_optical(restfreq_line)
-    elif spec_line == 'OH':
+    elif spec_line == 'CO(3-2)':
+        restfreq_line = 345.79599 * u.GHz
+        convention = u.doppler_optical(restfreq_line)
+    elif spec_line == 'OH_1612':
+        restfreq_line = 1.6122309 * u.GHz
+        convention = u.doppler_optical(restfreq_line)
+    elif spec_line == 'OH_1665':
+        restfreq_line = 1.6654018 * u.GHz
+        convention = u.doppler_optical(restfreq_line)
+    elif spec_line == 'OH_1667':
         restfreq_line = 1.6673590 * u.GHz
         convention = u.doppler_optical(restfreq_line)
+    elif spec_line == 'OH_1720':
+        restfreq_line = 1.7205299 * u.GHz
+        convention = u.doppler_optical(restfreq_line)
     else:
-        logger.error("Unrecognized spectral line.  Try 'HI', 'CO', or 'OH'.")
+        logger.error("Unrecognized spectral line.  Try 'HI'; 'CO(1-0)', etc; or 'OH_1667', etc.")
         exit()
 
     return {'name': spec_line, 'restfreq': restfreq_line, 'convention':convention, 'rad_opt':rad_opt}
