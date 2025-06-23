@@ -1,6 +1,4 @@
 import os
-import random
-import string
 
 from src.modules.logger import Logger
 
@@ -9,15 +7,20 @@ logger = Logger.get_logger()
 
 # Note, although this has been generalized, it seems to work best with png's!
 
-def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue', user_image=None, file_size_limit = 8e+5):
+def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue', user_image=None, file_size_limit=8e+5,
+                   code=None):
     """_summary_
 
     :param source: source for which to combine images
     :type source: Astropy source object?
     :param src_basename: basename for the source image files
     :type src_basename: str
+    :param user_image: path to the FITS image on which HI contours were overlaid
+    :type user_image: str
     :param suffix: filetype, defaults to 'png'
     :type suffix: str, optional
+    :param code: unique random code to identify temp files
+    :type code: str
     """
 
     # Specify the command to use imagemagick's convert (karma has a convert which may conflict)
@@ -25,7 +28,6 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
 
     # Configure expected file name:
     infile = src_basename.replace('cubelets', 'figures') + '_{}_'.format(source['id'])
-    code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
 
     # Use terminal commands to assemble figures with imagemagick: https://imagemagick.org/index.php
     logger.info("\tAssembling figures with imagemagick")

@@ -3,6 +3,8 @@
 # Import default Python libraries
 from argparse import ArgumentParser, RawTextHelpFormatter
 import os
+import random
+import string
 import traceback
 
 # Import installed Python libraries
@@ -239,9 +241,11 @@ def main():
                 traceback.print_exc()
             try:
                 if imagemagick:
+                    code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
                     combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), 
-                                   user_image=args.user_image)
+                                   user_image=args.user_image, code=code)
             except:
+                os.system('rm -rf *_{1}.{0}'.format(suffix, code))
                 pass
 
     if 0 in args.source_id:
