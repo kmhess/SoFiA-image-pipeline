@@ -10,13 +10,13 @@ import traceback
 # Import installed Python libraries
 from astropy.table import Table
 from astropy import units as u
-import pkg_resources  # part of setuptools
+import importlib.metadata
 import numpy as np
 
 # Other imports from src are in code below so logger is initialized correctly
 from src.modules.logger import Logger
 
-version = pkg_resources.require("SoFiA-image-pipeline")[0].version
+version = importlib.metadata.version('SoFiA-image-pipeline')
 
 ###################################################################
 

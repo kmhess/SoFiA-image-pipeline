@@ -5,16 +5,15 @@ from astropy import constants as const
 from astropy.io import ascii, fits
 from astropy import units as u
 import matplotlib.pyplot as plt
-from matplotlib.ticker import FormatStrFormatter
 import numpy as np
-import pkg_resources  # part of setuptools
+import importlib.metadata
 
 from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, line_lookup, make_hist_arr
 from src.modules.logger import Logger
 
 logger = Logger.get_logger()
 
-version = pkg_resources.require("SoFiA-image-pipeline")[0].version
+version = importlib.metadata.version('SoFiA-image-pipeline')
 
 ###################################################################
 
