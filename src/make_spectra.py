@@ -104,12 +104,15 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         line = line_lookup(spec_line)
 
         try:
-            logger.info("\tMaking {} spectrum plot including noise.".format(spec_line))
+            logger.info("\tMaking aperture spectrum plot.")
             if 'freq' in source.colnames:
                 # Calculate source quantities for labels
-                v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
-                spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
-                z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                # v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
+                if line['name'] == 'Unknown':
+                    z_label = ''
+                else:
+                    spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
                 # SoFiA-2 puts out frequency w20/w50 in Hz units
                 w50_vel = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
                 w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
@@ -270,12 +273,14 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         line = line_lookup(spec_line)
 
         try:
-            logger.info("\tMaking {} SoFiA masked spectrum plot.".format(spec_line))
+            logger.info("\tMaking SoFiA masked spectrum plot.")
             if 'freq' in source.colnames:
-                # Calculate source quantities for labels
-                v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
-                spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
-                z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                # Calculate source redshift for labels if line is known/recognized
+                if line['name'] == 'Unknown':
+                    z_label = ''
+                else:
+                    spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
                 # SoFiA-2 puts out frequency w20/w50 in Hz units
                 w50_vel = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
                 w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
