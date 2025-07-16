@@ -147,8 +147,12 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
         nhi_label = r'$N_\mathrm{{HI}}$ = {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$'.format(nhi/10**nhi_ofm, nhi_ofm)
         nhi_labels = r'$N_\mathrm{{HI}}$ = $2^n$ x {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$ ($n$=0,1,...)'.format(nhi/10**nhi_ofm, nhi_ofm)
     else:
+        if line['name'] == 'Unknown':
+            subscript = ''
+        else:
+            subscript = line['name']
         nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(line['name'], nhi/10**nhi_ofm, nhi_ofm)
-        nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1...)'.format(line['name'],
+        nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1...)'.format(subscript,
                                                                                              nhi/10**nhi_ofm, nhi_ofm)
 
     return nhi, nhi_label, nhi_labels
@@ -451,8 +455,11 @@ def line_lookup(spec_line):
         restfreq_line = 1.7205299 * u.GHz
         convention = u.doppler_optical(restfreq_line)
     else:
-        logger.error("Unrecognized spectral line.  Try 'HI'; 'CO(1-0)', etc; or 'OH_1667', etc.")
-        exit()
+        logger.error("\t\tUnrecognized spectral line, try 'HI'; 'CO(1-0)', etc; or 'OH_1667', etc. " \
+                     "Continuing to make plots without a known redshift.")
+        spec_line = 'Unknown'
+        restfreq_line = None
+        convention = None
 
     return {'name': spec_line, 'restfreq': restfreq_line, 'convention':convention, 'rad_opt':rad_opt}
 
