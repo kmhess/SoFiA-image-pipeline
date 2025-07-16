@@ -448,7 +448,8 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
                 logger.warning("\tVelocity calculated in source rest frame because 'radio velocity' convention has no physical meaning.")
             mom1[0].data = (const.c * (source['freq'] - mom1[0].data)/source['freq']).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
-            v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
+            if line['name'] != 'Unknown':
+                v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
             # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
             w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
             w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
@@ -535,9 +536,10 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
         if not singlechansource:
             cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=1.0, transform=ax1.get_transform(cubew))
         
-        v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
-        if source['id'] != 0:
+        if (line['name'] == 'Unknown') or (source['id'] != 0):
             v_sys_label = ""
+        else:
+            v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
 
         if source['id'] != 0:
             # Plot kin_pa from (HI) center of galaxy; calculate end points of line
