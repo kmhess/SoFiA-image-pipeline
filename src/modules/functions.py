@@ -121,10 +121,9 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
             nhi = sbr
 
     elif (bunit == 'Jy/beam*Hz') or (bunit == 'beam-1 Jy*Hz'):
-        freq_sys = source['freq']
-        z = (HI_restfreq.value - freq_sys) / freq_sys
-
         if (spec_line == None) or (spec_line == 'HI'):
+            freq_sys = source['freq']
+            z = (HI_restfreq.value - freq_sys) / freq_sys
             nhi = 2.330e+20 * (1 + z) ** 4 * sbr / bmaj / bmin
         else:
             # Units of Jy/beam Hz
