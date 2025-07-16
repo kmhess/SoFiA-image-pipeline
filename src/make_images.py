@@ -1007,7 +1007,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
     except FileNotFoundError:
         if os.path.isfile(src_basename + '_mom0.fits'):
             logger.info("\tNo SNR fits file found. Will determine lowest contour based on rms in catalog,"
-                  " min(user provided SNR), and user provided channel width.")
+                  " min(user provided SNR), and cubelet or user provided channel width.")
             if cube_params['chan_width'] != None:
                 HIlowest = source['rms'] * np.nanmin(snr_range) * np.abs(cube_params['chan_width'].value)
             # Assumes user gives chan_width in correct units of original data but SIP knows units from mom0 header!
@@ -1018,7 +1018,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                       " or rms in mom0 map units.")
                 HIlowest = source['rms'] * np.nanmin(snr_range)
             logger.info("\tThe first {0} contour defined at SNR = {1} has level = {2:.3e} (mom0 data units)."
-                  " ".format(np.nanmin(spec_line, snr_range), HIlowest))
+                  " ".format(spec_line, np.nanmin(snr_range), HIlowest))
         else:
             logger.error("\tNo mom0 to match source {}.\n".format(source['id']))
             return
