@@ -22,7 +22,7 @@ version = importlib.metadata.version('SoFiA-image-pipeline')
 
 def main():
     parser = ArgumentParser(description="Welcome to the SoFiA Image Pipeline, version {}.\n"
-                            "Create images from a SoFiA catalog and cubelets, or fits file. Only works with SoFiA-2 and wcs=True (for now).".format(version),
+                            "Create images from a SoFiA catalog, and cubelets or fits file. Only works with SoFiA-2 and wcs=True (for now).".format(version),
                             formatter_class=RawTextHelpFormatter)
 
     parser.add_argument('-c', '--catalog', required=True,
@@ -50,39 +50,39 @@ def main():
 
     parser.add_argument('-i', '--image_size', default=[6], nargs=1, type=float,
                         help='Optional: specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
-                             'the HI mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
+                             'the mom0 mask is larger. Note max panstarrs image size is 8 arcmin (default: %(default)s).')
 
     parser.add_argument('-snr', '--snr-range', default=[2., 3.], nargs=2, type=float,
-                        help='Optional: specify which SNRmin and SNRmax values should be used to set the lowest reliable HI \n'
+                        help='Optional: specify which SNRmin and SNRmax values should be used to set the lowest reliable \n'
                              'contour in the figures. The contour level is calculated as the median value in the mom0 image\n'
                              'of all pixels whose SNR value is within the given range. Default is [2,3].')
 
     parser.add_argument('-o', '--original', default=None,
-                        help='Optional: specify the original fits data: used for plotting HI spectra *with* noise over \n'
-                             'the full frequency range of the cube. Otherwise, plot with noise over frequency range\n'
-                             'in the cubelet.  Uses 2D mask to integrate. (No default).')
+                        help='Optional: specify the original fits data: used for plotting aperture spectra over the full \n'
+                             'frequency range of the cube. Otherwise, plot with noise over frequency range in the cubelet. \n'
+                             'Uses 2D mask to integrate. (No default).')
 
     parser.add_argument('-b', '--beam', default=None,
-                        help='Optional: specify the beam dimensions as "(bmaj,bmin,bpa)" in arcsec, arcsec, deg. If only 1 value\n'
-                             'is given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
+                        help='Optional: specify the beam dimensions as "(bmaj,bmin,bpa)" in arcsec, arcsec, deg. If only \n'
+                             '1 value is given, assume a circular beam. If 2 values are given, assume PA = 0. (No default).')
 
     parser.add_argument('-cw', '--chan_width', default=[None], nargs=1, type=float,
-                        help='Optional: specify the channel width in native units of the original data (e.g. Hz or m/s).'
+                        help='Optional: specify the channel width in native units of the original data (e.g. Hz or m/s). \n'
                               '(No default).')
 
     parser.add_argument('-x', '--suffix', default='png',
                         help='Optional: specify the output image file type: png, pdf, eps, jpeg, tiff, etc (default: %(default)s).')
 
     parser.add_argument('-m', '--imagemagick', nargs='?', type=str, default='', const='magick',
-                        help='Optional: combine the main plots into single large image file using IMAGEMAGICK.  If this option is\n'
-                             'given with no argument we simply assume that image combination is executed by the "magick" command.\n'
-                             'Otherwise, the argument of this option gives the full path to the CONVERT executable (e.g. for older\n'
-                             'versions of imagemagick).  Only the first multiwavelength image specified in "surveys" argument is\n'
-                             'plotted next to the spectral line data.')
+                        help='Optional: combine the main plots into single large image file using IMAGEMAGICK. If this option \n'
+                             'is given with no argument we simply assume that image combination is executed by the "magick" \n'
+                             'command. Otherwise, the argument of this option gives the full path to the CONVERT executable \n'
+                             '(e.g. for older versions of imagemagick). Only the first multiwavelength image specified in \n'
+                             '"surveys" argument is plotted next to the spectral line data.')
     
     parser.add_argument('-log', '--logfile-name', type=str, default=None,
-                        help='Optional: Set name of the output log file. If not provided, log is named with catalog name and date\n'
-                             'time stamp. Output will always have the ".log" suffix.  (No default).')
+                        help='Optional: Set name of the output log file. If not provided, log is named with catalog name and \n'
+                             'date time stamp. Output will always have the ".log" suffix.  (No default).')
 
 
     ###################################################################
