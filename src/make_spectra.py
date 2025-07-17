@@ -251,8 +251,6 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
 def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
 
     outfile1 = src_basename.replace('cubelets', 'figures') + '_{}_spec.{}'.format(source['id'], suffix)
-    fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
-
     # For estimating position of z_w20, z_w50, z_wm50 which are given in pixel space:
     fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
 
