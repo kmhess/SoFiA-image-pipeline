@@ -14,7 +14,7 @@ import numpy as np
 from urllib.error import HTTPError
 
 from src.modules.functions import get_info
-from src.modules.functions import chan2freq, chan2vel, sbr2nhi, line_lookup
+from src.modules.functions import chan2freq, chan2vel, sbr2nhi
 from src.modules.functions import create_pv
 from src.modules.functions import plot_labels
 from src.modules.functions import make_header
@@ -75,8 +75,8 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
     :type swapx: bool
     :param perc: percentage range of data for plotting user image
     :type perc: list, float
-    :param spec_line: name of spectral line
-    :type spec_line: str
+    :param spec_line: spectral line properties
+    :type spec_line: dict
     :param suffix: file type, defaults to 'png'
     :type suffix: str, optional
     :return:
@@ -85,7 +85,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
     if not os.path.isfile(outfile):
         try:
-            logger.info("\tMaking {} contour overlay on {} image.".format(spec_line, 'usr'))
+            logger.info("\tMaking {} contour overlay on {} image.".format(spec_line['name'], 'usr'))
             hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             logger.error("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -152,8 +152,8 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
     :type opt: dict
     :param base_contour: base contour
     :type base_contour: float
-    :param spec_line: name of spectral line
-    :type spec_line: str
+    :param spec_line: spectral line properties
+    :type spec_line: dict
     :param suffix: file type, defaults to 'png'
     :type suffix: str, optional
     :param survey: survey from which to use data, defaults to 'DSS2 Blue'
@@ -164,7 +164,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
 
     if not os.path.isfile(outfile):
         try:
-            logger.info("\tMaking {} contour overlay on {} image.".format(spec_line, survey))
+            logger.info("\tMaking {} contour overlay on {} image.".format(spec_line['name'], survey))
             hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             logger.error("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -240,8 +240,8 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
     :type opt_head: FITS header
     :param base_contour: lowest contour
     :type base_contour: float
-    :param spec_line: name of spectral line
-    :type spec_line: str
+    :param spec_line: spectral line properties
+    :type spec_line: dict
     :param suffix: image file type
     :type suffix: str
     :return:
@@ -250,7 +250,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
     if not os.path.isfile(outfile):
         try:
-            logger.info("\tMaking {} contour overlay on grey-scale mom0 total intensity image.".format(spec_line))
+            logger.info("\tMaking {} contour overlay on grey-scale mom0 total intensity image.".format(spec_line['name']))
             hdulist_hi = fits.open(src_basename + '_mom0.fits')
         except FileNotFoundError:
             logger.error("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
@@ -417,8 +417,8 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
     :type opt_view: quantity
     :param base_contour: lowest contour
     :type base_contour: float
-    :param spec_line: name of spectral line
-    :type spec_line: str
+    :param spec_line: spectral line properties
+    :type spec_line: dict
     :param suffix: image file type
     :type suffix: str
     :return:
@@ -437,19 +437,16 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             logger.error("\tNo mom1 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        # Get frequency information for spectral line in question:
-        line = line_lookup(spec_line)
-
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
 
-            if line['rad_opt'] == 'Radio':
+            if spec_line['rad_opt'] == 'Radio':
                 logger.warning("\tVelocity calculated in source rest frame because 'radio velocity' convention has no physical meaning.")
             mom1[0].data = (const.c * (source['freq'] - mom1[0].data)/source['freq']).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
-            if line['name'] != 'Unknown':
-                v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
+            if spec_line['name'] != 'Unknown':
+                v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=spec_line['convention']).value
             # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
             w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
             w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
@@ -468,7 +465,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             mom1[0].data = (mom1[0].data * u.m / u.s).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
-                line['rad_opt'] = 'Radio'
+                spec_line['rad_opt'] = 'Radio'
                 v_sys = (source['v_rad'] * u.m / u.s).to(u.km / u.s).value
             elif 'v_opt' in source.colnames:
                 v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
@@ -483,7 +480,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             else:
                 velmin = chan2vel(source['z_min'], src_basename + cube_end).to(u.km / u.s).value
                 velmax = chan2vel(source['z_max'], src_basename + cube_end).to(u.km / u.s).value
-            cbar_label = "{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt'])
+            cbar_label = "{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), spec_line['rad_opt'])
 
         if velmin == velmax:
             singlechansource = True
@@ -540,7 +537,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
         if not singlechansource:
             cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=1.0, transform=ax1.get_transform(cubew))
         
-        if (line['name'] == 'Unknown') or (source['id'] != 0):
+        if (spec_line['name'] == 'Unknown') or (source['id'] != 0):
             v_sys_label = ""
         else:
             v_sys_label = "$v_{{center}}$ = {} km/s".format(int(v_sys))
@@ -618,9 +615,6 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
             logger.error("\tNo mom2 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        # Get frequency information for spectral line in question:
-        line = line_lookup(spec_line)
-
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
         if 'freq' in source.colnames:
             # Convert moment map from Hz into units of km/s
@@ -633,8 +627,8 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
             mom2[0].data = (mom2[0].data * u.m / u.s).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
-                line['rad_opt'] = 'Radio'
-            cbar_label = "{} Velocity Dispersion [km/s]".format(line['rad_opt'])
+                spec_line['rad_opt'] = 'Radio'
+            cbar_label = "{} Velocity Dispersion [km/s]".format(spec_line['rad_opt'])
 
         if source['z_min'] == source['z_max']:
             singlechansource = True
@@ -734,8 +728,8 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     :type opt_head: FITS header
     :param base_contour: lowest contour
     :type base_contour: float
-    :param spec_line: name of spectral line
-    :type spec_line: str
+    :param spec_line: spectral line properties
+    :type spec_line: dict
     :param suffix: image file type
     :type suffix: str
     :param survey: survey name to retrieve color image
@@ -750,7 +744,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     elif survey == 'sdss': survey = 'SDSS'
 
     if not os.path.isfile(outfile):
-        logger.info("\tMaking {} contour overlay on {} false color image.".format(spec_line, survey))
+        logger.info("\tMaking {} contour overlay on {} false color image.".format(spec_line['name'], survey))
         hdulist_hi = fits.open(src_basename + '_mom0.fits')
 
         try:
@@ -818,8 +812,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     :type cube_params: dict
     :param opt_view: requested size of the image for regriding
     :type opt_view: quantity
-    :param spec_line: name of spectral line
-    :type spec_line: str
+    :param spec_line: spectral line properties
+    :type spec_line: dict
     :param min_axis: flag for extracting major or minor axis
     :type min_axis: boolean
     :param suffix: image file type
@@ -851,9 +845,6 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
         ax1 = fig.add_subplot(111, projection=WCS(pv[0].header, fix=True, translate_units='shd'))
         pvd = pv[0].data
         pvd_rms = 1.4826 * np.nanmedian(np.abs(pvd[pvd < 0]))  # Estimate rms as MAD of negative pix assuming median = 0
-
-        # Get frequency information for spectral line in question:
-        line = line_lookup(spec_line)
 
         # Append second color map for above the 3 sigma noise:
         # https://matplotlib.org/3.5.0/tutorials/colors/colormapnorms.html#twoslopenorm-different-mapping-on-either-side-of-a-center
@@ -937,7 +928,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
             else:
                 logger.warning("\tInput cube is in velocity units--no correction to source rest frame velocity has been applied!")
                 if ('v_rad' in source.colnames) or (cube_params['spec_axis'] == 'VRAD'):
-                    line['rad_opt'] = 'Radio'
+                    spec_line['rad_opt'] = 'Radio'
                     v_sys = source['v_rad']
                 elif 'v_opt' in source.colnames:
                     v_sys = source['v_opt']
@@ -954,10 +945,10 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                     ax1.plot([ang1, ang2], [w20_max, w20_max], c='red', linestyle='--', linewidth=1.0, 
                             transform=ax1.get_transform('world'))
                 ax1.coords[1].set_format_unit(u.km / u.s)
-                if line['rad_opt'] == 'Optical':
+                if spec_line['rad_opt'] == 'Optical':
                     ax1.set_ylabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=22)
                 else:
-                    ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), line['rad_opt']), 
+                    ax1.set_ylabel('{} {} velocity [km/s]'.format(cube_params['spec_sys'].capitalize(), spec_line['rad_opt']), 
                                    fontsize=22)
             if pv[0].header['cdelt2'] < 0:
                 ax1.set_ylim(ax1.get_ylim()[::-1])
@@ -1005,8 +996,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                 fits.open(src_basename + '_mom0.fits') as hdulist_hi:
             HIlowest = np.median(np.abs(hdulist_hi[0].data[(np.abs(hdulist_snr[0].data) > snr_range[0]) *
                                                            (np.abs(hdulist_snr[0].data) < snr_range[1])]))
-        logger.info("\tThe first {0} contour defined at SNR = {1} has level = {2:.3e} (mom0 data units).".format(spec_line, snr_range,
-                                                                                                                HIlowest))
+        logger.info("\tThe first contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
+                                                                                                             HIlowest))
     # If no SNR map use the channel width of the original data (provided by user if necessary) for lowest contour.
     except FileNotFoundError:
         if os.path.isfile(src_basename + '_mom0.fits'):
@@ -1021,8 +1012,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                 logger.warning("\tNo user provided channel width. Check figures! Either provide channel width,"
                       " or rms in mom0 map units.")
                 HIlowest = source['rms'] * np.nanmin(snr_range)
-            logger.info("\tThe first {0} contour defined at SNR = {1} has level = {2:.3e} (mom0 data units)."
-                  " ".format(spec_line, np.nanmin(snr_range), HIlowest))
+            logger.info("\tThe first contour defined at SNR = {0} has level = {1:.3e} (mom0 data units)."
+                  " ".format(np.nanmin(snr_range), HIlowest))
         else:
             logger.error("\tNo mom0 to match source {}.\n".format(source['id']))
             return
@@ -1101,10 +1092,10 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         except:
             logger.warning('\t2D cutout extraction failed. Source outside user image? Will try again with the next source.')
             if not surveys:
-                logger.info("\tOffline mode requested. Making {} images.".format(spec_line))
+                logger.info("\tOffline mode requested. Making radio spectral line images.")
                 opt_head = make_header(source, opt_view=opt_view)
     elif not surveys:
-        logger.info("\tNo user image given and offline mode requested. Making {} images.".format(spec_line))
+        logger.info("\tNo user image given and offline mode requested. Making radio spectral line images.")
         opt_head = make_header(source, opt_view=opt_view)
     else:
         logger.info("\tNo user image given. Proceeding with the download of any requested archive images.")

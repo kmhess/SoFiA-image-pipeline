@@ -100,19 +100,16 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
 
     if not os.path.isfile(outfile2):
 
-        # Get frequency information for spectral line in question:
-        line = line_lookup(spec_line)
-
         try:
             logger.info("\tMaking aperture spectrum plot.")
             if 'freq' in source.colnames:
                 # Calculate source quantities for labels
                 # v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
-                if line['name'] == 'Unknown':
+                if spec_line['name'] == 'Unknown':
                     z_label = ''
                 else:
-                    spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
-                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                    spec_z = (spec_line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(specfile, names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (source['freq'] - spec['freq'])/spec['freq'] * const.c.to(u.km/u.s).value
@@ -124,14 +121,14 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
             else:
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
-                    line['rad_opt'] = 'Radio'
+                    spec_line['rad_opt'] = 'Radio'
                     v_sys = (source['v_rad'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = ''
                     z_label = ''
                 elif 'v_opt' in source.colnames:
                     v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = (source['v_opt'] * u.m / u.s / const.c).decompose()
-                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
                 else:
                     v_sys = (source['v_app'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
@@ -140,9 +137,9 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 spec = ascii.read(specfile, names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
                 maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s,
-                                                                                         equivalencies=line['convention']).value
+                                                                                         equivalencies=spec_line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
-                                                                                         equivalencies=line['convention']).value
+                                                                                         equivalencies=spec_line['convention']).value
             if 'snr' in source.colnames:
                 v_sys_label = "SNR = {:.1f}".format(source['snr'])
 
@@ -193,11 +190,11 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
         if 'freq' in source.colnames:
             ax2_spec.set_xlabel("Rest frame velocity [km/s]", fontsize=17)
-        elif line['rad_opt'] == 'Optical':
+        elif spec_line['rad_opt'] == 'Optical':
             ax2_spec.set_xlabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=17)
         else:
             ax2_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
-                                                                           line['rad_opt']), fontsize=17)
+                                                                           spec_line['rad_opt']), fontsize=17)
         ax2_spec.tick_params(axis='both', which='major', labelsize=16, length=5, width=1.8)
         ax2_spec.autoscale(False)
         if not original or len(spec) < long_format:
@@ -256,18 +253,15 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
 
     if not os.path.isfile(outfile1):
 
-        # Get frequency information for spectral line in question:
-        line = line_lookup(spec_line)
-
         try:
             logger.info("\tMaking SoFiA masked spectrum plot.")
             if 'freq' in source.colnames:
                 # Calculate source redshift for labels if line is known/recognized
-                if line['name'] == 'Unknown':
+                if spec_line['name'] == 'Unknown':
                     z_label = ''
                 else:
-                    spec_z = (line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
-                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                    spec_z = (spec_line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
                 # SoFiA-2 puts out frequency w20/w50 in Hz units
                 w50_vel = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
                 w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
@@ -284,14 +278,14 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             else:
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
-                    line['rad_opt'] = 'Radio'
+                    spec_line['rad_opt'] = 'Radio'
                     v_sys = (source['v_rad'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = ''
                     z_label = ''
                 elif 'v_opt' in source.colnames:
                     v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = (source['v_opt'] * u.m / u.s / const.c).decompose()
-                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(line['name'], spec_z.value)
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
                 else:
                     v_sys = (source['v_app'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
@@ -342,11 +336,11 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
         ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
         if 'freq' in source.colnames:
             ax1_spec.set_xlabel("Rest frame velocity [km/s]", fontsize=17)
-        elif line['rad_opt'] == 'Optical':
+        elif spec_line['rad_opt'] == 'Optical':
             ax1_spec.set_xlabel("{} cz [km/s]".format(cube_params['spec_sys'].capitalize()), fontsize=17)
         else:
             ax1_spec.set_xlabel("{} {} Recessional Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), 
-                                                                           line['rad_opt']), fontsize=17)
+                                                                           spec_line['rad_opt']), fontsize=17)
         ax1_spec.tick_params(axis='both', which='major', labelsize=16, length=5, width=1.8)
         ax1_spec.autoscale(False)
         ax1_spec.xaxis.set_major_locator(plt.MaxNLocator(7))
