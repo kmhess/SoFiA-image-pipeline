@@ -576,7 +576,7 @@ def make_source(catalog, fits_name):
     wcs = WCS(header, fix=True, translate_units='shd')
 
     # Change the relevant catalog parameters ... prob need to deal with kin_pa and rms at some point.
-    new_source['name'] = fits_name.split('/')[-1][:-5]
+    new_source['name'] = fits_name.split('/')[-1][:-10]
     new_source['id'] = 0
     new_source['x'], new_source['y'], new_source['z'] = header['NAXIS1']/2, header['NAXIS2']/2, 0
     new_source['x_min'], new_source['x_max'] = int(np.min(catalog['x_min'])), int(np.max(catalog['x_max']))
