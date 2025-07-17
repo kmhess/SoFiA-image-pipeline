@@ -40,7 +40,8 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     if user_image and os.path.exists('{0}mom0_usr.{1}'.format(infile, suffix)):
         os.system("{0} {1}mom0_usr.{2} mom0_{3}.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append"
                   " -gravity south -splice 0x18 temp_{3}.{2}".format(imgck, infile, suffix, code))
-    elif surveys:
+    elif surveys and os.path.exists('{0}mom0_{2}.{1}'.format(infile, suffix, 
+                                        surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'))):
         os.system("{0} {1}mom0_{3}.{2} mom0_{4}.{2} snr_{4}.{2} mom1_{4}.{2} mom2_{4}.{2} +append"
                   " -gravity south -splice 0x18 temp_{4}.{2}".format(imgck, infile, suffix,
                                         surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'), code))
