@@ -90,12 +90,14 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
     :type bmin: float
     :param source: source object
     :type source: Astropy table
+    :param spec_line: spectral line properties
+    :type spec_line: dict
     :return: column density
     :rtype: float
     """
 
     c = const.c.to(u.m/u.s).value
-    line = line_lookup(spec_line)
+    spec_line = spec_line['name']
     
     if (bunit == 'Jy/beam*m/s') or (bunit == 'Jy/beam*M/S'):
         logger.warning("\tAssumes velocity axis of cube is in the *observed* frame. If cube is in source rest frame, "
@@ -147,11 +149,11 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
         nhi_label = r'$N_\mathrm{{HI}}$ = {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$'.format(nhi/10**nhi_ofm, nhi_ofm)
         nhi_labels = r'$N_\mathrm{{HI}}$ = $2^n$ x {0:.1f} x $10^{{ {1:d} }}$ cm$^{{-2}}$ ($n$=0,1,...)'.format(nhi/10**nhi_ofm, nhi_ofm)
     else:
-        if line['name'] == 'Unknown':
+        if spec_line == 'Unknown':
             subscript = ''
         else:
-            subscript = line['name']
-        nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(line['name'], nhi/10**nhi_ofm, nhi_ofm)
+            subscript = spec_line
+        nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(spec_line, nhi/10**nhi_ofm, nhi_ofm)
         nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1...)'.format(subscript,
                                                                                              nhi/10**nhi_ofm, nhi_ofm)
 
