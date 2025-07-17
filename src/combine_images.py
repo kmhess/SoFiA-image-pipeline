@@ -53,21 +53,26 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     os.system("{0} specfull_{3}.{2} -resize 133% temp3_{3}.{2}".format(imgck, infile, suffix, code))
 
     # Remove redundant y-axes for pv plots and create a little space between pv and spectra:
-    if os.path.isfile('{0}pv_min.{1}'.format(infile, suffix)):
-        if 'freq' in source.colnames:
-            os.system('{0} {1}pv_min.{2} -gravity west -chop 132x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
-            os.system('{0} {1}pv.{2} -gravity east -chop 128x0 -splice 40x0 pv_{3}.{2}'.format(imgck, infile, 
-                                                                                               suffix, code))
-            os.system("{0} temp2_{3}.{2} temp3_{3}.{2} pv_{3}.{2} -gravity west -splice 20x0 pv_min_{3}.{2}"
-                      " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+    if os.path.isfile('{0}pv.{1}'.format(infile, suffix)):
+        if os.path.isfile('{0}pv_min.{1}'.format(infile, suffix)):
+            if 'freq' in source.colnames:
+                os.system('{0} {1}pv_min.{2} -gravity west -chop 132x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
+                os.system('{0} {1}pv.{2} -gravity east -chop 128x0 -splice 40x0 pv_{3}.{2}'.format(imgck, infile, 
+                                                                                                suffix, code))
+                os.system("{0} temp2_{3}.{2} temp3_{3}.{2} pv_{3}.{2} -gravity west -splice 20x0 pv_min_{3}.{2}"
+                        " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+            else:
+                os.system('{0} {1}pv_min.{2} -gravity west -chop 40x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
+                os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} -gravity west -splice 20x0 pv_min_{3}.{2}"
+                        " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
         else:
-            os.system('{0} {1}pv_min.{2} -gravity west -chop 40x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
-            os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} -gravity west -splice 20x0 pv_min_{3}.{2}"
-                      " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+            os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} -gravity west -splice 20x0"
+                    " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+        os.system("{0} temp_{3}.{2} temp4_{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
     else:
-        os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} -gravity west -splice 20x0"
-                  " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} temp_{3}.{2} temp4_{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
+        os.system("{0} temp2_{3}.{2} temp3_{3}.{2} -gravity west -splice 20x0"
+                " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+        os.system("{0} temp_{3}.{2} temp4_{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
 
     new_file_size = os.path.getsize(new_file)
 
