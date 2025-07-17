@@ -477,8 +477,12 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
             w50 = (source['w50'] * u.m / u.s).to(u.km / u.s).value
             w20 = (source['w20'] * u.m / u.s).to(u.km / u.s).value
-            velmin = chan2vel(source['z_min'], src_basename + cube_end).to(u.km / u.s).value
-            velmax = chan2vel(source['z_max'], src_basename + cube_end).to(u.km / u.s).value
+            if (source['id'] == 0) and original:
+                velmin = chan2vel(source['z_min'], original).to(u.km / u.s).value
+                velmax = chan2vel(source['z_max'], original).to(u.km / u.s).value
+            else:
+                velmin = chan2vel(source['z_min'], src_basename + cube_end).to(u.km / u.s).value
+                velmax = chan2vel(source['z_max'], src_basename + cube_end).to(u.km / u.s).value
             cbar_label = "{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), line['rad_opt'])
 
         if velmin == velmax:
