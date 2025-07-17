@@ -221,6 +221,9 @@ def main():
     from src import make_images, make_spectra
     from src.combine_images import combine_images
 
+    from src.modules.functions import line_lookup
+    spectral_line = line_lookup(args.spectral_line)
+
     for source in catalog:
 
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
@@ -231,8 +234,8 @@ def main():
             try:
                 make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                                 chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                                user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
-                make_spectra.main(source, src_basename, original, spec_line=args.spectral_line, suffix=suffix, 
+                                user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line)
+                make_spectra.main(source, src_basename, original, spec_line=spectral_line, suffix=suffix, 
                                   beam=beam)
                 n_src += 1
             except:
@@ -259,7 +262,7 @@ def main():
         src_basename = src_basename.split('_cubelets')[0]
         make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                    user_image=args.user_image, user_range=args.user_range, spec_line=args.spectral_line)
+                    user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line)
 
     logger.info(" ")
     logger.info("\tDONE! Made images for {} sources.".format(n_src))
