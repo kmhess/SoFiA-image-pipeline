@@ -5,9 +5,11 @@ SoFiA Image Pipeline (SIP)
 
 Introduction
 ------------
-SIP takes a SoFiA generated source catalog and produce images for publication or quick inspection.  Images include HI contours overlaid on multiwavelength images, HI moment maps, pixel-by-pixel SNR maps, pv-diagrams with SoFiA mask, and spectra with and without noise.
+SIP takes a SoFiA generated source catalog and produce images for publication or quick inspection.  Images include spectral line total intensity contours overlaid on multiwavelength images, spectral line moment maps, pixel-by-pixel SNR maps, pv-diagrams with source mask, masked spectra, and aperture spectra using the 2D projection of the source mask.  We also generate a plot of the aperture and masked spectrum overplotted.
 
 ![](docs/sofia_test_output_3_combo.png)
+<!-- ![](docs/sofia_test_output_3_specboth.png) -->
+<img src="docs/sofia_test_output_3_specboth.png" alt="drawing" width="30%"/>
 
 Requirements
 ------------
@@ -115,7 +117,7 @@ sofia_image_pipeline -c <path/to/catalog.xml>
 sofia_image_pipeline -c <path/to/catalog.txt> -x pdf -o <path/to/original_cube.fits>
 ```
 
-* Request HI contours on multiple survey images, separated by a space, and make a combined image for each source:
+* Request spectral line contours on multiple survey images, separated by a space, and make a combined image for each source:
 
 ```
 sofia_image_pipeline -c <path/to/catalog.txt> -s panstarrs 'GALEX Far UV' -m
