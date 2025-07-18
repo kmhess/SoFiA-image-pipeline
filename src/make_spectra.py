@@ -86,13 +86,17 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 
 
 # Make full spectrum plot:
-def make_specfull(source, src_basename, cube_params, original, spec_line=None, suffix='png'):
+def make_specfull(source, src_basename, cube_params, original, spec_line=None, suffix='png', both=False):
 
     outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
     specfile = src_basename + '_{}_spec_aperture.txt'.format(source['id'])
 
     if original or (not os.path.isfile(specfile)):
         specfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
+
+    if both == True:
+        outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specboth.{}'.format(source['id'], suffix)
+        specfile2 = src_basename + '_{}_spec.txt'.format(source['id'])
 
     logger.info('\tUsing {} to make aperture spectrum plot.'.format(specfile))
 
@@ -113,6 +117,9 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(specfile, names=['chan', 'freq', 'f_sum', 'n_pix'])
                 optical_velocity = (source['freq'] - spec['freq'])/spec['freq'] * const.c.to(u.km/u.s).value
+                if both == True:
+                    spec2 = ascii.read(specfile2, names=['chan', 'freq', 'f_sum', 'n_pix'])
+                    optical_velocity2 = (source['freq'] - spec2['freq'])/spec2['freq'] * const.c.to(u.km/u.s).value
                 maskmin = (source['freq'] - spec['freq'][spec['chan'] == source['z_min']]) / source['freq'] * \
                                                                                             const.c.to(u.km / u.s).value
                 maskmax = (source['freq'] - spec['freq'][spec['chan'] == source['z_max']]) / source['freq'] * \
@@ -136,6 +143,9 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                 # Calculate spectral axes quantities for plotting. Force velocity column to common name.
                 spec = ascii.read(specfile, names=['chan', 'velo', 'f_sum', 'n_pix'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
+                if both == True:
+                    spec2 = ascii.read(specfile2, names=['chan', 'velo', 'f_sum', 'n_pix'])
+                    optical_velocity2 = (spec2['velo'] * u.m / u.s).to(u.km / u.s).value
                 maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=spec_line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
@@ -161,9 +171,12 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
 
         if specunits == 'Jy/beam':
             flux_dens = spec['f_sum'] / cube_params['pix_per_beam']
+            if both == True: flux_dens2 = spec2['f_sum'] / cube_params['pix_per_beam']
         elif specunits == 'Jy':
             flux_dens = spec['f_sum']
+            if both == True: flux_dens2 = spec2['f_sum'] 
         y_error = source['rms'] * np.sqrt(spec['n_pix'] / cube_params['pix_per_beam'])
+        if both == True: y_error2 = source['rms'] * np.sqrt(spec2['n_pix'] / cube_params['pix_per_beam'])
 
         # Could be more clever about picking the size of the figure when there are a lot of channels. Leave for later.
         if original or len(spec) >= long_format:
@@ -176,18 +189,26 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         # If there are lots of channels, don't plot errors (too crowded and can tell from noise.) Cut off currently arbitrary.
         if len(spec) <= 100:
             opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=flux_dens, yy_err=y_error)
-            ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
+            ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1, label='aperture')
+            if both == True:
+                opt_vel2, f_sum2, y_err2 = make_hist_arr(xx=optical_velocity2, yy=flux_dens2, yy_err=y_error2)
+                ax2_spec.errorbar(opt_vel2, f_sum2, elinewidth=0.75, yerr=y_err2, capsize=1, ls='--', label='masked')
         elif len(spec) <= 200:
             opt_vel, f_sum, y_err = make_hist_arr(xx=optical_velocity, yy=flux_dens, yy_err=y_error * 0)
             ax2_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=0)
+            if both == True:
+                opt_vel2, f_sum2, y_err2 = make_hist_arr(xx=optical_velocity2, yy=flux_dens2, yy_err=y_error2 * 0)
+                ax2_spec.errorbar(opt_vel2, f_sum2, elinewidth=0.75, yerr=y_err2, capsize=0, ls='--')
         else:
             logger.info("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
             ax2_spec.plot(optical_velocity, flux_dens)
+            if both == True: ax2_spec.plot(optical_velocity2, flux_dens2)
         ax2_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         ax2_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         ax2_spec.set_title(source['name'], fontsize=20)
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
+        if both == True: ax2_spec.legend(fontsize=15, loc='best', bbox_to_anchor=(0.72, 0.6, 0.27, 0.38), bbox_transform=ax2_spec.transAxes)
         if 'freq' in source.colnames:
             ax2_spec.set_xlabel("Rest frame velocity [km/s]", fontsize=17)
         elif spec_line['rad_opt'] == 'Optical':
@@ -397,16 +418,23 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
 
     # Make plot of spectrum with noise
     fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
-                                             suffix=suffix)
+                                             suffix=suffix, both=False)
     if outfile1 and outfile2:
+        fig3, ax3_spec, outfile3 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
+                                                 suffix=suffix, both=True)
         ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
         ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
         ax1_spec.set_ylim([ymin, ymax])
         ax2_spec.set_ylim([ymin, ymax])
+        ax3_spec.set_ylim([ymin, ymax])
+    else:
+        outfile3 = None
     if outfile1:
         fig1.savefig(outfile1, bbox_inches='tight')
     if outfile2:
         fig2.savefig(outfile2, bbox_inches='tight')
+    if outfile3:
+        fig3.savefig(outfile3, bbox_inches='tight')
     plt.close('all')
 
     logger.info("\tDone making spectral profiles.")
