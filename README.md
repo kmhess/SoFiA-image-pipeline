@@ -126,7 +126,7 @@ Test data cube
 The SoFiA test data cube can be found through the SoFiA-2 wiki [here](https://github.com/SoFiA-Admin/SoFiA-2/wiki#test-data-cube) (14.2 MB).
 This cube contains HI emission from several galaxies around NGC 4036.
 
-The current version of this repo also has a test data set (without instructions) in the `test_data/` folder.  The cube contains HI emission from several galaxies around UGC 7012.
+The current version of this repo also has a test data set (without instructions) in the `tests/data/` folder.  The cube contains HI emission from several galaxies around UGC 7012.
 
 Advanced tips
 --------
@@ -136,7 +136,9 @@ Advanced tips
 
 * SIP is now capable of doing spectral lines other than HI.  So far `HI`, `CO(1-0)`, `CO(2-1)`, `CO(3-2)`, and `OH_1667`, `OH_1665`, `OH_1720`, `OH_1612` are the only allowed options.  This is work in progress.
 
-* SIP can now be run in 'offline' mode, by setting `-s none`.  In this case no survey archive data will be downloaded, and SIP will only generate the HI images.  Any surveys in a list in which `none` appears will be ignored.
+* SIP can be run in 'offline' mode, by setting `-s none`.  In this case no survey archive data will be downloaded, and SIP will only generate the HI images.  Any surveys in a list in which `none` appears will be ignored.
+
+* SIP now generates a plot called `*specboth.png` which overlays the masked and aperture spectra on the same plot, although it is not in the combo plot.
 
 * Available surveys from `astroquery` can be found by running:
 ```
@@ -181,7 +183,6 @@ In addition we are aware of the following issues:
 * Saving figures with .ps or .eps format has issues with transparency and background colors appearing black.
 * `download_usr_fig` can download full color images from PanSTARRS and DECaLS, but these can not yet be read as user supplied input to `sofia_image_pipeline`.
 * WISE images, PanSTARRS, DECaLS, and DECaPS cannot (yet?) be plotted with Galactic coordinates.
-* The mask (red line) on pv-diagram plots may not be perfectly aligned from left-to-right.  Please use this line only as a rough indication of the mask position.  Refer to actual data for the truth.  Any suggestions for how to improve this are welcome.
 * For data with channels that are not uniform in width (e.g. `SPECSYS = FELO-OPT`), SIP's conversion to km/s is off compared to SoFiA-2's: the programs use formula from [here](https://www.astro.rug.nl/software/kapteyn/spectralbackground.html#aips-axis-type-felo) or use wcslib to do the conversion, respectively.  We haven't tracked down the discrepancy.  To the best of our knowledge, only relatively old radio data observing nearby galaxies, might be in this `FELO` format. 
 * No exceptions are caught for `socket.timeout` during downloads (seen for `-s panstarrs` when image requested was 20.5 arcmin). We've noticed that simply rerunning the request at a later time has solved the issue.
 
