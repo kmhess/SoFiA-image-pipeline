@@ -150,8 +150,14 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                                                                                          equivalencies=spec_line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=spec_line['convention']).value
-            if 'snr' in source.colnames:
-                v_sys_label = "SNR = {:.1f}".format(source['snr'])
+            # aperture_noise = np.std(list(spec['f_sum'][:np.where(spec['chan'] == source['z_min'])[0][0]]) +
+            #                        list(spec['f_sum'][np.where(spec['chan'] == source['z_max'])[0][0]+1:]))
+            # aperture_sum = np.sum(spec['f_sum'][np.where(spec['chan'] == source['z_min'])[0][0]:
+            #                                     np.where(spec['chan'] == source['z_max'])[0][0]+1])
+            # aperture_SNR = aperture_sum / (aperture_noise * np.sqrt(source['z_max']+1-source['z_min']))
+            # v_sys_label = "SNR$_\mathrm{{aper}}$ = {:.1f}".format(aperture_SNR)
+            # if both == True:
+            #     v_sys_label = "SNR$_\mathrm{{mask}}$ = {:.1f}  SNR$_\mathrm{{aper}}$ = {:.1f}".format(source['snr'],aperture_SNR)
 
         except FileNotFoundError:
             logger.warning("\tNo existing _specfull.txt file. Perhaps there is no cube to generate one, or need to specify original.")
@@ -204,7 +210,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
             ax2_spec.plot(optical_velocity, flux_dens)
             if both == True: ax2_spec.plot(optical_velocity2, flux_dens2)
         ax2_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
-        ax2_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
+        # ax2_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         ax2_spec.set_title(source['name'], fontsize=20)
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
