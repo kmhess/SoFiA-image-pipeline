@@ -562,7 +562,7 @@ def make_header(source, opt_view=6*u.arcmin):
     return hdu.header
 
 
-def make_source(catalog, fits_name):
+def add_source(catalog, fits_name):
     """Return a dummy source when a summary image is requested.
 
     :param catalog: source catalog
@@ -573,27 +573,27 @@ def make_source(catalog, fits_name):
     :rtype: Astropy table
     """
 
-    new_source = catalog[0]
+    catalog.add_row(catalog[0])
     header = fits.getheader(fits_name)
     wcs = WCS(header, fix=True, translate_units='shd')
 
     # Change the relevant catalog parameters ... prob need to deal with kin_pa and rms at some point.
-    new_source['name'] = fits_name.split('/')[-1][:-10]
-    new_source['id'] = 0
-    new_source['x'], new_source['y'], new_source['z'] = header['NAXIS1']/2, header['NAXIS2']/2, 0
-    new_source['x_min'], new_source['x_max'] = int(np.min(catalog['x_min'])), int(np.max(catalog['x_max']))
-    new_source['y_min'], new_source['y_max'] = int(np.min(catalog['y_min'])), int(np.max(catalog['y_max']))
-    new_source['z_min'], new_source['z_max'] = int(np.min(catalog['z_min'])), int(np.max(catalog['z_max']))
-    new_source['rms'] = np.nanmin(catalog['rms'])
-    new_source['ra'], new_source['dec'] = wcs.celestial.wcs_pix2world(new_source['x'], new_source['y'], 0)
-    new_source['pos_x'], new_source['pos_y'] = wcs.celestial.wcs_pix2world(new_source['x'], new_source['y'], 0)
+    catalog[-1]['name'] = fits_name.split('/')[-1][:-10]
+    catalog[-1]['id'] = 0
+    catalog[-1]['x'], catalog[-1]['y'], catalog[-1]['z'] = header['NAXIS1']/2, header['NAXIS2']/2, 0
+    catalog[-1]['x_min'], catalog[-1]['x_max'] = int(np.min(catalog['x_min'])), int(np.max(catalog['x_max']))
+    catalog[-1]['y_min'], catalog[-1]['y_max'] = int(np.min(catalog['y_min'])), int(np.max(catalog['y_max']))
+    catalog[-1]['z_min'], catalog[-1]['z_max'] = int(np.min(catalog['z_min'])), int(np.max(catalog['z_max']))
+    catalog[-1]['rms'] = np.nanmin(catalog['rms'])
+    catalog[-1]['ra'], catalog[-1]['dec'] = wcs.celestial.wcs_pix2world(catalog[-1]['x'], catalog[-1]['y'], 0)
+    catalog[-1]['pos_x'], catalog[-1]['pos_y'] = wcs.celestial.wcs_pix2world(catalog[-1]['x'], catalog[-1]['y'], 0)
     if 'freq' in catalog.colnames:
-        new_source['freq'] = (np.min(catalog['freq']) + np.max(catalog['freq'])) / 2
+        catalog[-1]['freq'] = (np.min(catalog['freq']) + np.max(catalog['freq'])) / 2
     elif 'vrad' in catalog.colnames:
-        new_source['v_rad'] = (np.min(catalog['v_rad']) + np.max(catalog['v_rad'])) / 2
+        catalog[-1]['v_rad'] = (np.min(catalog['v_rad']) + np.max(catalog['v_rad'])) / 2
     elif 'v_opt' in catalog.colnames:
-        new_source['v_opt'] = (np.min(catalog['v_opt']) + np.max(catalog['v_opt'])) / 2
+        catalog[-1]['v_opt'] = (np.min(catalog['v_opt']) + np.max(catalog['v_opt'])) / 2
     elif 'v_app' in catalog.colnames:
-        new_source['v_app'] = (np.min(catalog['v_app']) + np.max(catalog['v_app'])) / 2
+        catalog[-1]['v_app'] = (np.min(catalog['v_app']) + np.max(catalog['v_app'])) / 2
 
-    return new_source
+    return catalog

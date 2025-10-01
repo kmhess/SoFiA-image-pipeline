@@ -255,12 +255,11 @@ def main():
 
     if (0 in args.source_id) or (-1 in args.source_id):
         # Make a source object for the overview image
-        from src.modules.functions import make_source
+        from src.modules.functions import add_source
 
         logger.info(" ")
         logger.info("\tMaking summary images of full field.")
-        new_source = make_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '_mom0.fits')
-        catalog.add_row(new_source)
+        catalog = add_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '_mom0.fits')
         src_basename = src_basename.split('_cubelets')[0]
         make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
