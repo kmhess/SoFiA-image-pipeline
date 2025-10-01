@@ -992,11 +992,22 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
 
     # Calculate base contour from the SNR map and requested SNR range
     try:
+        snr_contour = None
         with fits.open(src_basename + '_snr.fits') as hdulist_snr, \
                 fits.open(src_basename + '_mom0.fits') as hdulist_hi:
             HIlowest = np.median(np.abs(hdulist_hi[0].data[(np.abs(hdulist_snr[0].data) > snr_range[0]) *
                                                            (np.abs(hdulist_snr[0].data) < snr_range[1])]))
-        logger.info("\tThe first contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
+            if np.isnan(HIlowest):
+                index = np.where(np.nanmin(hdulist_snr[0].data[np.abs(hdulist_snr[0].data) > snr_range[1]]) == 
+                                                                hdulist_snr[0].data)
+                HIlowest = np.min(np.abs(hdulist_hi[0].data[index[0][0],index[1][0]]))
+                snr_contour = hdulist_snr[0].data[index[0][0],index[1][0]]
+        if snr_contour:
+            logger.warning("\tNo pixels in SNR range chosen by user.  Using next lowest SNR available.")
+            logger.info("\tThe first contour defined at SNR = {0:.3f} has level = {1:.3e} (mom0 data units).".format(snr_contour,
+                                                                                                             HIlowest))
+        else:
+            logger.info("\tThe first contour defined at SNR = {0} has level = {1:.3e} (mom0 data units).".format(snr_range,
                                                                                                              HIlowest))
     # If no SNR map use the channel width of the original data (provided by user if necessary) for lowest contour.
     except FileNotFoundError:
