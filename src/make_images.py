@@ -963,6 +963,68 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     return
 
 
+# Make labeled plot for overview summary
+def make_overview_summary(source, src_basename, cube_params, patch, opt_head, catalog, suffix='png'):
+    """Overlay source id numbers on the mask-2d image.
+
+    :param source: source object
+    :type source: Astropy table
+    :param src_basename: directory name
+    :type src_basename: str
+    :param cube_params: The characteristics of the beam and coordinate system of the image.
+    :type cube_params: dict
+    :param patch: size of the beam ellipse for plotting
+    :type patch: dict
+    :param opt_head: Header for the color image
+    :type opt_head: FITS header
+    :param suffix: image file type
+    :type suffix: str
+    :return:
+    """
+    outfile = src_basename.replace('cubelets', 'figures') + '_sources.{}'.format(suffix)
+
+    if not os.path.isfile(outfile):
+        try:
+            logger.info("\tMaking source overview image.")
+            hdulist_hi = fits.open(src_basename + '_mask-2d.fits')
+        except FileNotFoundError:
+            logger.error("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
+            return
+
+        mom0 = hdulist_hi[0].data
+        mom0 = np.asarray(mom0, dtype=float)
+        mom0[mom0 < 1] = np.nan
+        try:
+            hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
+        except FileNotFoundError:
+            logger.error("\tNo cubelet or mom0 to match source {}.\n".format(source['id']))
+            exit()
+
+        owcs = WCS(opt_head)
+
+        fig = plt.figure(figsize=(8, 8))
+        ax1 = fig.add_subplot(111, projection=owcs)
+        plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
+        im = ax1.imshow(mom0, cmap='viridis_r', origin='lower', transform=ax1.get_transform(cubew))
+        for s in range(len(catalog[:-1])):
+            ax1.text(catalog['ra'][s], # + np.random.uniform(-40, 40), 
+                     catalog['dec'][s], # + np.random.uniform(-40, 40),
+                     catalog['id'][s], color='black', fontsize=22, transform=ax1.get_transform('world'))
+        ax1.set(facecolor="white")  # Doesn't work with the color im
+        ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
+                              transform=ax1.transAxes, facecolor='firebrick', edgecolor='dimgrey', linewidth=1))
+        ax1.set_xlim(0, opt_head['NAXIS1'])
+        ax1.set_ylim(0, opt_head['NAXIS2'])
+
+        fig.savefig(outfile, bbox_inches='tight')
+        hdulist_hi.close()
+
+    else:
+        logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
+
+    return
+
+
 def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam=None, chan_width=None, surveys=None,
          snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None, catalog=None):
 
@@ -1233,8 +1295,11 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
 
     # Make pv and/or pv_min if they were created; not dependent on having a survey image to regrid to.
-    make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=False)
-    make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=True)
+    if source['id'] != 0:
+        make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=False)
+        make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=True)
+    else:
+        make_overview_summary(source, src_basename, cube_params, patch, opt_head, catalog, suffix=suffix)
 
     plt.close('all')
 
