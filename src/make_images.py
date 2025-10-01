@@ -964,7 +964,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
 
 
 def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam=None, chan_width=None, surveys=None,
-         snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None):
+         snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None, catalog=None):
 
     logger.info("\tStart making spatial images.")
     swapx = False

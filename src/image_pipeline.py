@@ -264,7 +264,8 @@ def main():
         src_basename = src_basename.split('_cubelets')[0]
         make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                    user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line)
+                    user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
+                    catalog=catalog)
 
     logger.info(" ")
     logger.info("\tDONE! Made images for {} sources.".format(n_src))
