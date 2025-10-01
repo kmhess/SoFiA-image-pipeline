@@ -30,7 +30,7 @@ def main():
 
     parser.add_argument('-id', '--source-id', default=[], nargs='*', #type=int,
                         help='Optional: Space-separated list, or range of sources to include in the plotting. If set to 0, do\n'
-                             'summary figure. Default all sources.')
+                             'summary figure. If set to -1, do summary figure and all sources. Default all sources.')
 
     parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
                         help='Optional: Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
@@ -95,7 +95,9 @@ def main():
     imagemagick = args.imagemagick
 
     if len(args.source_id) >= 1:
-        if '-' in args.source_id[0]:
+        if args.source_id[0] == '-1':
+            args.source_id = [int(s) for s in args.source_id]
+        elif '-' in args.source_id[0]:
             s_range = args.source_id[0].split('-')
             args.source_id = np.array(range(int(s_range[1]) - int(s_range[0]) + 1)) + int(s_range[0])
         else:
@@ -228,7 +230,7 @@ def main():
 
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
 
-        if not len(args.source_id) or source['id'] in args.source_id:
+        if (not len(args.source_id)) or (source['id'] in args.source_id) or (args.source_id[0] == -1):
             logger.info(" ")
             logger.info("\t-Source {}: {}.".format(source['id'], source['name']))
             try:
@@ -251,7 +253,7 @@ def main():
                 os.system('rm -rf *_{1}.{0}'.format(suffix, code))
                 pass
 
-    if 0 in args.source_id:
+    if (0 in args.source_id) or (-1 in args.source_id):
         # Make a source object for the overview image
         from src.modules.functions import make_source
 
