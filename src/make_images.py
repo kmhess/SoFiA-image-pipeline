@@ -602,6 +602,22 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
 # Make velocity dispersion map for object
 def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png', spec_line=None):
     """
+    :param source: source object
+    :type source: Astropy table
+    :param src_basename: directory name
+    :type src_basename: str
+    :param cube_params: The characteristics of the beam and coordinate system of the image.
+    :type cube_params: dict
+    :param patch: size of the beam ellipse for plotting
+    :type patch: dict
+    :param opt_head: Header for the color image
+    :type opt_head: FITS header
+    :param base_contour: lowest contour
+    :type base_contour: float
+    :param spec_line: spectral line properties
+    :type spec_line: dict
+    :param suffix: image file type
+    :type suffix: str
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom2.{}'.format(suffix)
