@@ -86,7 +86,8 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 
 
 # Make full spectrum plot:
-def make_specfull(source, src_basename, cube_params, original, spec_line=None, suffix='png', both=False):
+def make_specfull(source, src_basename, cube_params, original, spec_line=None, suffix='png', both=False,
+                  id_label=''):
 
     outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
     specfile = src_basename + '_{}_spec_aperture.txt'.format(source['id'])
@@ -211,7 +212,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
             if both == True: ax2_spec.plot(optical_velocity2, flux_dens2)
         ax2_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         # ax2_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
-        ax2_spec.set_title(source['name'], fontsize=20)
+        ax2_spec.set_title(source['name'] + id_label, fontsize=20)
         ax2_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax2_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
         if both == True: ax2_spec.legend(fontsize=15, loc='best', bbox_to_anchor=(0.72, 0.6, 0.27, 0.38), bbox_transform=ax2_spec.transAxes)
@@ -272,7 +273,7 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
 
 
 # Make SoFiA masked spectrum plot (no noise):
-def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
+def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', id_label=''):
 
     outfile1 = src_basename.replace('cubelets', 'figures') + '_{}_spec.{}'.format(source['id'], suffix)
     # For estimating position of z_w20, z_w50, z_wm50 which are given in pixel space:
@@ -358,7 +359,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
             ax1_spec.errorbar(opt_vel, f_sum, elinewidth=0.75, yerr=y_err, capsize=1)
         ax1_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax1_spec.transAxes, color='black', fontsize=17)
         ax1_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax1_spec.transAxes, color='black', fontsize=17)
-        ax1_spec.set_title(source['name'], fontsize=20)
+        ax1_spec.set_title(source['name'] + id_label, fontsize=20)
         ax1_spec.set_xlim(np.min(optical_velocity) - 5, np.max(optical_velocity) + 5)
         ax1_spec.set_ylabel("Integrated Flux [Jy]", fontsize=17)
         if 'freq' in source.colnames:
@@ -397,9 +398,12 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png'):
     return fig1, ax1_spec, outfile1
 
 
-def main(source, src_basename, original=None, spec_line=None, suffix='png', beam=None):
+def main(source, src_basename, original=None, spec_line=None, suffix='png', beam=None, noid=False):
 
     logger.info("\tStart making spectral profiles")
+    id_label = ''
+    if source['id'] != 0:
+        id_label = ' ({})'.format(source['id'])
 
     # Get beam information from the source cubelet
     try:
@@ -413,7 +417,8 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
             return
 
     # Make plot of SoFiA masked spectrum
-    fig1, ax1_spec, outfile1 = make_spec(source, src_basename, cube_params, spec_line=spec_line, suffix=suffix)
+    fig1, ax1_spec, outfile1 = make_spec(source, src_basename, cube_params, spec_line=spec_line, suffix=suffix,
+                                         id_label=id_label)
 
     # Make text file of spectrum with noise; use full frequency range of original cube if provided:
     # Can be a bit more precise here in the output options/specification.
@@ -424,10 +429,10 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
 
     # Make plot of spectrum with noise
     fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
-                                             suffix=suffix, both=False)
+                                             suffix=suffix, both=False, id_label=id_label)
     if outfile1 and outfile2:
         fig3, ax3_spec, outfile3 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
-                                                 suffix=suffix, both=True)
+                                                 suffix=suffix, both=True, id_label=id_label)
         ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
         ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
         ax1_spec.set_ylim([ymin, ymax])

@@ -56,7 +56,7 @@ def get_wcs_info(fits_name):
 
 # Overlay radio spectral line contours on user image
 def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, spec_line=None,
-                     suffix='png'):
+                     suffix='png', id_label=''):
     """Overlay radio spectral line contours on top of a user provided image
 
     :param source: source object
@@ -79,6 +79,8 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
     :type spec_line: dict
     :param suffix: file type, defaults to 'png'
     :type suffix: str, optional
+    :param id_label: title addition with source id number
+    :type id_label: str, optional
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format('usr', suffix)
@@ -108,7 +110,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=opt.wcs)
-        plot_labels(source, ax1, cube_params['default_beam'])
+        plot_labels(source, ax1, cube_params['default_beam'], id_label=id_label)
         ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data[~np.isnan(opt.data)], perc[0]),
                    vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]))
         # Plot positive contours
@@ -137,7 +139,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
 # Overlay contours on another image
 def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, spec_line=None, suffix='png',
-                 survey='DSS2 Blue'):
+                 survey='DSS2 Blue', id_label=''):
     """Overlay contours on top of an optical image
 
     :param source: source object
@@ -158,6 +160,9 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
     :type suffix: str, optional
     :param survey: survey from which to use data, defaults to 'DSS2 Blue'
     :type survey: str, optional
+    :param id_label: title addition with source id number
+    :type id_label: str, optional
+    :return
     """
     survey_nospace = survey.replace(" ", "").lower()
     outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format(survey_nospace, suffix)
@@ -189,7 +194,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
         if survey == 'hst':
-            plot_labels(source, ax1, cube_params['default_beam'], x_color='w')
+            plot_labels(source, ax1, cube_params['default_beam'], x_color='w', id_label=id_label)
             ax1.imshow(opt[0].data, origin='lower', cmap='Greys',
                        norm=PowerNorm(gamma=0.4, vmin=np.percentile(opt[0].data, 20),
                                       vmax=np.percentile(opt[0].data, 99.5)))
@@ -198,7 +203,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
                     transform=ax1.get_transform(cubew))
             ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=22)
         else:
-            plot_labels(source, ax1, cube_params['default_beam'])
+            plot_labels(source, ax1, cube_params['default_beam'], id_label=id_label)
             ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
                        vmax=np.percentile(opt[0].data, 99.8), origin='lower')
             # Plot positive contours
@@ -225,7 +230,8 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
 
 
 # Make moment 0 grey scale image
-def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png'):
+def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png',
+              id_label=''):
     """Overlay radio spectral contours on the moment 0 gray scale image.
 
     :param source: source object
@@ -244,6 +250,8 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
     :type spec_line: dict
     :param suffix: image file type
     :type suffix: str
+    :param id_label: title addition with source id number
+    :type id_label: str, optional
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom0.{}'.format(suffix)
@@ -275,7 +283,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
                                              cube_params['bmin'].value, source, spec_line=spec_line)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
+        plot_labels(source, ax1, cube_params['default_beam'], x_color='white', id_label=id_label)
         im = ax1.imshow(mom0, cmap='gray_r', origin='lower', transform=ax1.get_transform(cubew))
         ax1.set(facecolor="white")  # Doesn't work with the color im
         # Plot positive contours
@@ -317,7 +325,8 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
 
 # Make radio spectral line significance image
-def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png'):
+def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png',
+             id_label=''):
     """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
     :param source: source object
@@ -336,6 +345,8 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
     :type spec_line: str
     :param suffix: image file type
     :type suffix: str
+    :param id_label: title addition with source id number
+    :type id_label: str, optional
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_snr.{}'.format(suffix)
@@ -373,7 +384,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         norm = colors.BoundaryNorm(boundaries, wa_cmap.N, clip=True)
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        plot_labels(source, ax1, cube_params['default_beam'])
+        plot_labels(source, ax1, cube_params['default_beam'], id_label=id_label)
         ax1.set(facecolor="white")  # Doesn't work with the color im
         im = ax1.imshow(np.abs(snr), cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(cubew))
         if np.isfinite(base_contour):
@@ -400,13 +411,15 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 # Make velocity map for object
 def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, base_contour, spec_line=None, 
-              suffix='png'):
+              suffix='png', id_label=''):
     """
 
     :param source: source object
     :type source: Astropy table
     :param src_basename: directory name
     :type src_basename: str
+    :param original: FITS file name
+    :type original: str
     :param cube_params: The characteristics of the beam and coordinate system of the image.
     :type cube_params: dict
     :param patch: size of the beam ellipse for plotting
@@ -421,6 +434,8 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
     :type spec_line: dict
     :param suffix: image file type
     :type suffix: str
+    :param id_label: title addition with source id number
+    :type id_label: str, optional
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom1.{}'.format(suffix)
@@ -516,7 +531,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        plot_labels(source, ax1, cube_params['default_beam'])
+        plot_labels(source, ax1, cube_params['default_beam'], id_label=id_label)
         if not singlechansource:
             im = ax1.imshow(mom1_d, cmap='RdBu_r', origin='lower', transform=ax1.get_transform(cubew))
         else:
@@ -600,7 +615,8 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
 
 
 # Make velocity dispersion map for object
-def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, suffix='png', spec_line=None):
+def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png',
+              id_label=''):
     """
     :param source: source object
     :type source: Astropy table
@@ -618,6 +634,8 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
     :type spec_line: dict
     :param suffix: image file type
     :type suffix: str
+    :param id_label: title addition with source id number
+    :type id_label: str, optional
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom2.{}'.format(suffix)
@@ -679,7 +697,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
-        plot_labels(source, ax1, cube_params['default_beam'])
+        plot_labels(source, ax1, cube_params['default_beam'], id_label=id_label)
         if not singlechansource:
             im = ax1.imshow(mom2_d, cmap='Spectral_r', origin='lower', transform=ax1.get_transform(cubew))
         else:
@@ -727,7 +745,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
 # Overlay radio spectral line contours on false color optical image
 def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, spec_line=None,
-                  suffix='png', survey='panstarrs'):
+                  suffix='png', survey='panstarrs', id_label=''):
     """Overlay radio spectral line contours on a false color image.
 
     :param source: source object
@@ -750,6 +768,8 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     :type suffix: str
     :param survey: survey name to retrieve color image
     :type survey: str
+    :param id_label: title addition with source id number
+    :type id_label: str, optional
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format(survey, suffix)
@@ -785,7 +805,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         ax1 = fig.add_subplot(111, projection=owcs)
         # ax1.set_facecolor("darkgray")   # Doesn't work with the color im
         ax1.imshow(color_im, origin='lower')
-        plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
+        plot_labels(source, ax1, cube_params['default_beam'], x_color='white', id_label=id_label)
         if np.isfinite(base_contour):
             # Plot positive contours
             if base_contour > 0.0:
@@ -817,7 +837,8 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
 
 # Make pv plot for object
-def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=None, min_axis=True, suffix='png'):
+def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=None, min_axis=True, suffix='png',
+            id_label=''):
     """Plot the position-velocity slice for the source.
 
     :param source: source object
@@ -834,6 +855,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     :type min_axis: boolean
     :param suffix: image file type
     :type suffix: str
+    :param id_label: title addition with source id number
+    :type id_label: str, optional
     :return:
     """
     pv_axis = 'pv'
@@ -901,7 +924,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
                 logger.warning("\tNo mask cubelet found to overlay mask on {} diagram.".format(pv_axis))
             ax1.plot([0.0, 0.0], [freq1, freq2], c='orange', linestyle='--', linewidth=1.0,
                      transform=ax1.get_transform('world'))
-            ax1.set_title(source['name'], fontsize=24)
+            ax1.set_title(source['name'] + id_label, fontsize=24)
             ax1.tick_params(axis='both', which='major', labelsize=22, length=6, width=2)
             ax1.coords[0].set_format_unit(u.arcmin)
             ax1.coords[0].set_major_formatter('x.xx')   # Prevent crowding on x-axis
@@ -1042,14 +1065,17 @@ def make_overview_summary(source, src_basename, cube_params, patch, opt_head, ca
 
 
 def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam=None, chan_width=None, surveys=None,
-         snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None, catalog=None):
+         snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None, catalog=None, noid=False):
 
     logger.info("\tStart making spatial images.")
     swapx = False
     cube_end = '.fits'
+    id_label = ''
     if source['id'] != 0:
         src_basename = src_basename + '_{}'.format(source['id'])
         cube_end = '_cube.fits'
+        if noid == False:
+            id_label = ', #{}'.format(source['id'])
     elif original:
         chan_width = fits.getheader(original)['CDELT3']
 
@@ -1172,7 +1198,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
             usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
                                  wcs=usrim_wcs, mode='partial')
             make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range,
-                             suffix='png', spec_line=spec_line)
+                             suffix='png', spec_line=spec_line, id_label=id_label)
             opt_head = usrim_cut.wcs.to_header()
             # wcs.to_header() seems to have a bug where it doesn't include the axis information.
             opt_head['NAXIS'] = 2
@@ -1215,7 +1241,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         pstar_im, pstar_head = get_panstarrs(hi_pos_common, opt_view=opt_view)
         if pstar_im:
             make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest,
-                          suffix=suffix, survey='panstarrs', spec_line=spec_line)
+                          suffix=suffix, survey='panstarrs', spec_line=spec_line, id_label=id_label)
             if surveys[0] == 'panstarrs':
                 opt_head = pstar_head
         elif surveys[0] == 'panstarrs':
@@ -1245,7 +1271,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         if decals_url == 'decaps' : decals_url = 'decals'  # Temp for file naming for now, but need to change in future.
         if decals_im:
             make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
-                        survey=decals_url, spec_line=spec_line)
+                        survey=decals_url, spec_line=spec_line, id_label=id_label)
             if (surveys[0] == 'decals') or (surveys[0] == 'dr9') or (surveys[0] == 'decaps') or (surveys[0] == 'sdss'):
                 opt_head = decals_head
         elif surveys[0] == 'decals':
@@ -1268,7 +1294,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                 overlay_image = get_wise(hi_pos_common, opt_view=opt_view, survey=survey)
                 if overlay_image:
                     make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, 
-                                 suffix=suffix, survey=survey, spec_line=spec_line)
+                                 suffix=suffix, survey=survey, spec_line=spec_line, id_label=id_label)
                     if surveys[0] == survey:
                         opt_head = overlay_image[0].header
                 else:
@@ -1279,7 +1305,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                     overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
                     if overlay_image:
                         make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, 
-                                     suffix=suffix, survey=survey, spec_line=spec_line)
+                                     suffix=suffix, survey=survey, spec_line=spec_line, id_label=id_label)
                         if surveys[0] == survey:
                             opt_head = overlay_image[0].header
                     else:
@@ -1295,7 +1321,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                     try:
                         overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
                         make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest,
-                                     suffix=suffix, survey=survey, spec_line=spec_line)
+                                     suffix=suffix, survey=survey, spec_line=spec_line, id_label=id_label)
                         if surveys[0] == survey:
                             opt_head = overlay_image[0].header
                     except:
@@ -1304,16 +1330,21 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
 
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
-        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
-        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
-        make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, HIlowest, suffix=suffix,
-                  spec_line=spec_line)
-        make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, suffix=suffix, spec_line=spec_line)
+        make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
+                  id_label=id_label)
+        make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
+                 id_label=id_label)
+        make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, HIlowest, spec_line=spec_line, 
+                  suffix=suffix, id_label=id_label)
+        make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
+                  id_label=id_label)
 
     # Make pv and/or pv_min if they were created; not dependent on having a survey image to regrid to.
     if source['id'] != 0:
-        make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=False)
-        make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, suffix=suffix, min_axis=True)
+        make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, min_axis=False,
+                suffix=suffix, id_label=id_label)
+        make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, min_axis=True,
+                suffix=suffix, id_label=id_label)
     else:
         make_overview_summary(source, src_basename, cube_params, patch, opt_head, catalog, suffix=suffix)
 
