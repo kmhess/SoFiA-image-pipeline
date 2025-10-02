@@ -466,7 +466,7 @@ def line_lookup(spec_line):
     return {'name': spec_line, 'restfreq': restfreq_line, 'convention':convention, 'rad_opt':rad_opt}
 
 
-def plot_labels(source, ax, default_beam, x_color='k'):
+def plot_labels(source, ax, default_beam, x_color='k', id_label=''):
     """Plot labels on spatial plots depending on the coordinate frame.
 
     :param source: source object
@@ -491,7 +491,7 @@ def plot_labels(source, ax, default_beam, x_color='k'):
     if source['id'] != 0:
         ax.scatter(source['pos_x'], source['pos_y'], marker='x', c=x_color, linewidth=0.75,
                 transform=ax.get_transform('world'))
-    ax.set_title(source['name'], fontsize=24)
+    ax.set_title(source['name'] + id_label, fontsize=24)
     ax.tick_params(axis='both', which='major', labelsize=22, length=6, width=2)
     ax.coords[x_coord].set_axislabel(x_label, fontsize=22)
     ax.coords[y_coord].set_axislabel(y_label, fontsize=22)
