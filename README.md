@@ -70,7 +70,8 @@ SIP works under the assumption that the user has run [SoFiA-2](https://github.co
 ```
 $ sofia_image_pipeline
 
-usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-s [SURVEYS ...]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE] [-line SPECTRAL_LINE] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-x SUFFIX] [-m [IMAGEMAGICK]]
+usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-s [SURVEYS ...]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE] [-line SPECTRAL_LINE] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-x SUFFIX] [-m [IMAGEMAGICK]] [-log LOGFILE_NAME] [-noid]
+
 sofia_image_pipeline: error: the following arguments are required: -c/--catalog
 ```
 
@@ -89,7 +90,7 @@ REQUIRED:
     -c     Catalog file. Can be the ascii file ending in .txt or the XML file from SoFiA-2.
     
 OPTIONAL:
-    -id    Select certain sources, or range of sources from catalog based on the source id number. Default is all sources. Include `0` to make summary image of all sources.
+    -id    Select certain sources, or range of sources from catalog based on the source id number. Default is all sources. Include `0` to make summary image of all sources. Run with `-id -1` for all sources and summary images.
     -s     List of surveys on which to overlay HI contours. Only the first entry will be used in the combined image if `-m` option is used. If 'none', work in offline mode. Default is 'DSS2 Blue'.
     -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
     -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
@@ -101,6 +102,8 @@ OPTIONAL:
     -cw    Channel width. This is only necessary if a source cubelet is not available, for example if user only has a mom0.  Channel width must then be provided in the native units of the original data cube (typically Hz or m/s.)
     -x     Output image file type. Any file type accepted by plt.savefig() is in theory valid.  Default is 'png'.
     -m     Make a combined image using ImageMagick.  If a path is provided after this option, it is assumed to be the path to the `convert` executable of ImageMagick. 
+    -log   Specify the filename to which the SIP log will be saved.
+    -noid  Flag to not include the source catalog id number in the title of the plots.
 ```
 
 ### Examples
@@ -141,6 +144,9 @@ Advanced tips
 * SIP can be run in 'offline' mode, by setting `-s none`.  In this case no survey archive data will be downloaded, and SIP will only generate the HI images.  Any surveys in a list in which `none` appears will be ignored.
 
 * SIP now generates a plot called `*specboth.png` which overlays the masked and aperture spectra on the same plot, although it is not in the combo plot.
+
+* SIP now includes the source ID number in the title of plots by default.  This can be prevented by including the
+`-noid` option.  The source ids can be used to match sources in a new summary image that includes the id numbers.
 
 * When saving files as postscript, use `-x eps` to maintain the figure dimensions.
 
