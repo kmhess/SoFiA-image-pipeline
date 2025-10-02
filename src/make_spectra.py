@@ -432,7 +432,7 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
         ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
         ax1_spec.set_ylim([ymin, ymax])
         ax2_spec.set_ylim([ymin, ymax])
-        ax3_spec.set_ylim([ymin, ymax])
+        if outfile3: ax3_spec.set_ylim([ymin, ymax])
     else:
         outfile3 = None
     if outfile1:
