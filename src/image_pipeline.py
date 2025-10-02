@@ -84,6 +84,10 @@ def main():
                         help='Optional: Set name of the output log file. If not provided, log is named with catalog name and \n'
                              'date time stamp. Output will always have the ".log" suffix.  (No default).')
 
+    parser.add_argument('-noid', '--no-source-id',
+                        help="Turn off printing of the catalog source id number in the title of individual source plots.",
+                        action='store_true')
+    
 
     ###################################################################
 
@@ -236,9 +240,10 @@ def main():
             try:
                 make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                                 chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                                user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line)
+                                user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
+                                noid=args.no_source_id)
                 make_spectra.main(source, src_basename, original, spec_line=spectral_line, suffix=suffix, 
-                                  beam=beam)
+                                  beam=beam, noid=args.no_source_id)
                 n_src += 1
             except:
                 failed_srcs.append(int(source['id']))
@@ -264,7 +269,7 @@ def main():
         make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
                     user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
-                    catalog=catalog)
+                    catalog=catalog, noid=False)
 
     logger.info(" ")
     logger.info("\tDONE! Made images for {} sources.".format(n_src))
