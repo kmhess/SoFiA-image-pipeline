@@ -137,7 +137,8 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
         fits_head = None
         color_im = None
     except URLError:
-        logger.warning("\tURL Error. No false color image retrieved.")
+        logger.warning("\tURL Error. No false color image retrieved. Attempted the following URL:")
+        logger.info("\t{}".format(url))
         fits_head = None
         color_im = None
 
