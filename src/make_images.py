@@ -1154,7 +1154,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         source['pos_x'] = [hi_pos_common.l.deg]
         source['pos_y'] = [hi_pos_common.b.deg]
 
-    # Calculate the size of the survey image for the moment maps
+    # Calculate the size of the survey image for the moment maps if source is bigger than requested image.
     Xc = source['x']
     Yc = source['y']
     Xmin = source['x_min']
@@ -1165,10 +1165,12 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                       ((Xc - Xmin) * cube_params['cellsize']).to(u.arcmin).value])
     Ysize = np.array([((Ymax - Yc) * cube_params['cellsize']).to(u.arcmin).value,
                       ((Yc - Ymin) * cube_params['cellsize']).to(u.arcmin).value])
+    opt_view_src = None
     if np.any(Xsize > opt_view.value * 1.1 / 2 ) | np.any(Ysize > opt_view.value * 1.1 / 2):
         opt_view = np.max([Xsize, Ysize]) * 2 * 1.1
         logger.info("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view))
         opt_view = np.array([opt_view,]) * u.arcmin
+        opt_view_src = opt_view
 
     # Calculate the size of the beam (plotted as a fraction of the image size)
     patch_height = (cube_params['bmaj'] / opt_view).decompose()
@@ -1242,6 +1244,18 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         elif surveys[0] == 'hst':
             opt_head = make_header(source, opt_view=opt_view)
         surveys.remove('hst')
+
+    # Minimum allowable ancillary image (after user image to allow for ALMA stuff)
+    # opt_view_src = None
+    min_imsize = 0.02 * u.arcmin
+    if np.any(opt_view.value < 0.02):
+        logger.info("\tRequested ancillary data image too small for available surveys.  Increasing to {}".format(min_imsize))
+        opt_view_src = opt_view * 1.3
+        opt_view = np.array([0.02,]) * u.arcmin
+        # Recalculate the size of the beam (plotted as a fraction of the image size) if necessary
+        patch_height = (cube_params['bmaj'] / opt_view).decompose()
+        patch_width = (cube_params['bmin'] / opt_view).decompose()
+        patch = {'width': patch_width, 'height': patch_height}
 
     # Create a false color optical panstarrs overlay, if requested:
     if ('panstarrs' in surveys) and (hi_pos_common.frame.name != 'galactic'):
@@ -1335,22 +1349,32 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                         logger.warning("\t\tSecond attempt failed. Either survey doesn't cover this area, or server failed."
                               " Try again later?")
 
+    # Done with ancillary images; now change opt_head if necessary to match smaller spectral line images
+    if opt_view_src != None:
+        opt_head = make_header(source, opt_view=opt_view_src)
+        # Recalculate patch size (size of the beam as a fraction of the image size):
+        patch_height = (cube_params['bmaj'] / opt_view_src).decompose()
+        patch_width = (cube_params['bmin'] / opt_view_src).decompose()
+        patch = {'width': patch_width, 'height': patch_height}
+    else:
+        opt_view_src = opt_view
+
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
                   id_label=id_label)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
                  id_label=id_label)
-        make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, HIlowest, spec_line=spec_line, 
+        make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view_src, HIlowest, spec_line=spec_line, 
                   suffix=suffix, id_label=id_label)
         make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
                   id_label=id_label)
 
     # Make pv and/or pv_min if they were created; not dependent on having a survey image to regrid to.
     if source['id'] != 0:
-        make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, min_axis=False,
+        make_pv(source, src_basename, cube_params, opt_view=opt_view_src, spec_line=spec_line, min_axis=False,
                 suffix=suffix, id_label=id_label)
-        make_pv(source, src_basename, cube_params, opt_view=opt_view, spec_line=spec_line, min_axis=True,
+        make_pv(source, src_basename, cube_params, opt_view=opt_view_src, spec_line=spec_line, min_axis=True,
                 suffix=suffix, id_label=id_label)
     else:
         make_overview_summary(source, src_basename, cube_params, patch, opt_head, catalog, suffix=suffix)
