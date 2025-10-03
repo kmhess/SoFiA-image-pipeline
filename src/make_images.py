@@ -567,10 +567,10 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             if 'l' in source.colnames:
                 ax1.plot([p1x, p2x], [p1y, p2y], linestyle='--', color='k', transform=ax1.get_transform('world'))
             else:
-                ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
-                            xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
-                            arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
-                                            linestyle='--'))
+                ann_maj = ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
+                                        xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
+                                        arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", 
+                                                        connectionstyle="arc3", linestyle='--'))
             # Plot the minor axis if pv_min was created by SoFiA:
             if os.path.isfile(src_basename + '_pv_min.fits'):
                 pa_min = kinpa + 90. * u.deg
@@ -582,10 +582,10 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
                 if 'l' in source.colnames:
                     ax1.plot([p1x, p2x], [p1y, p2y], linestyle=':', color='k', transform=ax1.get_transform('world'))
                 else:
-                    ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
-                                xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
-                                arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", connectionstyle="arc3",
-                                                linestyle=':'))
+                    ann_min = ax1.annotate("", xy=(p1x, p1y), xycoords=ax1.get_transform('world'),
+                                           xytext=(p2x, p2y), textcoords=ax1.get_transform('world'),
+                                           arrowprops=dict(arrowstyle="->,head_length=0.8,head_width=0.4", 
+                                                           connectionstyle="arc3", linestyle=':'))
             v_sys_label += "Kinematic PA = {:5.1f}$^\\circ$".format(source['kin_pa'])
 
         ax1.text(0.5, 0.05, v_sys_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=22)
@@ -604,7 +604,14 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
-        fig.savefig(outfile, bbox_inches='tight')
+        try:
+            fig.savefig(outfile, bbox_inches='tight')
+        except:
+            logger.error("\tCannot plot kinematic major/minor axis arrow(s).")
+            logger.error("\tMatplotlib error apparently linked to plotting arrows on very small images. :/")
+            ann_maj.remove()
+            ann_min.remove()
+            fig.savefig(outfile, bbox_inches='tight')
         mom1.close()
         hdulist_hi.close()
 
