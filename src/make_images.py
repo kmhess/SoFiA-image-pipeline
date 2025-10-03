@@ -1165,8 +1165,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                       ((Xc - Xmin) * cube_params['cellsize']).to(u.arcmin).value])
     Ysize = np.array([((Ymax - Yc) * cube_params['cellsize']).to(u.arcmin).value,
                       ((Yc - Ymin) * cube_params['cellsize']).to(u.arcmin).value])
-    if np.any(Xsize > opt_view.value / 2) | np.any(Ysize > opt_view.value / 2):
-        opt_view = np.max([Xsize, Ysize]) * 2 * 1.05
+    if np.any(Xsize > opt_view.value * 1.1 / 2 ) | np.any(Ysize > opt_view.value * 1.1 / 2):
+        opt_view = np.max([Xsize, Ysize]) * 2 * 1.1
         logger.info("\tImage size bigger than default. Now {:.2f} arcmin".format(opt_view))
         opt_view = np.array([opt_view,]) * u.arcmin
 
