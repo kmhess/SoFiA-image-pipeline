@@ -13,7 +13,7 @@ from matplotlib.colors import PowerNorm
 import numpy as np
 from urllib.error import HTTPError
 
-from src.modules.functions import get_info
+from src.modules.functions import get_info, get_wcs_info
 from src.modules.functions import chan2freq, chan2vel, sbr2nhi
 from src.modules.functions import create_pv
 from src.modules.functions import plot_labels
@@ -26,32 +26,6 @@ logger = Logger.get_logger()
 
 
 ###################################################################
-
-
-## Get uniform wcs object
-def get_wcs_info(fits_name):
-    """Get uniform wcs object for plotting
-
-    :param fits_name: basename for the source for data files
-    :type fits_name: str
-    :return: world coordinate system object
-    :rtype: WCS object
-    """
-    cubeh = fits.getheader(fits_name)
-    cubew = WCS(cubeh, fix=True, translate_units='shd').sub(2)
-
-    if cubew.wcs.equinox != 2000.0:
-        sky = cubew.sub(2).pixel_to_world(cubew.wcs.crpix[0], cubew.wcs.crpix[1])
-        sky_icrs = sky.transform_to("icrs")
-        
-        cubeh['EPOCH'] = 2000.0
-        cubeh['CRVAL1'] = sky_icrs.ra.deg
-        cubeh['CRVAL2'] = sky_icrs.dec.deg
-        hiwcs = WCS(cubeh).sub(2)
-    else:
-        hiwcs = cubew
-
-    return hiwcs, cubew
 
 
 # Overlay radio spectral line contours on user image

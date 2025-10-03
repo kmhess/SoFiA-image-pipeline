@@ -304,6 +304,32 @@ def get_info(fits_name, beam=None, source_id=0):
             'spec_axis': spec_axis}
 
 
+## Get uniform wcs object
+def get_wcs_info(fits_name):
+    """Get uniform wcs object for plotting
+
+    :param fits_name: basename for the source for data files
+    :type fits_name: str
+    :return: world coordinate system object
+    :rtype: WCS object
+    """
+    cubeh = fits.getheader(fits_name)
+    cubew = WCS(cubeh, fix=True, translate_units='shd').sub(2)
+
+    if cubew.wcs.equinox != 2000.0:
+        sky = cubew.sub(2).pixel_to_world(cubew.wcs.crpix[0], cubew.wcs.crpix[1])
+        sky_icrs = sky.transform_to("icrs")
+        
+        cubeh['EPOCH'] = 2000.0
+        cubeh['CRVAL1'] = sky_icrs.ra.deg
+        cubeh['CRVAL2'] = sky_icrs.dec.deg
+        hiwcs = WCS(cubeh).sub(2)
+    else:
+        hiwcs = cubew
+
+    return hiwcs, cubew
+
+
 def get_radecfreq(catalog, original):
     """Get the right ascension, declination, and frequeny of a catalog object.
 
