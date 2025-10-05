@@ -85,11 +85,12 @@ def main():
                              'date time stamp. Output will always have the ".log" suffix.  (No default).')
 
     parser.add_argument('-noid', '--no-source-id',
-                        help="Turn off printing of the catalog source id number in the title of individual source plots.",
+                        help='Turn off printing of the catalog source id number in the title of individual source plots.',
                         action='store_true')
     
     parser.add_argument('-cm', '--chan-maps',
-                        help="Make a pdf file of for each source containing channel maps in 4x5.",
+                        help='Make a pdf file of for each source containing channel maps in 4x5. Contours plotted at +/- powers \n'
+                             'of 2 x RMS',
                         action='store_true')
 
     ###################################################################
