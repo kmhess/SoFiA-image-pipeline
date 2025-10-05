@@ -138,7 +138,7 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
 
                 if ((row+1) * (column+1) == chan_per_panel) | (c == end - 1): #hdulist_hi[0].data.shape[0] - 1):
                     column += 1
-                    if column != xsize and row != 0:
+                    if column != xsize: #and row != 0:
                         while column < xsize:
                             axs[row,column].coords[x_coord].set_axislabel('')
                             axs[row,column].coords[x_coord].set_ticklabel_visible(False)
