@@ -148,6 +148,8 @@ Advanced tips
 * SIP now includes the source ID number in the title of plots by default.  This can be prevented by including the
 `-noid` option.  The source ids can be used to match sources in a new summary image that includes the id numbers.
 
+* SIP can how create channel maps of each source.  This can be enabled by including the `-cm` option.
+
 * When saving files as postscript, use `-x eps` to maintain the figure dimensions.
 
 * Available surveys from `astroquery` can be found by running:

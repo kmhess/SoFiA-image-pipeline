@@ -88,6 +88,9 @@ def main():
                         help="Turn off printing of the catalog source id number in the title of individual source plots.",
                         action='store_true')
     
+    parser.add_argument('-cm', '--chan-maps',
+                        help="Make a pdf file of for each source containing channel maps in 4x5.",
+                        action='store_true')
 
     ###################################################################
 
@@ -225,6 +228,7 @@ def main():
 
     # Do the hard work
     from src import make_images, make_spectra
+    from src.modules import make_chan_maps
     from src.combine_images import combine_images
 
     from src.modules.functions import line_lookup
@@ -238,10 +242,13 @@ def main():
             logger.info(" ")
             logger.info("\t-Source {}: {}.".format(source['id'], source['name']))
             try:
-                make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
+                x, p = make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                                 chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
                                 user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
                                 noid=args.no_source_id)
+                if args.chan_maps:
+                    make_chan_maps.main(source, src_basename, suffix=suffix, beam=beam, noid=args.no_source_id, 
+                                        opt_head=x, patch=p)
                 make_spectra.main(source, src_basename, original, spec_line=spectral_line, suffix=suffix, 
                                   beam=beam, noid=args.no_source_id)
                 n_src += 1
