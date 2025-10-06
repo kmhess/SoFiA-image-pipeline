@@ -121,7 +121,7 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
                 if panel == 0:
                     axs[row,column].add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'],
                                                       angle=cube_params['bpa'], transform=axs[row,column].transAxes,
-                                                      edgecolor='black', linewidth=1))
+                                                      edgecolor='black', linewidth=1, zorder=99))
 
                 for ax in axs[:-1].flatten():
                     ax.tick_params(axis='x', which='both', labelbottom=False)
