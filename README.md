@@ -104,6 +104,8 @@ OPTIONAL:
     -m     Make a combined image using ImageMagick.  If a path is provided after this option, it is assumed to be the path to the `convert` executable of ImageMagick. 
     -log   Specify the filename to which the SIP log will be saved.
     -noid  Flag to not include the source catalog id number in the title of the plots.
+    -cm    Make channel maps for each source. These will be written to a multi-page pdf file in 4x5 portrait format.
+    -spec  Only make spectra, no spatial images. May be useful for multi-line sources where the moment maps are less meaningful.
 ```
 
 ### Examples
@@ -148,7 +150,9 @@ Advanced tips
 * SIP now includes the source ID number in the title of plots by default.  This can be prevented by including the
 `-noid` option.  The source ids can be used to match sources in a new summary image that includes the id numbers.
 
-* SIP can how create channel maps of each source with contours at +/- powers of 2 x RMS.  This can be enabled by including the `-cm` option.
+* SIP can now create channel maps of each source with contours at +/- powers of 2 x RMS.  This can be enabled by including the `-cm` option.
+
+* SIP spatial images can be turned off such that only spectra are created for each source with the `-spec` option.
 
 * When saving files as postscript, use `-x eps` to maintain the figure dimensions.
 
