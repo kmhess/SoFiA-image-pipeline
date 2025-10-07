@@ -89,8 +89,12 @@ def main():
                         action='store_true')
     
     parser.add_argument('-cm', '--chan-maps',
-                        help='Make a pdf file of for each source containing channel maps in 4x5. Contours plotted at +/- powers \n'
-                             'of 2 x RMS',
+                        help='Make a (multipage) pdf file for each source containing channel maps in 4x5 portrait layout. \n'
+                             'Contours are plotted at +/- powers of 2 x RMS. No channel maps made if "-spec" flag is set.',
+                        action='store_true')
+
+    parser.add_argument('-spec', '--spec-only',
+                        help='Skip making spatial images and only make spectra profiles.',
                         action='store_true')
 
     ###################################################################
@@ -243,11 +247,14 @@ def main():
             logger.info(" ")
             logger.info("\t-Source {}: {}.".format(source['id'], source['name']))
             try:
-                x, p = make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
-                                chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                                user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
-                                noid=args.no_source_id)
-                if args.chan_maps:
+                if args.spec_only:
+                    logger.info("\tSkipping spatial images: only spectral profiles requested.")
+                else:
+                    x, p = make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
+                                    chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
+                                    user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
+                                    noid=args.no_source_id)
+                if args.chan_maps and not args.spec_only:
                     make_chan_maps.main(source, src_basename, suffix=suffix, beam=beam, noid=args.no_source_id, 
                                         opt_head=x, patch=p)
                 make_spectra.main(source, src_basename, original, spec_line=spectral_line, suffix=suffix, 
@@ -266,7 +273,7 @@ def main():
                 os.system('rm -rf *_{1}.{0}'.format(suffix, code))
                 pass
 
-    if (0 in args.source_id) or (-1 in args.source_id):
+    if ((0 in args.source_id) or (-1 in args.source_id)) & (not args.spec_only):
         # Make a source object for the overview image
         from src.modules.functions import add_source
 
