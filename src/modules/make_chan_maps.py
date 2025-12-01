@@ -30,12 +30,6 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
 
     base_contour = source['rms'] * 2
 
-    # pos_x and pos_y were set in make_images.py  To make code stand-alone, need to repeat that calculation here
-    # print(source['pos_x'], source['pos_y'])
-
-    # opt_head was calculated in make_images.py  Keep consistent my just taking it in from there
-    # print(opt_head)
-
     infile = src_basename + '_{}_cube.fits'.format(source['id'])
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_chan_maps.pdf'.format(source['id'])
 
@@ -66,27 +60,36 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
 
         xsize = 4
         ysize = 5
-        remove_margin = 10
-        end = hdulist_hi[0].data.shape[0] - remove_margin
-        print('FREQUENCIES ARE WRONG SO FAR: ABSOLUTE VS RELATIVE CHANNEL')
-        chans_ghz = chan2freq(np.array(range(remove_margin, end, 1)), infile).to(u.GHz)
-
-        chan_per_panel = xsize * ysize
+        boundary = 1   # Number of source-free channels in channel map
+ 
+        # SoFiA indexed from 1; FITS headers indexed from 1; python arrays indexed from 0
+        new_py_zmin = int(source['z_min']-1 + hdulist_hi[0].header['CRPIX3']-1 - boundary)
+        new_py_zmax = int(source['z_max']-1 + hdulist_hi[0].header['CRPIX3']-1 + boundary)
+        new_py_zmin = np.max([0, new_py_zmin])
+        new_py_zmax = np.min([new_py_zmax, len(hdulist_hi[0].data[:,0,0])])
+        n_panels = new_py_zmax - new_py_zmin
+        chans_ghz = chan2freq(np.array(range(source['z_min']-1-boundary, source['z_max']-1+boundary, 1)), 
+                              infile).to(u.GHz)
+        chan_per_page = xsize * ysize
+        page = 0
 
         # Save channel maps to a multi-page pdf
         with PdfPages(outfile) as pdf:
-            for c, c_ghz in zip(range(hdulist_hi[0].data.shape[0])[remove_margin:end], chans_ghz):
-                chan = hdulist_hi[0].data[c, :, :]
-                panel = int((c - remove_margin) % chan_per_panel)
+            for c, c_ghz in zip(range(new_py_zmin,new_py_zmax,1), chans_ghz):
+                chan_im = hdulist_hi[0].data[c, :, :]
+                mask_im = hdulist_mask[0].data[c, :, :]
+                chan_num = c - new_py_zmin    # indexed from 0
+                panel = int((chan_num) % chan_per_page)
                 column = panel % xsize
-                row = int(((panel - column) / xsize) % chan_per_panel)
-
+                row = int(((panel - column) / xsize) % chan_per_page)
                 if panel == 0:
-                    if end - c < chan_per_panel:
-                        if (end - c) % xsize == 0:
-                            ysize = int((end - c) / xsize)
+                    page += 1
+                    logger.warning('\tPlotting page {} of channel maps'.format(page))
+                    if n_panels - chan_num < chan_per_page:
+                        if (n_panels - chan_num) % xsize == 0:
+                            ysize = int((n_panels - (chan_num)) / xsize)
                         else:
-                            ysize = int((end - c) / xsize) + 1
+                            ysize = int((n_panels - (chan_num)) / xsize) + 1
                     fig = plt.figure(figsize=(xsize*3, ysize*3))
                     gs = fig.add_gridspec(ysize, xsize, hspace=0, wspace=0)
                     axs = gs.subplots(sharex='col', sharey='row', subplot_kw=dict(projection=owcs))
@@ -97,22 +100,21 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
 
                 if axs.ndim == 1:
                     axs = axs[None,:]
-                axs[row,column].imshow(chan, cmap=pvd_map, norm=divnorm, origin='lower', 
+                axs[row,column].imshow(chan_im, cmap=pvd_map, norm=divnorm, origin='lower', 
                                        transform=axs[row,column].get_transform(cubew))
-                # axs[row,column].text(0.5, 0.5, '{:.2f}'.format(c_ghz), fontsize=14)
-                axs[row,column].text(0.5, 0.5, 'XXX GHz'.format(c_ghz), fontsize=14)
+                axs[row,column].text(0.5, 0.5, '{:.4f} GHz'.format(c_ghz.value), fontsize=14)
                 axs[row,column].tick_params(axis='both', which='major', labelsize=14, length=6, width=2)
                 axs[row,column].set(facecolor="white")  # Doesn't work with the color im
                 # Plot positive contours
                 try:
-                    axs[row,column].contour(chan, cmap='Oranges_r', linewidths=1.2, 
+                    axs[row,column].contour(chan_im, cmap='Oranges_r', linewidths=1.2, 
                                             levels=base_contour * 2 ** np.arange(10),
                                             transform=axs[row,column].get_transform(cubew))
                 except:
                     pass
                 # Plot negative contours
                 try:
-                    axs[row,column].contour(chan, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
+                    axs[row,column].contour(chan_im, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
                                             levels=-base_contour * 2 ** np.arange(10, -1, -1),
                                             transform=axs[row,column].get_transform(cubew))
                 except:
@@ -121,7 +123,7 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
                 if panel == 0:
                     axs[row,column].add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'],
                                                       angle=cube_params['bpa'], transform=axs[row,column].transAxes,
-                                                      edgecolor='black', linewidth=1, zorder=99))
+                                                      edgecolor='black', linewidth=1, zorder=99))          
 
                 for ax in axs[:-1].flatten():
                     ax.tick_params(axis='x', which='both', labelbottom=False)
@@ -136,7 +138,7 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
                 axs[row,column].set_xlim(0, opt_head['NAXIS1'])
                 axs[row,column].set_ylim(0, opt_head['NAXIS2'])
 
-                if ((row+1) * (column+1) == chan_per_panel) | (c == end - 1): #hdulist_hi[0].data.shape[0] - 1):
+                if ((row+1) * (column+1) == chan_per_page) | (chan_num == n_panels - 1):
                     column += 1
                     if column != xsize: #and row != 0:
                         while column < xsize:
