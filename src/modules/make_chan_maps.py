@@ -63,12 +63,12 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
         boundary = 1   # Number of source-free channels in channel map
  
         # SoFiA indexed from 1; FITS headers indexed from 1; python arrays indexed from 0
-        new_py_zmin = int(source['z_min']-1 + hdulist_hi[0].header['CRPIX3']-1 - boundary)
-        new_py_zmax = int(source['z_max']-1 + hdulist_hi[0].header['CRPIX3']-1 + boundary)
+        new_py_zmin = int(source['z_min'] + hdulist_hi[0].header['CRPIX3'] - 1 - boundary)
+        new_py_zmax = int(source['z_max'] + hdulist_hi[0].header['CRPIX3'] - 1 + boundary)
         new_py_zmin = np.max([0, new_py_zmin])
         new_py_zmax = np.min([new_py_zmax, len(hdulist_hi[0].data[:,0,0])])
         n_panels = new_py_zmax - new_py_zmin
-        chans_ghz = chan2freq(np.array(range(source['z_min']-1-boundary, source['z_max']-1+boundary, 1)), 
+        chans_ghz = chan2freq(np.array(range(source['z_min']-boundary, source['z_max']+boundary, 1)), 
                               infile).to(u.GHz)
         chan_per_page = xsize * ysize
         page = 0
