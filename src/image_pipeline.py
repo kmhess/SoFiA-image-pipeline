@@ -289,7 +289,8 @@ def main():
     logger.info(" ")
     logger.info("\tDONE! Made images for {} sources.".format(n_src))
     if n_fail > 0:
-        logger.warning("\tFailed for {} sources with id number: {}".format(n_fail, failed_srcs))
+        failed_msg = ' '.join([str(f) for f in failed_srcs])
+        logger.warning(f"\Failed for {n_fail} sources with id number: {failed_msg}")
     logger.info("\tCreated log file: {}".format(Logger._log_path))
     logger.info("*****************************************************************\n")
 
