@@ -104,6 +104,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
+        plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -196,6 +197,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
 
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
+        plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -291,6 +293,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
+        plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -376,6 +379,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
+        plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -588,6 +592,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             fig.savefig(outfile, bbox_inches='tight')
         mom1.close()
         hdulist_hi.close()
+        plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -717,6 +722,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         fig.savefig(outfile, bbox_inches='tight')
         mom2.close()
         hdulist_hi.close()
+        plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -810,6 +816,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
+        plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -976,6 +983,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
 
             fig.savefig(outfile, bbox_inches='tight')
             pv.close()
+            plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
@@ -1038,6 +1046,7 @@ def make_overview_summary(source, src_basename, cube_params, patch, opt_head, ca
 
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
+        plt.close()
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile))
