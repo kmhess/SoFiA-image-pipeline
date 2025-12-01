@@ -41,6 +41,7 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
             logger.error("\tNo cubelet to match source {}. Can't make channel maps.\n".format(source['id']))
             return
         hdulist_hi = fits.open(infile)
+        hdulist_mask = fits.open(infile.replace('cube.fits','mask.fits'))
 
         hiwcs, cubew = get_wcs_info(infile)
         owcs = WCS(opt_head)
@@ -117,6 +118,12 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
                     axs[row,column].contour(chan_im, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
                                             levels=-base_contour * 2 ** np.arange(10, -1, -1),
                                             transform=axs[row,column].get_transform(cubew))
+                except:
+                    pass
+                # Plot mask contours
+                try:
+                    axs[row,column].contour(mask_im, colors='cyan', linewidths=1.2, levels=[0.1],
+                                            transform=axs[row,column].get_transform(cubew), zorder=98)
                 except:
                     pass
                 # Plot beam in the first panel
