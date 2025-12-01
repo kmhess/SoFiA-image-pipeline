@@ -1357,7 +1357,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
 
     logger.info("\tDone making spatial images.")
 
-    return True
+    return opt_head, patch
 
 
 if __name__ == '__main__':
