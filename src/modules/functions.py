@@ -31,6 +31,7 @@ def chan2freq(channels, fits_name):
     # frequencies = (header['CDELT3'] * (channels - (header['CRPIX3'] - 1)) + header['CRVAL3']) * u.Hz  # parameter.offset=True ?
     frequencies = (header['CDELT3'] * channels + header['CRVAL3']) * u.Hz     # parameter.offset=False ?
     # frequencies = (header['CDELT3'] * (channels - (header['CRPIX3']-1)) + header['CRVAL3']) * u.Hz
+    return frequencies
 
 
 def chan2vel(channels, fits_name):
