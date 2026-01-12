@@ -77,7 +77,7 @@ def felo2vel(channels, fits_name):
     return velocities
 
 
-def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
+def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None, Jykms=False):
     """Get the HI column density from sbr.  See Section 15 of Meyer et al (2017) for equations: 
     https://ui.adsabs.harvard.edu/abs/2017PASA...34...52M/abstract
 
@@ -129,7 +129,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
             z = (HI_restfreq.value - freq_sys) / freq_sys
             nhi = 2.330e+20 * (1 + z) ** 4 * sbr / bmaj / bmin
         else:
-            # Units of Jy/beam Hz
+            # Units of Jy/beam Hz or Jy/beam km/s depending on what was done earlier
             nhi = sbr
             # Units of Kelvin Hz
             # nhi = 1.222e+3 * sbr / bmaj / bmin / line['restfreq'].to(u.GHz).value**2
@@ -154,9 +154,14 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None):
             subscript = ''
         else:
             subscript = spec_line
-        nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(spec_line, nhi/10**nhi_ofm, nhi_ofm)
-        nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1...)'.format(subscript,
-                                                                                             nhi/10**nhi_ofm, nhi_ofm)
+        if Jykms == False:
+            nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(spec_line, nhi/10**nhi_ofm, nhi_ofm)
+            nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1...)'.format(subscript,
+                                                                                                              nhi/10**nhi_ofm, nhi_ofm)
+        else:
+            nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm km/s'.format(spec_line, nhi/10**nhi_ofm, nhi_ofm)
+            nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm km/s ($n$=0,1...)'.format(subscript,
+                                                                                                              nhi/10**nhi_ofm, nhi_ofm)
 
     return nhi, nhi_label, nhi_labels
 
