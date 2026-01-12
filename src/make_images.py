@@ -1019,9 +1019,9 @@ def make_overview_summary(source, src_basename, cube_params, patch, opt_head, ca
             logger.error("\tNo mom0 fits file. Perhaps you ran SoFiA without generating moments?")
             return
 
-        mom0 = hdulist_hi[0].data
-        mom0 = np.asarray(mom0, dtype=float)
-        mom0[mom0 < 1] = np.nan
+        mask2d = hdulist_hi[0].data
+        mask2d = np.asarray(mask2d, dtype=float)
+        mask2d[mask2d < 1] = np.nan
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
         except FileNotFoundError:
@@ -1033,14 +1033,14 @@ def make_overview_summary(source, src_basename, cube_params, patch, opt_head, ca
         fig = plt.figure(figsize=(8, 8))
         ax1 = fig.add_subplot(111, projection=owcs)
         plot_labels(source, ax1, cube_params['default_beam'], x_color='white')
-        im = ax1.imshow(mom0, cmap='viridis_r', origin='lower', transform=ax1.get_transform(cubew))
+        im = ax1.imshow(mask2d, cmap='Spectral_r', origin='lower', transform=ax1.get_transform(cubew))
         for s in range(len(catalog[:-1])):
             ax1.text(catalog['ra'][s], # + np.random.uniform(-40, 40), 
                      catalog['dec'][s], # + np.random.uniform(-40, 40),
                      catalog['id'][s], color='black', fontsize=22, transform=ax1.get_transform('world'))
         ax1.set(facecolor="white")  # Doesn't work with the color im
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
-                              transform=ax1.transAxes, facecolor='firebrick', edgecolor='dimgrey', linewidth=1))
+                              transform=ax1.transAxes, facecolor='grey', edgecolor='dimgrey', linewidth=1))
         ax1.set_xlim(0, opt_head['NAXIS1'])
         ax1.set_ylim(0, opt_head['NAXIS2'])
 
