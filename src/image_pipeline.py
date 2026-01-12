@@ -97,6 +97,10 @@ def main():
                         help='Skip making spatial images and only make spectra profiles.',
                         action='store_true')
 
+    parser.add_argument('-j', '--jy-kms',
+                        help='Display moment 0 images in units of Jy km/s. Note this only works for in non-HI lines are specified.',
+                        action='store_true')
+    
     ###################################################################
 
     # Parse the arguments above
@@ -253,7 +257,7 @@ def main():
                     x, p = make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
                                     user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
-                                    noid=args.no_source_id)
+                                    noid=args.no_source_id, Jykms=args.jy_kms)
                 if args.chan_maps and not args.spec_only:
                     make_chan_maps.main(source, src_basename, suffix=suffix, beam=beam, noid=args.no_source_id, 
                                         opt_head=x, patch=p)
@@ -284,7 +288,7 @@ def main():
         make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
                     user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
-                    catalog=catalog, noid=False)
+                    catalog=catalog, noid=False, Jykms=args.jy_kms)
 
     logger.info(" ")
     logger.info("\tDONE! Made images for {} sources.".format(n_src))

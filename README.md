@@ -70,7 +70,7 @@ SIP works under the assumption that the user has run [SoFiA-2](https://github.co
 ```
 $ sofia_image_pipeline
 
-usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-s [SURVEYS ...]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE] [-line SPECTRAL_LINE] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-x SUFFIX] [-m [IMAGEMAGICK]] [-log LOGFILE_NAME] [-noid]
+usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-s [SURVEYS ...]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE] [-line SPECTRAL_LINE] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-x SUFFIX] [-m [IMAGEMAGICK]] [-log LOGFILE_NAME] [-noid] [-cm] [-spec] [-j]
 
 sofia_image_pipeline: error: the following arguments are required: -c/--catalog
 ```
@@ -106,6 +106,7 @@ OPTIONAL:
     -noid  Flag to not include the source catalog id number in the title of the plots.
     -cm    Make channel maps for each source. These will be written to a multi-page pdf file in 4x5 portrait format.
     -spec  Only make spectra, no spatial images. May be useful for multi-line sources where the moment maps are less meaningful.
+    -j     Plot the units of the moment 0 map in Jy/beam km/s.  Only works when HI line is not requested, otherwise defaults to cm^-2 or native units.
 ```
 
 ### Examples
