@@ -44,9 +44,12 @@ def main():
     parser.add_argument('-ur', '--user-range', default=[10., 99.], nargs=2, type=float,
                         help='Optional: Percentile range used when displaying the user image (see "-ui"). Default is [10,99].')
 
-    parser.add_argument('-line', '--spectral-line', default="HI", type=str,
-                        help='Optional: Provide name of spectral line such as "HI"; "CO(1-0)" up to (3-2); or "OH_1667" or\n'
-                             'other L-band accessible OH lines. Default is "HI". See github for more details. Work in progress.')
+    parser.add_argument('-line', '--spectral-line', default='HI',
+                        help='Optional: Provide name of molecule, and optionally the rest frequency of the transition in GHz,\n'
+                             'and label. Takes 0-3 comma-separated inputs e.g. CO,115,CO(1-0). Line list includes ADMIT Tier 1\n'
+                             'sources for ALMA coverage and VLA accessible lines. Old functionality also still works: can\n'
+                             'provide just 1 entry that looks like "HI"; "CO(1-0)" up to (3-2); or "OH_1667" or other L-band \n'
+                             'accessible OH lines. See github for all details. Default is "HI".')
 
     parser.add_argument('-i', '--image_size', default=[6], nargs=1, type=float,
                         help='Optional: specify the minimum survey image size to retrieve in arcmin.  It will be adjusted if\n'
@@ -123,6 +126,15 @@ def main():
         beam = [float(b) for b in args.beam.split(',')]
     except:
         beam = []
+    
+    try:
+        line = [l for l in args.spectral_line.split(',')]
+        if len(line) > 1:
+            line[1] = float(line[1])
+        else:
+            line.append(None)
+    except:
+        line = []
 
     opt_view = args.image_size * u.arcmin
 
@@ -239,9 +251,12 @@ def main():
     from src import make_images, make_spectra
     from src.modules import make_chan_maps
     from src.combine_images import combine_images
+    from src.modules.functions import line_lookup, line_lookup2
 
-    from src.modules.functions import line_lookup
-    spectral_line = line_lookup(args.spectral_line)
+    if line[0] in ['HI','CO(1-0)','CO(2-1)','CO(3-2)','OH_1612','OH_1665','OH_1667','OH_1720']:
+        spectral_line = line_lookup(line[0])
+    elif args.spectral_line != None:
+        spectral_line = line_lookup2(line[0], line[1])
 
     for source in catalog:
 
