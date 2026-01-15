@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 import importlib.metadata
 
-from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, line_lookup, make_hist_arr
+from src.modules.functions import chan2freq, chan2vel, get_info, get_subcube, felo2vel, make_hist_arr
 from src.modules.logger import Logger
 
 logger = Logger.get_logger()
