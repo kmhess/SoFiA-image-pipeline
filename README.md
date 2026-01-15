@@ -94,7 +94,7 @@ OPTIONAL:
     -s     List of surveys on which to overlay HI contours. Only the first entry will be used in the combined image if `-m` option is used. If 'none', work in offline mode. Default is 'DSS2 Blue'.
     -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
     -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
-    -line  Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO(1-0)' up to (3-2) and 'OH_1667' and the 3 other OH lines which may fall within L-band observations.
+    -line  Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO(1-0)' up to (3-2) and 'OH_1667' and the 3 other OH lines which may fall within L-band observations. A second possibility is specifying 1-3 comma-separated parameters that are molecule,rest frequency in GHz,label such as 'CO,115,CO(1-0)'. A line table is provided with the software in `src/data/tier1_lines_reformat.list`.
     -i     Minimum image size (ARCMIN). Images will be square. If an HI source exceeds the requested size, a larger image to fit the HI contours will be generated. Default is 6 arcmin.
     -snr   Specify the SNR range within which to plot the lowest HI contour. Requires 2 values. Default is [2.0, 3.0].
     -o     Path to the original data file on which source finding was conducted. This allows the spectrum with noise to be plotted over the full spectral range of the original cube.  
@@ -142,7 +142,7 @@ Advanced tips
 
 * If you have a large catalog of sources, start by testing SIP with the `-id N` option, where `N` is a source id number.  Make sure the image and text outputs from SIP for that source are as you expect.  Adjust optional variables as necessary.  Run on your larger catalog.
 
-* SIP is now capable of doing spectral lines other than HI.  So far `HI`, `CO(1-0)`, `CO(2-1)`, `CO(3-2)`, and `OH_1667`, `OH_1665`, `OH_1720`, `OH_1612` are the only allowed options.  This is work in progress.
+* SIP is now capable of doing spectral lines.  All available lines can be specified by providing a molecule name and optionally a frequency in GHz.  If there are multiple or no spectral lines matched within the tolerances of 1-0.001 GHz of the provided frequency, an error message will appear that the line could not be identified from those in the reference data table, but SIP will continue.  If a unique line can be identified, SIP will use this knowledge to plot a redshift for the source in the spectrum plots.  A small subset of lines can be accessed by only providing one entry: `HI`, `CO(1-0)`, `CO(2-1)`, `CO(3-2)`, and `OH_1667`, `OH_1665`, `OH_1720`, `OH_1612` are accepted.
 
 * SIP can be run in 'offline' mode, by setting `-s none`.  In this case no survey archive data will be downloaded, and SIP will only generate the HI images.  Any surveys in a list in which `none` appears will be ignored.
 
