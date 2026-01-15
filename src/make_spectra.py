@@ -19,9 +19,13 @@ version = importlib.metadata.version('SoFiA-image-pipeline')
 
 
 # Save full spectrum to a txt file:
-def get_noise_spec(source, src_basename, cube_params, original=None):
+def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=False):
 
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
 
@@ -87,7 +91,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None):
 
 # Make full spectrum plot:
 def make_specfull(source, src_basename, cube_params, original, spec_line=None, suffix='png', both=False,
-                  id_label=''):
+                  id_label='', overwrite=False):
 
     outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
     specfile = src_basename + '_{}_spec_aperture.txt'.format(source['id'])
@@ -102,6 +106,10 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
     logger.info('\tUsing {} to make aperture spectrum plot.'.format(specfile))
 
     long_format = 200
+
+    if os.path.isfile(outfile2) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile2))
+        os.system('rm -rf {}'.format(outfile2))
 
     if not os.path.isfile(outfile2):
 
@@ -273,11 +281,15 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
 
 
 # Make SoFiA masked spectrum plot (no noise):
-def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', id_label=''):
+def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', id_label='', overwrite=False):
 
     outfile1 = src_basename.replace('cubelets', 'figures') + '_{}_spec.{}'.format(source['id'], suffix)
     # For estimating position of z_w20, z_w50, z_wm50 which are given in pixel space:
     fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
+
+    if os.path.isfile(outfile1) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile1))
+        os.system('rm -rf {}'.format(outfile1))
 
     if not os.path.isfile(outfile1):
 
@@ -398,7 +410,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
     return fig1, ax1_spec, outfile1
 
 
-def main(source, src_basename, original=None, spec_line=None, suffix='png', beam=None, noid=False):
+def main(source, src_basename, original=None, spec_line=None, suffix='png', beam=None, noid=False, overwrite=False):
 
     logger.info("\tStart making spectral profiles")
     id_label = ''
@@ -418,21 +430,21 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
 
     # Make plot of SoFiA masked spectrum
     fig1, ax1_spec, outfile1 = make_spec(source, src_basename, cube_params, spec_line=spec_line, suffix=suffix,
-                                         id_label=id_label)
+                                         id_label=id_label, overwrite=overwrite)
 
     # Make text file of spectrum with noise; use full frequency range of original cube if provided:
     # Can be a bit more precise here in the output options/specification.
     sofia_aper_spec = src_basename + '_{}_spec_aperture.txt'.format(source['id'])
     specfull_file = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
     if original or ((not os.path.isfile(sofia_aper_spec)) and (not os.path.isfile(specfull_file))):
-        get_noise_spec(source, src_basename, cube_params, original)
+        get_noise_spec(source, src_basename, cube_params, original, overwrite=overwrite)
 
     # Make plot of spectrum with noise
     fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
-                                             suffix=suffix, both=False, id_label=id_label)
+                                             suffix=suffix, both=False, id_label=id_label, overwrite=overwrite)
     if outfile1 and outfile2:
         fig3, ax3_spec, outfile3 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
-                                                 suffix=suffix, both=True, id_label=id_label)
+                                                 suffix=suffix, both=True, id_label=id_label, overwrite=overwrite)
         ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
         ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
         ax1_spec.set_ylim([ymin, ymax])

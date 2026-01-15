@@ -20,7 +20,7 @@ logger = Logger.get_logger()
 ###################################################################
 
 
-def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=None, patch=None):
+def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=None, patch=None, overwrite=False):
         #  original, opt_view=6*u.arcmin, snr_range=[2, 3], spec_line=None, 
 
     logger.info("\tMaking CHANNEL maps.")
@@ -32,6 +32,10 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
 
     infile = src_basename + '_{}_cube.fits'.format(source['id'])
     outfile = src_basename.replace('cubelets', 'figures') + '_{}_chan_maps.pdf'.format(source['id'])
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
         # Get beam information from the source cubelet

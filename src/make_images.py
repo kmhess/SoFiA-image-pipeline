@@ -30,7 +30,7 @@ logger = Logger.get_logger()
 
 # Overlay radio spectral line contours on user image
 def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour, swapx, perc, spec_line=None,
-                     suffix='png', id_label='', Jykms=False):
+                     suffix='png', id_label='', Jykms=False, overwrite=False):
     """Overlay radio spectral line contours on top of a user provided image
 
     :param source: source object
@@ -57,9 +57,15 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
     :type id_label: str, optional
     :param Jykms: unit flag for moment 0 map
     :type Jykms: bool
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format('usr', suffix)
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
         try:
@@ -120,7 +126,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
 # Overlay contours on another image
 def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, spec_line=None, suffix='png',
-                 survey='DSS2 Blue', id_label='', Jykms=False):
+                 survey='DSS2 Blue', id_label='', Jykms=False, overwrite=False):
     """Overlay contours on top of an optical image
 
     :param source: source object
@@ -145,10 +151,16 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
     :type id_label: str, optional
     :param Jykms: unit flag for moment 0 map
     :type Jykms: bool
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return
     """
     survey_nospace = survey.replace(" ", "").lower()
     outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format(survey_nospace, suffix)
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
         try:
@@ -219,7 +231,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
 
 # Make moment 0 grey scale image
 def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png',
-              id_label='', Jykms=False):
+              id_label='', Jykms=False, overwrite=False):
     """Overlay radio spectral contours on the moment 0 gray scale image.
 
     :param source: source object
@@ -242,9 +254,15 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
     :type id_label: str, optional
     :param Jykms: unit flag for moment 0 map
     :type Jykms: bool
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom0.{}'.format(suffix)
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
         try:
@@ -324,7 +342,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
 # Make radio spectral line significance image
 def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png',
-             id_label='', Jykms=False):
+             id_label='', Jykms=False, overwrite=False):
     """Plot the pixel-by-pixel signal-to-noise ratio for the total intensity map of the source.
 
     :param source: source object
@@ -347,9 +365,15 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
     :type id_label: str, optional
     :param Jykms: unit flag for moment 0 map
     :type Jykms: bool
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_snr.{}'.format(suffix)
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
         try:
@@ -416,7 +440,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
 # Make velocity map for object
 def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view, base_contour, spec_line=None, 
-              suffix='png', id_label=''):
+              suffix='png', id_label='', overwrite=False):
     """
 
     :param source: source object
@@ -441,12 +465,18 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
     :type suffix: str
     :param id_label: title addition with source id number
     :type id_label: str, optional
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom1.{}'.format(suffix)
     cube_end = '.fits'
     if source['id'] != 0:
         cube_end = '_cube.fits'
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
 
@@ -629,7 +659,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
 
 # Make velocity dispersion map for object
 def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, spec_line=None, suffix='png',
-              id_label=''):
+              id_label='', overwrite=False):
     """
     :param source: source object
     :type source: Astropy table
@@ -649,9 +679,15 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
     :type suffix: str
     :param id_label: title addition with source id number
     :type id_label: str, optional
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom2.{}'.format(suffix)
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
 
@@ -759,7 +795,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
 # Overlay radio spectral line contours on false color optical image
 def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, base_contour, spec_line=None,
-                  suffix='png', survey='panstarrs', id_label='', Jykms=False):
+                  suffix='png', survey='panstarrs', id_label='', Jykms=False, overwrite=False):
     """Overlay radio spectral line contours on a false color image.
 
     :param source: source object
@@ -786,6 +822,8 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     :type id_label: str, optional
     :param Jykms: unit flag for moment 0 map
     :type Jykms: bool
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_mom0_{}.{}'.format(survey, suffix)
@@ -794,6 +832,10 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
     elif (survey == 'decals') or (survey == 'dr9'): survey = 'DECaLS'
     elif survey == 'decaps': survey = 'DECaPS'
     elif survey == 'sdss': survey = 'SDSS'
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
         logger.info("\tMaking {} contour overlay on {} false color image.".format(spec_line['name'], survey))
@@ -858,7 +900,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
 # Make pv plot for object
 def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=None, min_axis=True, suffix='png',
-            id_label=''):
+            id_label='', overwrite=False):
     """Plot the position-velocity slice for the source.
 
     :param source: source object
@@ -877,6 +919,8 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     :type suffix: str
     :param id_label: title addition with source id number
     :type id_label: str, optional
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return:
     """
     pv_axis = 'pv'
@@ -885,6 +929,10 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
     maskfile = src_basename + '_{}_mask.fits'.format(pv_axis)
     outfile = src_basename.replace('cubelets', 'figures') + '_{}.{}'.format(pv_axis, suffix)
     fits_file = src_basename + '_cube.fits'
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
         try:
@@ -1024,7 +1072,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
 
 
 # Make labeled plot for overview summary
-def make_overview_summary(source, src_basename, cube_params, patch, opt_head, catalog, suffix='png'):
+def make_overview_summary(source, src_basename, cube_params, patch, opt_head, catalog, suffix='png', overwrite=False):
     """Overlay source id numbers on the mask-2d image.
 
     :param source: source object
@@ -1039,9 +1087,15 @@ def make_overview_summary(source, src_basename, cube_params, patch, opt_head, ca
     :type opt_head: FITS header
     :param suffix: image file type
     :type suffix: str
+    :param overwrite: Flag to overwrite existing file
+    :type overwrite: bool
     :return:
     """
     outfile = src_basename.replace('cubelets', 'figures') + '_sources.{}'.format(suffix)
+
+    if os.path.isfile(outfile) and overwrite == True:
+        logger.warning('\tRemoving existing file: {}'.format(outfile))
+        os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
         try:
@@ -1087,7 +1141,8 @@ def make_overview_summary(source, src_basename, cube_params, patch, opt_head, ca
 
 
 def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam=None, chan_width=None, surveys=None,
-         snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None, catalog=None, noid=False, Jykms=False):
+         snr_range=[2, 3], user_image=None, user_range=[10., 99.], spec_line=None, catalog=None, noid=False, Jykms=False,
+         overwrite=False):
 
     logger.info("\tStart making spatial images.")
     swapx = False
@@ -1222,7 +1277,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
             usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
                                  wcs=usrim_wcs, mode='partial')
             make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range,
-                             suffix='png', spec_line=spec_line, id_label=id_label, Jykms=Jykms)
+                             suffix='png', spec_line=spec_line, id_label=id_label, Jykms=Jykms, overwrite=overwrite)
             opt_head = usrim_cut.wcs.to_header()
             # wcs.to_header() seems to have a bug where it doesn't include the axis information.
             opt_head['NAXIS'] = 2
@@ -1251,7 +1306,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
             patch_width = (cube_params['bmin'] / hst_opt_view).decompose()
             patch_hst = {'width': patch_width, 'height': patch_height}
             make_overlay(source, src_basename, cube_params, patch_hst, hst_opt, HIlowest, suffix=suffix, survey='hst',
-                         spec_line=spec_line, Jykms=Jykms)
+                         spec_line=spec_line, Jykms=Jykms, overwrite=overwrite)
             if surveys[0] == 'hst':
                 opt_head = hst_opt[0].header
                 opt_view = np.array([hst_opt_view.value,]) * u.arcsec
@@ -1276,8 +1331,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
     if ('panstarrs' in surveys) and (hi_pos_common.frame.name != 'galactic'):
         pstar_im, pstar_head = get_panstarrs(hi_pos_common, opt_view=opt_view)
         if pstar_im:
-            make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest,
-                          suffix=suffix, survey='panstarrs', spec_line=spec_line, id_label=id_label, Jykms=Jykms)
+            make_color_im(source, src_basename, cube_params, patch, pstar_im, pstar_head, HIlowest, suffix=suffix,
+                          survey='panstarrs', spec_line=spec_line, id_label=id_label, Jykms=Jykms, overwrite=overwrite)
             if surveys[0] == 'panstarrs':
                 opt_head = pstar_head
         elif surveys[0] == 'panstarrs':
@@ -1307,7 +1362,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         if decals_url == 'decaps' : decals_url = 'decals'  # Temp for file naming for now, but need to change in future.
         if decals_im:
             make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
-                        survey=decals_url, spec_line=spec_line, id_label=id_label, Jykms=Jykms)
+                        survey=decals_url, spec_line=spec_line, id_label=id_label, Jykms=Jykms, overwrite=overwrite)
             if (surveys[0] == 'decals') or (surveys[0] == 'dr9') or (surveys[0] == 'decaps') or (surveys[0] == 'sdss'):
                 opt_head = decals_head
         elif surveys[0] == 'decals':
@@ -1329,8 +1384,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
             if ('wise' in survey) or ('WISE' in survey):
                 overlay_image = get_wise(hi_pos_common, opt_view=opt_view, survey=survey)
                 if overlay_image:
-                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, 
-                                 suffix=suffix, survey=survey, spec_line=spec_line, id_label=id_label, Jykms=Jykms)
+                    make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix, 
+                                 survey=survey, spec_line=spec_line, id_label=id_label, Jykms=Jykms, overwrite=overwrite)
                     if surveys[0] == survey:
                         opt_head = overlay_image[0].header
                 else:
@@ -1340,8 +1395,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                 try:
                     overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey)
                     if overlay_image:
-                        make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, 
-                                     suffix=suffix, survey=survey, spec_line=spec_line, id_label=id_label, Jykms=Jykms)
+                        make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix, 
+                                     survey=survey, spec_line=spec_line, id_label=id_label, Jykms=Jykms, overwrite=overwrite)
                         if surveys[0] == survey:
                             opt_head = overlay_image[0].header
                     else:
@@ -1356,8 +1411,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
                           " cache=False.".format(survey))
                     try:
                         overlay_image = get_skyview(hi_pos_common, opt_view=opt_view, survey=survey, cache=False)
-                        make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest,
-                                     suffix=suffix, survey=survey, spec_line=spec_line, id_label=id_label, Jykms=Jykms)
+                        make_overlay(source, src_basename, cube_params, patch, overlay_image, HIlowest, suffix=suffix, 
+                                     survey=survey, spec_line=spec_line, id_label=id_label, Jykms=Jykms, overwrite=overwrite)
                         if surveys[0] == survey:
                             opt_head = overlay_image[0].header
                     except:
@@ -1377,22 +1432,22 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
     # Make the rest of the images if there is a survey image to regrid to.
     if opt_head:
         make_mom0(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
-                  id_label=id_label, Jykms=Jykms)
+                  id_label=id_label, Jykms=Jykms, overwrite=overwrite)
         make_snr(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
-                 id_label=id_label, Jykms=Jykms)
+                 id_label=id_label, Jykms=Jykms, overwrite=overwrite)
         make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_view_src, HIlowest, spec_line=spec_line, 
-                  suffix=suffix, id_label=id_label)
+                  suffix=suffix, id_label=id_label, overwrite=overwrite)
         make_mom2(source, src_basename, cube_params, patch, opt_head, HIlowest, spec_line=spec_line, suffix=suffix, 
-                  id_label=id_label)
+                  id_label=id_label, overwrite=overwrite)
 
     # Make pv and/or pv_min if they were created; not dependent on having a survey image to regrid to.
     if source['id'] != 0:
         make_pv(source, src_basename, cube_params, opt_view=opt_view_src, spec_line=spec_line, min_axis=False,
-                suffix=suffix, id_label=id_label)
+                suffix=suffix, id_label=id_label, overwrite=overwrite)
         make_pv(source, src_basename, cube_params, opt_view=opt_view_src, spec_line=spec_line, min_axis=True,
-                suffix=suffix, id_label=id_label)
+                suffix=suffix, id_label=id_label, overwrite=overwrite)
     else:
-        make_overview_summary(source, src_basename, cube_params, patch, opt_head, catalog, suffix=suffix)
+        make_overview_summary(source, src_basename, cube_params, patch, opt_head, catalog, suffix=suffix, overwrite=overwrite)
 
     plt.close('all')
 
