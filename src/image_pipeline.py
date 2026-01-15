@@ -104,6 +104,10 @@ def main():
                         help='Display moment 0 images in units of Jy km/s. Note this only works for in non-HI lines are specified.',
                         action='store_true')
     
+    parser.add_argument('-ow', '--overwrite',
+                        help='Overwrites files for requested source IDs.',
+                        action='store_true')
+
     ###################################################################
 
     # Parse the arguments above
@@ -149,6 +153,9 @@ def main():
     print("\n")
     logger.info("*****************************************************************")
     logger.info("\tBeginning SoFiA-image-pipeline (SIP) {}.".format(version))
+
+    if args.overwrite:
+        logger.warning("\tWARNING: 'overwrite = True'. Pipeline will delete previous file (if it exists) before making new files!")
 
     if (len(args.surveys) == 0) and (not args.user_image):
         args.surveys = ['DSS2 Blue']
@@ -272,12 +279,12 @@ def main():
                     x, p = make_images.main(source, src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
                                     user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
-                                    noid=args.no_source_id, Jykms=args.jy_kms)
+                                    noid=args.no_source_id, Jykms=args.jy_kms, overwrite=args.overwrite)
                 if args.chan_maps and not args.spec_only:
                     make_chan_maps.main(source, src_basename, suffix=suffix, beam=beam, noid=args.no_source_id, 
-                                        opt_head=x, patch=p)
+                                        opt_head=x, patch=p, overwrite=args.overwrite)
                 make_spectra.main(source, src_basename, original, spec_line=spectral_line, suffix=suffix, 
-                                  beam=beam, noid=args.no_source_id)
+                                  beam=beam, noid=args.no_source_id, overwrite=args.overwrite)
                 n_src += 1
             except:
                 failed_srcs.append(int(source['id']))
@@ -303,7 +310,7 @@ def main():
         make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
                     chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
                     user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
-                    catalog=catalog, noid=False, Jykms=args.jy_kms)
+                    catalog=catalog, noid=False, Jykms=args.jy_kms, overwrite=args.overwrite)
 
     logger.info(" ")
     logger.info("\tDONE! Made images for {} sources.".format(n_src))
