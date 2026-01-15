@@ -60,10 +60,11 @@ def main():
                              'contour in the figures. The contour level is calculated as the median value in the mom0 image\n'
                              'of all pixels whose SNR value is within the given range. Default is [2,3].')
 
-    parser.add_argument('-o', '--original', default=None,
-                        help='Optional: specify the original fits data: used for plotting aperture spectra over the full \n'
-                             'frequency range of the cube. Otherwise, plot with noise over frequency range in the cubelet. \n'
-                             'Uses 2D mask to integrate. (No default).')
+    parser.add_argument('-o', '--original', nargs='?', type=str, default='', #default=None,
+                        help='Optional: specify the original fits data for plotting the aperture spectrum over the full \n'
+                             'frequency range of the cube. Otherwise, plot aperture spectrum over frequency range in the \n'
+                             'cubelet. Uses 2D mask to integrate. If this option is given with no argument, SIP will guess \n'
+                             'the name of the original FITS file based on the catalog name, assuming SoFiA conventions.')
 
     parser.add_argument('-b', '--beam', default=None,
                         help='Optional: specify the beam dimensions as "(bmaj,bmin,bpa)" in arcsec, arcsec, deg. If only \n'
@@ -173,7 +174,19 @@ def main():
 
     if len(args.source_id):
         logger.info("\tWill only process selected sources: {}".format(args.source_id))
-
+    
+    # Check if user requested original image exists.  If not, exit.
+    if args.original == '':
+        original = None
+    elif args.original == None:
+        # Means flag was set to try to guess the original file name from the input catalog, assuming SoFiA naming scheme:
+        original = args.catalog[:-8] + '.fits'
+    else:
+        original = args.original
+    if original:
+        if not os.path.isfile(original):
+            logger.error("\tOriginal file assumed by pipeline {} does not exist. Check input options or filename.".format(original))
+    
     # Read in the catalog file:
     if catalog_file.split(".")[-1] == "xml":
         logger.info("\tReading catalog in XML format.")
