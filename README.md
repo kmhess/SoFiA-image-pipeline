@@ -107,6 +107,7 @@ OPTIONAL:
     -cm    Make channel maps for each source. These will be written to a multi-page pdf file in 4x5 portrait format.
     -spec  Only make spectra, no spatial images. May be useful for multi-line sources where the moment maps are less meaningful.
     -j     Plot the units of the moment 0 map in Jy/beam km/s.  Only works when HI line is not requested, otherwise defaults to cm^-2 or native units.
+    -ow    Overwrite option. Will delete existing plots of the same name, if they exist before making new one.
 ```
 
 ### Examples
@@ -154,6 +155,8 @@ Advanced tips
 * SIP can now create channel maps of each source with contours at +/- powers of 2 x RMS.  This can be enabled by including the `-cm` option.
 
 * SIP spatial images can be turned off such that only spectra are created for each source with the `-spec` option.
+
+* SIP now has an 'overwrite' option. It deletes old images as it goes, rather than removing all files at the beginning, so if SIP crashes midway through some old files may still be present.
 
 * When saving files as postscript, use `-x eps` to maintain the figure dimensions.
 
