@@ -1,3 +1,34 @@
+# IAU list of important lines: https://www.craf.eu/iau-list-of-important-spectral-lines/
+0.327384 DI
+3.263794 CH
+3.335481 CH
+3.349193 CH
+8.665650 3HeII
+18.343 C3H2
+42.880 SiO
+43.424 SiO
+87.300 C2H
+110.201 C13CO
+220.399 C13CO
+330.587 C13CO
+440.765 C13CO
+137.450 H213CO
+183.310 H2O
+380.197 H2O
+556.936 H2O
+547.676 H218O
+572.113 15NH3
+572.498 NH3
+# Lines from z_lines.list that weren't already in the table: https://github.com/astroumd/admit/blob/master/etc/z_lines.list
+492.160651 [CI]
+809.34197 [CI]
+752.033143 H2O
+987.926759 H2O
+1461.131406 [NII]
+2459.380101 [NII]
+2060.06886 [OI]
+3393.006244 [OIII]
+5785.879589 [OIII]
 # Transitions from VLA line list: https://www.aoc.nrao.edu/~cwalker/sched/Spectral_Line_Observations.html
 1.612231 OH
 1.665402 OH
