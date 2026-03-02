@@ -1255,6 +1255,11 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         with fits.open(user_image) as usrim:
             usrim_d = usrim[0].data
             usrim_h = usrim[0].header
+            # Deal with images that have extra axes:
+            if len(usrim_d.shape) == 4:
+                usrim_d = usrim_d[0,0,:,:]
+            if len(usrim_d.shape) == 3:
+                usrim_d = usrim_d[0,:,:]
             if ('cdelt1' in usrim_h) and ('cdelt2' in usrim_h) and ('cd1_1' in usrim_h) and ('cd2_2' in usrim_h):
                 usrim_pix_x, usrim_pix_y = usrim_h['cd1_1'], np.abs(usrim_h['cd2_2'])
             elif ('cdelt1' in usrim_h) and ('cdelt2' in usrim_h):
@@ -1270,7 +1275,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
             else:
                 swapx = False
             usrim_pix_x = np.abs(usrim_pix_x)
-            usrim_wcs = WCS(usrim_h)
+            usrim_wcs = WCS(usrim_h).celestial
         logger.info('\tImage loaded.')
         logger.info('\tExtracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
