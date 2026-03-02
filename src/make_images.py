@@ -100,13 +100,15 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         ax1.imshow(opt.data, origin='lower', cmap='viridis', vmin=np.percentile(opt.data[~np.isnan(opt.data)], perc[0]),
                    vmax=np.percentile(opt.data[~np.isnan(opt.data)], perc[1]))
         # Plot positive contours
-        if np.isfinite(base_contour):
+        if np.nanmax(hdulist_hi[0].data) > base_contour and np.isfinite(base_contour):
             ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(cubew))
         # Plot negative contours
         if np.nanmin(hdulist_hi[0].data) < -base_contour and np.isfinite(base_contour):
-            ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
-                        levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
+            levels_neg = -base_contour * 2 ** np.arange(10, -1, -1)
+            levels_neg = levels_neg[levels_neg > np.nanmin(hdulist_hi[0].data)]
+            ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed', levels=levels_neg, 
+                        transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
@@ -206,13 +208,14 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
             ax1.imshow(opt[0].data, cmap='viridis', vmin=np.percentile(opt[0].data, 10),
                        vmax=np.percentile(opt[0].data, 99.8), origin='lower')
             # Plot positive contours
-            if np.isfinite(base_contour):
+            if np.nanmax(hdulist_hi[0].data) > base_contour and np.isfinite(base_contour):
                 ax1.contour(hdulist_hi[0].data, cmap='Oranges', linewidths=1, levels=base_contour * 2 ** np.arange(10),
-                            transform=ax1.get_transform(cubew))
+                        transform=ax1.get_transform(cubew))
             # Plot negative contours
             if np.nanmin(hdulist_hi[0].data) < -base_contour and np.isfinite(base_contour):
-                ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed',
-                            levels=-base_contour * 2 ** np.arange(10, -1, -1),
+                levels_neg = -base_contour * 2 ** np.arange(10, -1, -1)
+                levels_neg = levels_neg[levels_neg > np.nanmin(hdulist_hi[0].data)]
+                ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed', levels=levels_neg, 
                             transform=ax1.get_transform(cubew))
             ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, color='white', fontsize=22)
                 
@@ -299,17 +302,15 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         im = ax1.imshow(mom0, cmap='gray_r', origin='lower', transform=ax1.get_transform(cubew))
         ax1.set(facecolor="white")  # Doesn't work with the color im
         # Plot positive contours
-        if np.isfinite(base_contour) and base_contour > 0.0:
+        if np.nanmax(mom0) > base_contour and np.isfinite(base_contour):
             ax1.contour(mom0, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10),
+                    transform=ax1.get_transform(cubew))
+        # Plot negative contours
+        if np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
+            levels_neg = -base_contour * 2 ** np.arange(10, -1, -1)
+            levels_neg = levels_neg[levels_neg > np.nanmin(mom0)]
+            ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed', levels=levels_neg, 
                         transform=ax1.get_transform(cubew))
-        # Plot negative contours when there's still positive emission
-            if np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
-                ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
-                            levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
-        # Plot negative contours when there's no positive emission
-        elif np.isfinite(base_contour):
-            ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed',
-                        levels=base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes, fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='darkorange', edgecolor='black', linewidth=1))
@@ -415,8 +416,13 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         plot_labels(source, ax1, cube_params['default_beam'], id_label=id_label)
         ax1.set(facecolor="white")  # Doesn't work with the color im
         im = ax1.imshow(np.abs(snr), cmap=wa_cmap, origin='lower', norm=norm, transform=ax1.get_transform(cubew))
-        if np.isfinite(base_contour):
+        # Plot positive contours
+        if np.nanmax(mom0) > base_contour and np.isfinite(base_contour):
             ax1.contour(mom0, linewidths=2, levels=[base_contour, ], colors=['k', ], transform=ax1.get_transform(cubew))
+        # Plot negative contours
+        if np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
+            ax1.contour(mom0, linewidths=2, levels=[-base_contour, ], colors=['k', ], linestyles='dashed',
+                        transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_label, ha='center', va='center', transform=ax1.transAxes, fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
                               transform=ax1.transAxes, facecolor='gold', edgecolor='indigo', linewidth=1))
@@ -867,19 +873,16 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         # ax1.set_facecolor("darkgray")   # Doesn't work with the color im
         ax1.imshow(color_im, origin='lower')
         plot_labels(source, ax1, cube_params['default_beam'], x_color='white', id_label=id_label)
-        if np.isfinite(base_contour):
-            # Plot positive contours
-            if base_contour > 0.0:
-                ax1.contour(mom0, cmap='Oranges', linewidths=1.2, levels=base_contour * 2 ** np.arange(10),
-                            transform=ax1.get_transform(cubew))
-                # Plot negative contours when there's still positive emission
-                if np.nanmin(mom0) < -base_contour:
-                    ax1.contour(mom0, cmap='YlOrBr', linewidths=1.2, linestyles='dashed',
-                                levels=-base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
-            # Plot negative contours when there's no positive emission
-            else:
-                ax1.contour(mom0, cmap='YlOrBr', linewidths=1.2, linestyles='dashed',
-                            levels=base_contour * 2 ** np.arange(10, -1, -1), transform=ax1.get_transform(cubew))
+        # Plot positive contours
+        if np.nanmax(mom0) > base_contour and np.isfinite(base_contour):
+            ax1.contour(mom0, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10),
+                    transform=ax1.get_transform(cubew))
+        # Plot negative contours
+        if np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
+            levels_neg = -base_contour * 2 ** np.arange(10, -1, -1)
+            levels_neg = levels_neg[levels_neg > np.nanmin(mom0)]
+            ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed', levels=levels_neg, 
+                        transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=22)
         ax1.add_patch(Ellipse((0.92, 0.9), height=patch['height'], width=patch['width'], angle=cube_params['bpa'],
