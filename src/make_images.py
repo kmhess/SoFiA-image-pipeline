@@ -495,11 +495,8 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
 
         # Do some preparatory work depending on the units of the spectral axis on the input cube.
         if 'freq' in source.colnames:
-            # Convert moment map from Hz into units of km/s
-
             if spec_line['rad_opt'] == 'Radio':
                 logger.warning("\tVelocity calculated in source rest frame because 'radio velocity' convention has no physical meaning.")
-            mom1[0].data = (const.c * (source['freq'] - mom1[0].data)/source['freq']).to(u.km / u.s).value
             # Calculate spectral quantities for plotting
             if spec_line['name'] != 'Unknown':
                 v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=spec_line['convention']).value
@@ -509,12 +506,18 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             if (source['id'] == 0) and original:
                 freqmin = chan2freq(source['z_min'], original).to(u.Hz).value
                 freqmax = chan2freq(source['z_max'], original).to(u.Hz).value
-            else:
+            elif original or source['id'] != 0:
                 freqmin = chan2freq(source['z_min'], src_basename + cube_end).to(u.Hz).value
                 freqmax = chan2freq(source['z_max'], src_basename + cube_end).to(u.Hz).value
+            else:
+                logger.warning("\tUsing the min/max values of the data itself to set scale, rather than the spectral extent of the source masks.")
+                freqmin = np.nanmin(mom1[0].data)
+                freqmax = np.nanmax(mom1[0].data)
             velmax = (const.c * (source['freq'] - freqmin)/source['freq']).to(u.km / u.s).value
             velmin = (const.c * (source['freq'] - freqmax)/source['freq']).to(u.km / u.s).value
             cbar_label = "Rest Frame Velocity [km/s]"
+            # Convert moment map from Hz into units of km/s in source restframe.
+            mom1[0].data = (const.c * (source['freq'] - mom1[0].data)/source['freq']).to(u.km / u.s).value
         else:
             logger.info("\tInput cube is in velocity units--no correction to source rest frame velocity has been applied!")
             # Convert moment map from m/s into units of km/s.
@@ -533,9 +536,13 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             if (source['id'] == 0) and original:
                 velmin = chan2vel(source['z_min'], original).to(u.km / u.s).value
                 velmax = chan2vel(source['z_max'], original).to(u.km / u.s).value
-            else:
+            elif original or source['id'] != 0:
                 velmin = chan2vel(source['z_min'], src_basename + cube_end).to(u.km / u.s).value
                 velmax = chan2vel(source['z_max'], src_basename + cube_end).to(u.km / u.s).value
+            else:
+                logger.warning("\tUsing the min/max values of the data itself to set scale, rather than the spectral extent of the source masks.")
+                velmin = np.nanmin(mom1[0].data)
+                velmax = np.nanmax(mom1[0].data)
             cbar_label = "{} {} Velocity [km/s]".format(cube_params['spec_sys'].capitalize(), spec_line['rad_opt'])
 
         if velmin == velmax:
