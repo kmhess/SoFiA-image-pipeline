@@ -882,7 +882,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         plot_labels(source, ax1, cube_params['default_beam'], x_color='white', id_label=id_label)
         # Plot positive contours
         if np.nanmax(mom0) > base_contour and np.isfinite(base_contour):
-            ax1.contour(mom0, cmap='Oranges_r', linewidths=1.2, levels=base_contour * 2 ** np.arange(10),
+            ax1.contour(mom0, cmap='Oranges', linewidths=1.2, levels=base_contour * 2 ** np.arange(10),
                     transform=ax1.get_transform(cubew))
         # Plot negative contours
         if np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
