@@ -28,6 +28,18 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
         os.system('rm -rf {}'.format(outfile))
 
     if not os.path.isfile(outfile):
+        # Make the output from this program as closely resemble the output from SoFiA as possible (units, etc)
+        spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
+                                   names=['chan', 'col2', 'f_sum', 'n_pix'])
+        ll = 0
+        while not ('f_sum' in spec_template.meta['comments'][ll] and 'chan' in spec_template.meta['comments'][ll] and
+                'n_pix' in spec_template.meta['comments'][ll]):
+            ll += 1
+        col_names = spec_template.meta['comments'][ll].split()
+        units_ = spec_template.meta['comments'][ll+1].split()
+        f_sum_units = (spec_template.meta['comments'][ll+1].split()[spec_template.meta['comments'][ll].split().index('f_sum')])
+        # Change 'col2' to actually column name. Hard coded, so potentially problematic if format changes in future:
+        spec_template.rename_column('col2', col_names[1])
 
         try:
             if not original:
@@ -35,8 +47,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
                 fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
                 cube = fits.getdata(fits_file)
                 mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
-                spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                                            names=['chan', 'col2', 'f_sum', 'n_pix'])
+                spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']), names=col_names)
                 channels = spec_template['chan']
             else:
                 fits_file = original
@@ -64,25 +75,23 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
             f.write("# The source spectrum, with noise, is calculated by integrating over\n")
             f.write("# the 2D mask of the source in every channel.  This means every row \n")
             f.write("# has the same number of contributing pixels and the noise is the same\n")
-            f.write("# for every point.\n")
+            f.write("# for every point. Units for each colum are as follows:\n")
+            f.write("# "+"\t".join('{}'.format(c) for c in col_names)+"\n")
+            f.write("# "+"\t".join('{}'.format(n) for n in units_)+"\n")
             f.write("# \n")
 
             if 'freq' in source.colnames:
-                frequency = spec_template['col2'] if spec_template else chan2freq(channels, fits_file)
-                ascii.write([channels, frequency, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
-                            names=['chan', 'freq', 'f_sum', 'n_pix'])
+                spectral_dim = spec_template[col_names[1]] if spec_template else chan2freq(channels, fits_file)
             elif 'FELO' in cube_params['spec_axis']:
-                velocities = spec_template['col2'] if spec_template else felo2vel(channels, fits_file)
-                ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
-                            names=['chan', 'velo', 'f_sum', 'n_pix'])
+                spectral_dim = spec_template[col_names[1]] if spec_template else felo2vel(channels, fits_file)
             elif 'VRAD' in cube_params['spec_axis']:
-                velocities = spec_template['col2'] if spec_template else chan2vel(channels, fits_file)
-                ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
-                            names=['chan', 'v_rad', 'f_sum', 'n_pix'])
+                spectral_dim = spec_template[col_names[1]] if spec_template else chan2vel(channels, fits_file)
             else:
-                velocities = spec_template['col2'] if spec_template else chan2vel(channels, fits_file)
-                ascii.write([channels, velocities, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line',
-                            names=['chan', 'velo', 'f_sum', 'n_pix'])
+                spectral_dim = spec_template[col_names[1]] if spec_template else chan2vel(channels, fits_file)
+
+            ascii.write([channels, spectral_dim, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line', 
+                        names=col_names)
+
         os.system("cat temp.txt temp2.txt > {}".format(outfile))
         os.system("rm temp.txt temp2.txt")
 
