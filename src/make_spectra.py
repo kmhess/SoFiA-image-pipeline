@@ -159,15 +159,6 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
                                                                                          equivalencies=spec_line['convention']).value
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=spec_line['convention']).value
-            # aperture_noise = np.std(list(spec['f_sum'][:np.where(spec['chan'] == source['z_min'])[0][0]]) +
-            #                        list(spec['f_sum'][np.where(spec['chan'] == source['z_max'])[0][0]+1:]))
-            # aperture_sum = np.sum(spec['f_sum'][np.where(spec['chan'] == source['z_min'])[0][0]:
-            #                                     np.where(spec['chan'] == source['z_max'])[0][0]+1])
-            # aperture_SNR = aperture_sum / (aperture_noise * np.sqrt(source['z_max']+1-source['z_min']))
-            # v_sys_label = "SNR$_\mathrm{{aper}}$ = {:.1f}".format(aperture_SNR)
-            # if both == True:
-            #     v_sys_label = "SNR$_\mathrm{{mask}}$ = {:.1f}  SNR$_\mathrm{{aper}}$ = {:.1f}".format(source['snr'],aperture_SNR)
-
         except FileNotFoundError:
             logger.warning("\tNo existing _specfull.txt file. Perhaps there is no cube to generate one, or need to specify original.")
             fig2, ax2_spec, outfile2 = None, None, None
@@ -262,16 +253,6 @@ def make_specfull(source, src_basename, cube_params, original, spec_line=None, s
         ax2_spec.plot([maskmax, maskmax], [0.95*ymin, 0.95*ymax], ':', color='gray')
 
         ax2_spec.plot([v_sys, v_sys], np.array([-0.05, 0.05])*(ymax-ymin), color='gray')
-
-        # # Condition from Apertif experience that if the RFI is *really* bad, plot based on strength of HI profile
-        # ax_margin_percent = 0.15
-        # if (ymax > 5.*galspec_max) | (ymin < np.nanmin([-2.*np.abs(galspec_min), -5.*np.nanstd(spectrumJy).value])):
-        #     print("\tWARNING: Suspect there is a lot of noise in the full spectrum?  Trying to adjust"
-        #           " y-axis to source.")
-        #     ax_margin = (1. + ax_margin_percent) * np.array([np.nanmin([-2.*np.abs(galspec_min),
-        #                                                                 -3*np.nanstd(spectrumJy).value]), 3.*galspec_max])
-        #     print(ax_margin)
-        #     ax2_spec.set_ylim(ax_margin)
 
     else:
         logger.warning('\t{} already exists. Will not overwrite.'.format(outfile2))
