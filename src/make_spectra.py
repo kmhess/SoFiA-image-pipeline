@@ -103,7 +103,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
 
 
 # Make full spectrum plot:
-def make_specfull(source, src_basename, cube_params, original, spec_line=None, suffix='png', both=False,
+def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, suffix='png', both=False,
                   id_label='', overwrite=False):
 
     outfile2 = src_basename.replace('cubelets', 'figures') + '_{}_specfull.{}'.format(source['id'], suffix)
@@ -434,10 +434,10 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
         get_noise_spec(source, src_basename, cube_params, original, overwrite=overwrite)
 
     # Make plot of spectrum with noise
-    fig2, ax2_spec, outfile2 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
+    fig2, ax2_spec, outfile2 = make_spec_aper(source, src_basename, cube_params, original, spec_line=spec_line,
                                              suffix=suffix, both=False, id_label=id_label, overwrite=overwrite)
     if outfile1 and outfile2:
-        fig3, ax3_spec, outfile3 = make_specfull(source, src_basename, cube_params, original, spec_line=spec_line,
+        fig3, ax3_spec, outfile3 = make_spec_aper(source, src_basename, cube_params, original, spec_line=spec_line,
                                                  suffix=suffix, both=True, id_label=id_label, overwrite=overwrite)
         ymin = min([ax1_spec.get_ylim()[0], ax2_spec.get_ylim()[0]])
         ymax = max([ax1_spec.get_ylim()[1], ax2_spec.get_ylim()[1]])
