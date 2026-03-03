@@ -179,14 +179,10 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
 
         # Get spec units (Jy or Jy/beam) to check whether the division by the beam area has been made
         ll = 0
-        try:
-            while not ('f_sum' in spec.meta['comments'][ll] and 'chan' in spec.meta['comments'][ll] and
-                    'n_pix' in spec.meta['comments'][ll]):
-                ll += 1
-            specunits = (spec.meta['comments'][ll+1].split()[spec.meta['comments'][ll].split().index('f_sum')])
-        except IndexError:
-            # If spectral plot is not made by SoFiA or does not have units for f_sum, assume the beam not accounted for
-            specunits = 'Jy/beam'
+        while not ('f_sum' in spec.meta['comments'][ll] and 'chan' in spec.meta['comments'][ll] and
+                'n_pix' in spec.meta['comments'][ll]):
+            ll += 1
+        specunits = (spec.meta['comments'][ll+1].split()[spec.meta['comments'][ll].split().index('f_sum')])
 
         if specunits == 'Jy/beam':
             flux_dens = spec['f_sum'] / cube_params['pix_per_beam']
@@ -221,7 +217,8 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
         else:
             logger.info("\tInput *_specfull.txt is >=200 channels; expanding figure, not including error bars (noise should be indicative).")
             ax2_spec.plot(optical_velocity, flux_dens)
-            if both == True: ax2_spec.plot(optical_velocity2, flux_dens2)
+            if both == True: 
+                ax2_spec.plot(optical_velocity2, flux_dens2)
         ax2_spec.text(0.05, 0.90, z_label, ha='left', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         # ax2_spec.text(0.5, 0.06, v_sys_label, ha='center', va='center', transform=ax2_spec.transAxes, color='black', fontsize=17)
         ax2_spec.set_title(source['name'] + id_label, fontsize=20)
