@@ -65,8 +65,12 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
             return
 
         mask2d = np.sum(mask, axis=0)
-        spectrum = np.nansum(cube[:, mask2d != 0], axis=1)
+        flux_sum = np.nansum(cube[:, mask2d != 0], axis=1)
         n_pix = 0 * channels + np.sum(mask2d != 0)
+
+        if f_sum_units == 'Jy':
+            # Then must convert from Jy/beam to Jy using the beam information
+            flux_sum = flux_sum / cube_params['pix_per_beam']
 
         with open('temp.txt', 'w') as f:
             f.write("# Integrated source spectrum with noise\n")
@@ -89,7 +93,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
             else:
                 spectral_dim = spec_template[col_names[1]] if spec_template else chan2vel(channels, fits_file)
 
-            ascii.write([channels, spectral_dim, spectrum, n_pix], 'temp2.txt', format='fixed_width_two_line', 
+            ascii.write([channels, spectral_dim, flux_sum, n_pix], 'temp2.txt', format='fixed_width_two_line', 
                         names=col_names)
 
         os.system("cat temp.txt temp2.txt > {}".format(outfile))
