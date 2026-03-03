@@ -107,7 +107,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         if np.nanmin(hdulist_hi[0].data) < -base_contour and np.isfinite(base_contour):
             levels_neg = -base_contour * 2 ** np.arange(10, -1, -1)
             levels_neg = levels_neg[levels_neg > np.nanmin(hdulist_hi[0].data)]
-            ax1.contour(hdulist_hi[0].data, cmap='BuPu_r', linewidths=1.2, linestyles='dashed', levels=levels_neg, 
+            ax1.contour(hdulist_hi[0].data, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed', levels=levels_neg, 
                         transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=22)
@@ -881,7 +881,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         if np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
             levels_neg = -base_contour * 2 ** np.arange(10, -1, -1)
             levels_neg = levels_neg[levels_neg > np.nanmin(mom0)]
-            ax1.contour(mom0, cmap='YlOrBr_r', linewidths=1.2, linestyles='dashed', levels=levels_neg, 
+            ax1.contour(mom0, cmap='BuPu_r', linewidths=1.2, linestyles='dashed', levels=levels_neg, 
                         transform=ax1.get_transform(cubew))
         ax1.text(0.5, 0.05, nhi_labels, ha='center', va='center', transform=ax1.transAxes,
                  color='white', fontsize=22)
