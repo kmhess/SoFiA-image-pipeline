@@ -559,10 +559,12 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
         # Only plot values above the lowest calculated contour value:
         hdulist_hi = fits.open(src_basename + '_mom0.fits')
         mom0 = hdulist_hi[0].data
-        if base_contour > 0.0 and np.isfinite(base_contour):
+        if np.nanmax(mom0) > base_contour and np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
+            mom1_d[np.abs(mom0) < base_contour] = np.nan
+        elif np.nanmax(mom0) > base_contour and np.isfinite(base_contour):
             mom1_d[mom0 < base_contour] = np.nan
-        elif np.isfinite(base_contour):
-            mom1_d[mom0 > base_contour] = np.nan
+        elif np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
+            mom1_d[mom0 > -base_contour] = np.nan
         else:
             mom1_d *= np.nan
         owcs = WCS(opt_head)
@@ -591,8 +593,11 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             levels = [v_sys-3*vunit, v_sys-2*vunit, v_sys-1*vunit, v_sys, v_sys+1*vunit, v_sys+2*vunit, v_sys+3*vunit]
         clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=1.0, transform=ax1.get_transform(cubew))
-        
+            try:
+                cf = ax1.contour(mom1_d, colors=clevels, levels=levels, linewidths=1.0, transform=ax1.get_transform(cubew))
+            except:
+                cf = None
+                logger.warning("\tCouldn't plot velocity contours. Check mom0 if source is 'real'.")
         if (spec_line['name'] == 'Unknown') or (source['id'] != 0):
             v_sys_label = ""
         else:
@@ -637,7 +642,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
                               transform=ax1.transAxes, edgecolor='darkred', linewidth=1))
         cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        if not singlechansource:
+        if cf and not singlechansource:
             cbar.add_lines(cf)
         cbar.set_label(cbar_label, fontsize=22)
         cbar.ax.tick_params(labelsize=22, length=6, width=2)
@@ -740,10 +745,12 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         # Only plot values above the lowest calculated contour value:
         hdulist_hi = fits.open(src_basename + '_mom0.fits')
         mom0 = hdulist_hi[0].data
-        if base_contour > 0.0 and np.isfinite(base_contour):
+        if np.nanmax(mom0) > base_contour and np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
+            mom2_d[np.abs(mom0) < base_contour] = np.nan
+        elif np.nanmax(mom0) > base_contour and np.isfinite(base_contour):
             mom2_d[mom0 < base_contour] = np.nan
-        elif np.isfinite(base_contour):
-            mom2_d[mom0 > base_contour] = np.nan
+        elif np.nanmin(mom0) < -base_contour and np.isfinite(base_contour):
+            mom2_d[mom0 > -base_contour] = np.nan
         else:
             mom2_d *= np.nan
         owcs = WCS(opt_head)
@@ -768,11 +775,11 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         levels = np.arange(vunit,vel_max,vunit)
         # clevels = ['white', 'lightgray', 'dimgrey', 'black', 'dimgrey', 'lightgray', 'white']
         if not singlechansource:
-            mom2_cf = True
             try:
                 cf = ax1.contour(mom2_d, levels=levels, colors=['k', ], linewidths=1.0, transform=ax1.get_transform(cubew))
             except ValueError:
-                mom2_cf = False
+                cf = None
+                logger.warning("\tCouldn't velocity dispersion contours. Check mom0 if source is 'real'.")
         v_disp_label = r"$\Delta \sigma_{{contours}}$ = {} km/s".format(int(vunit))
 
         ax1.text(0.5, 0.05, v_disp_label, ha='center', va='center', transform=ax1.transAxes, color='black', fontsize=22)
@@ -780,7 +787,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
                               transform=ax1.transAxes, facecolor='#4199B5', edgecolor='#D8424D', linewidth=1))
         cb_ax = fig.add_axes([0.915, 0.11, 0.02, 0.76])
         cbar = fig.colorbar(im, cax=cb_ax)
-        if not singlechansource and mom2_cf:
+        if cf and not singlechansource:
             cbar.add_lines(cf)
         cbar.set_label(cbar_label, fontsize=22)
         cbar.ax.tick_params(labelsize=22, length=6, width=2)
