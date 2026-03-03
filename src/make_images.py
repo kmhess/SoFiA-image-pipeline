@@ -85,9 +85,6 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
-            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            logger.warning("\tNo cubelet to match source {}."
-                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
                 hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
@@ -181,9 +178,6 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
-            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            logger.warning("\tNo cubelet to match source {}."
-                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
                 hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
@@ -283,9 +277,6 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
-            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            logger.warning("\tNo cubelet to match source {}."
-                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
                 hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
@@ -389,9 +380,6 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
-            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            logger.warning("\tNo cubelet to match source {}."
-                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
                 hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
@@ -553,9 +541,6 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
-            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            logger.warning("\tNo cubelet to match source {}."
-                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
                 hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
@@ -739,9 +724,6 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
-            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            logger.warning("\tNo cubelet to match source {}."
-                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
                 hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
@@ -864,9 +846,6 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
         try:
             hiwcs, cubew = get_wcs_info(src_basename + '_cube.fits')
         except FileNotFoundError:
-            # Exits, but need to see if one can proceed without this...say with only mom0.fits as min requirement?
-            logger.warning("\tNo cubelet to match source {}."
-                  " Try retrieving coordinate info from moment 0 map.".format(source['id']))
             try:
                 hiwcs, cubew = get_wcs_info(src_basename + '_mom0.fits')
             except FileNotFoundError:
@@ -1173,6 +1152,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
     elif original:
         chan_width = fits.getheader(original)['CDELT3']
 
+    # This block of code may make the try/excepts around get_wcs_info() in functions above redundant.  See issue #145.
     # Get beam information from the source cubelet
     try:
         cube_params = get_info(src_basename + cube_end, beam, source['id'])
