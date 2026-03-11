@@ -974,7 +974,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
             if os.path.isfile(maskfile):
                 logger.info("\tOverlaying SoFiA-generated pv mask boundaries on {} diagram ...".format(pv_axis))
                 mask_pv = fits.open(maskfile)
-                ax1.contour(mask_pv[0].data, colors='red', levels=[0.5], transform=ax1.get_transform(WCS(mask_pv[0].header)))
+                ax1.contour(mask_pv[0].data, colors='red', levels=[0.5], transform=ax1.get_transform(wcs_pv))
                 mask_pv.close()
             elif os.path.isfile(src_basename + '_mask.fits'):
                 logger.info("\tAttempting to overlay mask boundaries on {} diagram ...".format(pv_axis))
