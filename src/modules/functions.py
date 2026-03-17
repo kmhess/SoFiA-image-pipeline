@@ -529,7 +529,7 @@ def line_lookup2(spec_line, frequency=None):
             if len(idx[0]) == 1:
                 logger.info("\t\tBest match found for {} with database frequency {} GHz".format(sub_list[idx]['name'][0],
                                                                                                 sub_list[idx]['freq'][0]))
-                restfreq_line = sub_list['freq'][0] * u.GHz
+                restfreq_line = sub_list[idx]['freq'][0] * u.GHz
                 convention = u.doppler_optical(restfreq_line)
                 break
             elif len(idx[0]) == 0:
