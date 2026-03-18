@@ -1166,6 +1166,10 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
             logger.error("\tNo cubelet or mom0 to match source {}.\n".format(source['id']))
             exit()
 
+    # Converstion to Jykms from JyHz only makes sense if the spectral axis is in frequency
+    if cube_params['spec_axis'] != 'FREQ':
+        Jykms = False
+
     opt_head = None
 
     # Calculate base contour from the SNR map and requested SNR range
