@@ -159,7 +159,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None, Jykms=False):
             subscript = ''
         else:
             subscript = spec_line
-        if Jykms == False:
+        if Jykms == False and ((bunit == 'Jy/beam*Hz') or (bunit == 'beam-1 Jy*Hz')):
             nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(spec_line, nhi/10**nhi_ofm, nhi_ofm)
             nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1...)'.format(subscript,
                                                                                                               nhi/10**nhi_ofm, nhi_ofm)
