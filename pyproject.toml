@@ -33,10 +33,11 @@ sofia_image_pipeline = "src.image_pipeline:main"
 [project.urls]
 Homepage = "https://github.com/kmhess/SoFiA-image-pipeline"
 
-[tool.hatch.version]
-path = "src/__init__.py"
+[tool.setuptools]
+include-package-data = true
 
-[tool.hatch.build.targets.sdist]
-include = [
-    "/src",
-]
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.setuptools.package-data]
+data = ["tier1_lines_reformat.list"] 
