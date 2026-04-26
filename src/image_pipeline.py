@@ -258,8 +258,6 @@ def main():
         logger.info("\tMaking figure directory.")
         os.system('mkdir {}'.format(figure_dir))
 
-    logger.info("\tAssuming all requested sources are associated with {} line transition".format(args.spectral_line))    
-
     src_basename = cubelet_dir + catalog_file.split("/")[-1].split("_cat.")[0]
 
     # Make all the images on a source-by-source basis.  In future, could parallelize this.
@@ -277,6 +275,8 @@ def main():
         spectral_line = line_lookup(line[0])
     elif args.spectral_line != None:
         spectral_line = line_lookup2(line[0], line[1])
+
+    logger.info("\tAssuming all requested sources are associated with {} line transition".format(args.spectral_line))    
 
     for source in catalog:
 
