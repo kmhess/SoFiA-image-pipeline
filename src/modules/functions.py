@@ -506,7 +506,7 @@ def line_lookup(spec_line):
 def line_lookup2(spec_line, frequency=None):
 
     rad_opt = 'Optical'
-    tolerance = [1, 0.1, 0.01, 0.001] * u.GHz
+    tolerance = [1, 0.1, 0.01, 0.001, 0.0001] * u.GHz
     tier1 = Table.read(package_dir + '/../data/tier1_lines_reformat.list', format='ascii', comment='#', names=['freq','name'])
     sub_list = tier1[tier1['name'] == spec_line]
     last_guess = 0
@@ -540,13 +540,15 @@ def line_lookup2(spec_line, frequency=None):
                 break
             last_guess = len(idx[0])
         if len(idx[0]) > 1:
-            logger.error("\t\tMultiple database matches to provided spectral line. Provide a more accurate rest frequency. " \
-                         "Continuing to make plots without a known redshift.")
+            logger.error("\t\tNo unique match: {} possibilities. Provide a more accurate rest frequency. " \
+                         "Continuing to make plots without a known redshift.".format(last_guess))
+            restfreq_line = None
+            convention = None
     else:
         spec_line = 'Unknown'
         restfreq_line = None
         convention = None
-        print('Should never get to this point in the code.  If so, please post an issue and describe how you got here.')
+        logger.error('[LINE_LOOKUP2] Should never get to this point in the code.  If so, please post an issue and describe how you got here.')
 
     return {'name': spec_line, 'restfreq': restfreq_line, 'convention':convention, 'rad_opt':rad_opt}
 
