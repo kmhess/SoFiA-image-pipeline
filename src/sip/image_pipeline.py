@@ -13,8 +13,8 @@ from astropy import units as u
 import importlib.metadata
 import numpy as np
 
-# Other imports from src are in code below so logger is initialized correctly
-from src.modules.logger import Logger
+# Other imports from sip are in code below so logger is initialized correctly
+from sip.modules.logger import Logger
 
 version = importlib.metadata.version('SoFiA-image-pipeline')
 
@@ -231,7 +231,7 @@ def main():
         exit()
     elif ('ra' not in catalog.colnames) and (original):
         # Try to calculate an ra dec if not in the catalog. Deprecated?
-        from src.modules.functions import get_radecfreq
+        from sip.modules.functions import get_radecfreq
 
         # This may be deprecated given that we insistence on running parameter.wcs, physical, offset = True
         logger.warning("\tLooks like catalog doesn't contain 'ra' and 'dec' columns. But can derive them with \n" \
@@ -266,10 +266,10 @@ def main():
     failed_srcs = []
 
     # Do the hard work
-    from src import make_images, make_spectra
-    from src.modules import make_chan_maps
-    from src.combine_images import combine_images
-    from src.modules.functions import line_lookup, line_lookup2
+    from sip import make_images, make_spectra
+    from sip.modules import make_chan_maps
+    from sip.combine_images import combine_images
+    from sip.modules.functions import line_lookup, line_lookup2
 
     if line[0] in ['HI','CO(1-0)','CO(2-1)','CO(3-2)','OH_1612','OH_1665','OH_1667','OH_1720']:
         spectral_line = line_lookup(line[0])
@@ -314,7 +314,7 @@ def main():
 
     if ((0 in args.source_id) or (-1 in args.source_id)) & (not args.spec_only):
         # Make a source object for the overview image
-        from src.modules.functions import add_source
+        from sip.modules.functions import add_source
 
         logger.info(" ")
         logger.info("\tMaking summary images of full field.")

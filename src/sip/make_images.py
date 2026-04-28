@@ -13,14 +13,14 @@ from matplotlib.colors import PowerNorm
 import numpy as np
 from urllib.error import HTTPError
 
-from src.modules.functions import get_info, get_wcs_info
-from src.modules.functions import chan2freq, chan2vel, sbr2nhi
-from src.modules.functions import create_pv
-from src.modules.functions import plot_labels
-from src.modules.functions import make_header
-from src.modules.get_ancillary import *
-from src.modules.get_hst_cosmos import get_hst_cosmos
-from src.modules.logger import Logger
+from sip.modules.functions import get_info, get_wcs_info
+from sip.modules.functions import chan2freq, chan2vel, sbr2nhi
+from sip.modules.functions import create_pv
+from sip.modules.functions import plot_labels
+from sip.modules.functions import make_header
+from sip.modules.get_ancillary import *
+from sip.modules.get_hst_cosmos import get_hst_cosmos
+from sip.modules.logger import Logger
 
 logger = Logger.get_logger()
 

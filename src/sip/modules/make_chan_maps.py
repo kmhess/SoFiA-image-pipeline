@@ -9,10 +9,10 @@ from matplotlib.patches import Ellipse
 import matplotlib.pyplot as plt
 import numpy as np
 
-from src.modules.functions import get_info, get_wcs_info
-from src.modules.functions import chan2freq
+from sip.modules.functions import get_info, get_wcs_info
+from sip.modules.functions import chan2freq
 
-from src.modules.logger import Logger
+from sip.modules.logger import Logger
 
 logger = Logger.get_logger()
 

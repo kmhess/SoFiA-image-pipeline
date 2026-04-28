@@ -9,7 +9,7 @@ from astropy.wcs import WCS
 import numpy as np
 from pvextractor import extract_pv_slice, PathFromCenter
 
-from src.modules.logger import Logger
+from sip.modules.logger import Logger
 
 logger = Logger.get_logger()
 
@@ -537,6 +537,7 @@ def line_lookup2(spec_line, frequency=None):
                              "to make plots without a known redshift.".format(last_guess))
                 restfreq_line = None
                 convention = None
+                print(sub_list[idx])
                 break
             last_guess = len(idx[0])
         if len(idx[0]) > 1:
@@ -544,6 +545,8 @@ def line_lookup2(spec_line, frequency=None):
                          "Continuing to make plots without a known redshift.".format(last_guess))
             restfreq_line = None
             convention = None
+            print(sub_list[idx],'*')
+            print(diff[idx])
     else:
         spec_line = 'Unknown'
         restfreq_line = None

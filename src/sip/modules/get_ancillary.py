@@ -9,8 +9,8 @@ from astropy.wcs import WCS
 from astroquery.skyview import SkyView
 import numpy as np
 
-from src.modules.panstarrs_fcns import getcolorim, geturl
-from src.modules.logger import Logger
+from sip.modules.panstarrs_fcns import getcolorim, geturl
+from sip.modules.logger import Logger
 
 logger = Logger.get_logger()
 

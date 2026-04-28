@@ -8,8 +8,8 @@ from urllib.error import HTTPError
 from astropy.coordinates import SkyCoord
 from astropy import units as u
 
-from src.modules.get_ancillary import *
-from src.modules.logger import Logger
+from sip.modules.get_ancillary import *
+from sip.modules.logger import Logger
 
 logger = Logger.get_logger()
 

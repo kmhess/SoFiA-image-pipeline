@@ -1,6 +1,6 @@
 import os
 
-from src.modules.logger import Logger
+from sip.modules.logger import Logger
 
 logger = Logger.get_logger()
 
