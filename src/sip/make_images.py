@@ -1244,8 +1244,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         opt_view_src = opt_view
 
     # Calculate the size of the beam (plotted as a fraction of the image size)
-    patch_height = (cube_params['bmaj'] / opt_view).decompose()
-    patch_width = (cube_params['bmin'] / opt_view).decompose()
+    patch_height = (cube_params['bmaj'] / opt_view).decompose()[0]
+    patch_width = (cube_params['bmin'] / opt_view).decompose()[0]
     patch = {'width': patch_width, 'height': patch_height}
 
     # Extract cutout from user image
@@ -1329,8 +1329,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         opt_view_src = opt_view * 1.3
         opt_view = np.array([0.02,]) * u.arcmin
         # Recalculate the size of the beam (plotted as a fraction of the image size) if necessary
-        patch_height = (cube_params['bmaj'] / opt_view).decompose()
-        patch_width = (cube_params['bmin'] / opt_view).decompose()
+        patch_height = (cube_params['bmaj'] / opt_view).decompose()[0]
+        patch_width = (cube_params['bmin'] / opt_view).decompose()[0]
         patch = {'width': patch_width, 'height': patch_height}
 
     # Create a false color optical panstarrs overlay, if requested:
@@ -1429,8 +1429,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
     if opt_view_src != None:
         opt_head = make_header(source, opt_view=opt_view_src)
         # Recalculate patch size (size of the beam as a fraction of the image size):
-        patch_height = (cube_params['bmaj'] / opt_view_src).decompose()
-        patch_width = (cube_params['bmin'] / opt_view_src).decompose()
+        patch_height = (cube_params['bmaj'] / opt_view_src).decompose()[0]
+        patch_width = (cube_params['bmin'] / opt_view_src).decompose()[0]
         patch = {'width': patch_width, 'height': patch_height}
     else:
         opt_view_src = opt_view
