@@ -377,7 +377,7 @@ def get_subcube(source, original):
     :rtype: NDArray
     """
 
-    hdu_orig = fits.open(original)
+    hdu_orig = fits.open(original, memmap=True)
 
     if hdu_orig[0].header['NAXIS'] == 4:
         stokes_dim, z_dim, y_dim, x_dim = 0, 1, 2, 3
