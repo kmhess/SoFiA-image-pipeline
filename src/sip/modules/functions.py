@@ -495,7 +495,7 @@ def line_lookup(spec_line):
         convention = u.doppler_optical(restfreq_line)
     else:
         logger.error("\t\tUnrecognized spectral line, try 'HI'; 'CO(1-0)', etc; or 'OH_1667', etc. " \
-                     "Continuing to make plots without a known redshift.")
+                     "See help or Github for options for specifying spectral lines.")
         spec_line = 'Unknown'
         restfreq_line = None
         convention = None
@@ -513,13 +513,12 @@ def line_lookup2(spec_line, frequency=None):
     
     if len(sub_list) == 0:
         logger.error("\t\tUnrecognized spectral line name. See help or Github for options for specifying spectral lines.")
-        logger.error("\t\t\tContinuing to make plots without a known redshift.")
         spec_line = 'Unknown'
         restfreq_line = None
         convention = None
     elif len(sub_list) == 1:
-        logger.info("\t\tDirect match found for {} based only on provided name. Has frequency {} GHz".format(sub_list['name'][0],
-                                                                                                             sub_list['freq'][0]))
+        logger.info("\t\tDirect match found for {} based only on provided name. Has frequency {} GHz.".format(sub_list['name'][0],
+                                                                                                              sub_list['freq'][0]))
         restfreq_line = sub_list['freq'][0] * u.GHz
         convention = u.doppler_optical(restfreq_line)
     elif frequency:
@@ -541,8 +540,7 @@ def line_lookup2(spec_line, frequency=None):
                 break
             last_guess = len(idx[0])
         if len(idx[0]) > 1:
-            logger.error("\t\tNo unique match: {} possibilities. Provide a more accurate rest frequency. " \
-                         "Continuing to make plots without a known redshift.".format(last_guess))
+            logger.error("\t\tNo unique match: {} possibilities. Provide a more accurate rest frequency.".format(last_guess))
             restfreq_line = None
             convention = None
             print(sub_list[idx],'*')

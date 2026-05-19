@@ -276,8 +276,12 @@ def main():
     elif args.spectral_line != None:
         spectral_line = line_lookup2(line[0], line[1])
 
-    logger.info("\tAssuming all requested sources are associated with {} line transition".format(args.spectral_line))    
-
+    if spectral_line['restfreq'] != None:
+        logger.info("\tAssuming all requested sources are associated with {} line transition at {}.".format(spectral_line['name'],
+                                                                                                        spectral_line['restfreq']))    
+    else:
+        logger.info("\tContinuing to make plots for unknown spectral line.")
+    
     for source in catalog:
 
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
