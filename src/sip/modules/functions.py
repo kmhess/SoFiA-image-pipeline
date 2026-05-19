@@ -470,7 +470,7 @@ def line_lookup(spec_line):
     rad_opt = 'Optical'
     if (spec_line == '') or (spec_line == 'HI'):
         spec_line == 'HI'
-        restfreq_line = 1420405751.77 * u.Hz
+        restfreq_line = 1.42040575177 * u.GHz
         convention = u.doppler_optical(restfreq_line)
     elif spec_line == 'CO(1-0)':
         restfreq_line = 115.27120180 * u.GHz
@@ -523,28 +523,31 @@ def line_lookup2(spec_line, frequency=None):
         convention = u.doppler_optical(restfreq_line)
     elif frequency:
         diff = sub_list['freq'] * u.GHz - frequency * u.GHz
-        for t in tolerance:
-            idx = np.where(np.abs(diff) <= t)
-            if len(idx[0]) == 1:
-                logger.info("\t\tBest match found for {} with database frequency {} GHz".format(sub_list[idx]['name'][0],
-                                                                                                sub_list[idx]['freq'][0]))
-                restfreq_line = sub_list[idx]['freq'][0] * u.GHz
-                convention = u.doppler_optical(restfreq_line)
-                break
-            elif len(idx[0]) == 0:
-                logger.error("\t\tNo unique match: {} possibilities. Provide a more accurate rest frequency. Continuing " \
-                             "to make plots without a known redshift.".format(last_guess))
-                restfreq_line = None
-                convention = None
-                print(sub_list[idx])
-                break
-            last_guess = len(idx[0])
+        if np.any(diff.value == 0.0):
+            idx = np.where(diff.value == 0.0)
+            logger.info("\t\tDirect match found for {} based on exact provided frequency of {} GHz.".format(sub_list[idx]['name'][0],
+                                                                                                            sub_list[idx]['freq'][0]))
+            restfreq_line = sub_list[idx]['freq'][0] * u.GHz
+            convention = u.doppler_optical(restfreq_line)
+        else:
+            for t in tolerance:
+                idx = np.where(np.abs(diff) <= t)
+                if len(idx[0]) == 1:
+                    logger.info("\t\tBest match found for {} with database frequency {} GHz".format(sub_list[idx]['name'][0],
+                                                                                                    sub_list[idx]['freq'][0]))
+                    restfreq_line = sub_list[idx]['freq'][0] * u.GHz
+                    convention = u.doppler_optical(restfreq_line)
+                    break
+                elif len(idx[0]) == 0:
+                    logger.error("\t\tNo unique match: {} possibilities. Provide a more accurate rest frequency.".format(last_guess))
+                    restfreq_line = None
+                    convention = None
+                    break
+                last_guess = len(idx[0])
         if len(idx[0]) > 1:
             logger.error("\t\tNo unique match: {} possibilities. Provide a more accurate rest frequency.".format(last_guess))
             restfreq_line = None
             convention = None
-            print(sub_list[idx],'*')
-            print(diff[idx])
     else:
         spec_line = 'Unknown'
         restfreq_line = None
