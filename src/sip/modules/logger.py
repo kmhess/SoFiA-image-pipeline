@@ -32,7 +32,7 @@ class Logger:
         logger = logging.getLogger("sip_logger")
         logger.setLevel(logging.INFO)
 
-        timestamp = datetime.now().strftime("%d%m%y_%H%M%S")
+        timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
 
         original_path = Path(log_path)
         if auto_logname:
