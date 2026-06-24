@@ -29,17 +29,20 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
 
     if not os.path.isfile(outfile):
         # Make the output from this program as closely resemble the output from SoFiA as possible (units, etc)
-        spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                                   names=['chan', 'col2', 'f_sum', 'n_pix'])
-        ll = 0
-        while not ('f_sum' in spec_template.meta['comments'][ll] and 'chan' in spec_template.meta['comments'][ll] and
-                'n_pix' in spec_template.meta['comments'][ll]):
-            ll += 1
-        col_names = spec_template.meta['comments'][ll].split()
-        units_ = spec_template.meta['comments'][ll+1].split()
-        f_sum_units = (spec_template.meta['comments'][ll+1].split()[spec_template.meta['comments'][ll].split().index('f_sum')])
-        # Change 'col2' to actually column name. Hard coded, so potentially problematic if format changes in future:
-        spec_template.rename_column('col2', col_names[1])
+        try:
+            spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
+                                    names=['chan', 'col2', 'f_sum', 'n_pix', 'f_peak'])
+            ll = 0
+            while not ('f_sum' in spec_template.meta['comments'][ll] and 'chan' in spec_template.meta['comments'][ll] and
+                    'n_pix' in spec_template.meta['comments'][ll] and 'f_peak' in spec_template.meta['comments'][ll]):
+                ll += 1
+            col_names = spec_template.meta['comments'][ll].split()
+            units_ = spec_template.meta['comments'][ll+1].split()
+            f_sum_units = (spec_template.meta['comments'][ll+1].split()[spec_template.meta['comments'][ll].split().index('f_sum')])
+            # Change 'col2' to actually column name. Hard coded, so potentially problematic if format changes in future:
+            spec_template.rename_column('col2', col_names[1])
+        except FileNotFoundError:
+            pass
 
         try:
             if not original:
