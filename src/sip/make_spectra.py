@@ -93,8 +93,8 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
             else:
                 spectral_dim = spec_template[col_names[1]] if spec_template else chan2vel(channels, fits_file)
 
-            ascii.write([channels, spectral_dim, flux_sum, n_pix], 'temp2.txt', format='fixed_width_two_line', 
-                        names=col_names)
+            ascii.write([channels, spectral_dim, flux_sum, n_pix, np.zeros(len(channels))], 'temp2.txt',
+                        format='fixed_width_two_line', names=col_names)
 
         os.system("cat temp.txt temp2.txt > {}".format(outfile))
         os.system("rm temp.txt temp2.txt")
@@ -137,10 +137,10 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
                     spec_z = (spec_line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
                     z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
                 # Calculate spectral axes quantities for plotting
-                spec = ascii.read(specfile, names=['chan', 'freq', 'f_sum', 'n_pix'])
+                spec = ascii.read(specfile, names=['chan', 'freq', 'f_sum', 'n_pix', 'f_peak'])
                 optical_velocity = (source['freq'] - spec['freq'])/spec['freq'] * const.c.to(u.km/u.s).value
                 if both == True:
-                    spec2 = ascii.read(specfile2, names=['chan', 'freq', 'f_sum', 'n_pix'])
+                    spec2 = ascii.read(specfile2, names=['chan', 'freq', 'f_sum', 'n_pix', 'f_peak'])
                     optical_velocity2 = (source['freq'] - spec2['freq'])/spec2['freq'] * const.c.to(u.km/u.s).value
                 maskmin = (source['freq'] - spec['freq'][spec['chan'] == source['z_min']]) / source['freq'] * \
                                                                                             const.c.to(u.km / u.s).value
@@ -163,10 +163,10 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
                     spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
                     z_label = r"$z_\mathrm{{app}}$ = {:.5f}".format(spec_z.value)
                 # Calculate spectral axes quantities for plotting. Force velocity column to common name.
-                spec = ascii.read(specfile, names=['chan', 'velo', 'f_sum', 'n_pix'])
+                spec = ascii.read(specfile, names=['chan', 'velo', 'f_sum', 'n_pix', 'f_peak'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
                 if both == True:
-                    spec2 = ascii.read(specfile2, names=['chan', 'velo', 'f_sum', 'n_pix'])
+                    spec2 = ascii.read(specfile2, names=['chan', 'velo', 'f_sum', 'n_pix', 'f_peak'])
                     optical_velocity2 = (spec2['velo'] * u.m / u.s).to(u.km / u.s).value
                 maskmin = (spec['velo'][spec['chan'] == source['z_min']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=spec_line['convention']).value
@@ -298,7 +298,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
                 w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                                  names=['chan', 'freq', 'f_sum', 'n_pix'])
+                                  names=['chan', 'freq', 'f_sum', 'n_pix', 'f_peak'], fast_reader=False, guess=False)
                 optical_velocity = (source['freq'] - spec['freq'])/spec['freq'] * const.c.to(u.km/u.s).value
                 v_sys = 0
                 if 'z_w20' in source.colnames:
@@ -326,7 +326,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
                 w20_vel = (source['w20'] * u.m / u.s).to(u.km / u.s).value
                 # Calculate spectral axes quantities for plotting. Force velocity column to common name.
                 spec = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']),
-                                  names=['chan', 'velo', 'f_sum', 'n_pix'])
+                                  names=['chan', 'velo', 'f_sum', 'n_pix', 'f_peak'])
                 optical_velocity = (spec['velo'] * u.m / u.s).to(u.km / u.s).value
                 if 'z_w20' in source.colnames:
                     z_w20 = chan2vel(source['z_w20'], fits_file)
