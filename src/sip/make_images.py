@@ -491,10 +491,10 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
             # Currently SoFiA-2 puts out frequency w20/w50 in Hz units (good)
             w50 = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
             w20 = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
-            if (source['id'] == 0) and original:
+            if (source['id'] == 0) and original and os.path.isfile(original):
                 freqmin = chan2freq(source['z_min'], original).to(u.Hz).value
                 freqmax = chan2freq(source['z_max'], original).to(u.Hz).value
-            elif original or source['id'] != 0:
+            elif source['id'] != 0:
                 freqmin = chan2freq(source['z_min'], src_basename + cube_end).to(u.Hz).value
                 freqmax = chan2freq(source['z_max'], src_basename + cube_end).to(u.Hz).value
             else:
@@ -1149,8 +1149,10 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         cube_end = '_cube.fits'
         if noid == False:
             id_label = ', #{}'.format(source['id'])
-    elif original:
+    elif original and os.path.isfile(original):
         chan_width = fits.getheader(original)['CDELT3']
+    else:
+        chan_width = None
 
     # This block of code may make the try/excepts around get_wcs_info() in functions above redundant.  See issue #145.
     # Get beam information from the source cubelet
@@ -1202,7 +1204,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
             elif chan_width:
                 HIlowest = source['rms'] * np.nanmin(snr_range) * chan_width
             else:
-                logger.warning("\tNo user provided channel width. Check figures! Either provide channel width,"
+                logger.error("\tNo user provided channel width. Check figures! Either provide channel width,"
                       " or rms in mom0 map units.")
                 HIlowest = source['rms'] * np.nanmin(snr_range)
             logger.info("\tThe first contour defined at SNR = {0} has level = {1:.3e} (mom0 data units)."
@@ -1251,7 +1253,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
     # Extract cutout from user image
     # !!! Actually we do not need to read the entire image every single time. We want to read it just once.
     # I leave this for later.
-    if user_image:
+    if user_image and os.path.isfile(user_image):
         logger.info("\tLoading usr image {0:s}".format(user_image))
         with fits.open(user_image) as usrim:
             usrim_d = usrim[0].data
@@ -1294,6 +1296,8 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
             if not surveys:
                 logger.info("\tOffline mode requested. Making radio spectral line images.")
                 opt_head = make_header(source, opt_view=opt_view)
+    elif user_image:
+        logger.error("\tRequested user image does not exist. Cannot make overlays on user requested image.")
     elif not surveys:
         logger.info("\tNo user image given and offline mode requested. Making radio spectral line images.")
         opt_head = make_header(source, opt_view=opt_view)
