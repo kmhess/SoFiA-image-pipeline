@@ -103,6 +103,7 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None, Jykms=False):
     """
 
     c = const.c.to(u.m/u.s).value
+    spec_label = spec_line['label']
     spec_line = spec_line['name']
     
     if (bunit == 'Jy/beam*m/s') or (bunit == 'Jy/beam*M/S'):
@@ -159,14 +160,14 @@ def sbr2nhi(sbr, bunit, bmaj, bmin, source, spec_line=None, Jykms=False):
             subscript = ''
         else:
             subscript = spec_line
+        if spec_label:
+            subscript = spec_label
         if Jykms == False and ((bunit == 'Jy/beam*Hz') or (bunit == 'beam-1 Jy*Hz')):
-            nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(spec_line, nhi/10**nhi_ofm, nhi_ofm)
-            nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1...)'.format(subscript,
-                                                                                                              nhi/10**nhi_ofm, nhi_ofm)
+            nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm Hz'.format(subscript, nhi/10**nhi_ofm, nhi_ofm)
+            nhi_labels = r'$S$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm Hz ($n$=0,1...)'.format(nhi/10**nhi_ofm, nhi_ofm)
         else:
-            nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm km/s'.format(spec_line, nhi/10**nhi_ofm, nhi_ofm)
-            nhi_labels = r'$S_\mathrm{{{:s}}}$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm km/s ($n$=0,1...)'.format(subscript,
-                                                                                                              nhi/10**nhi_ofm, nhi_ofm)
+            nhi_label = r'$S_\mathrm{{{0:s}}}$ = {1:.1f} x $10^{{ {2:d} }}$ Jy/bm km/s'.format(subscript, nhi/10**nhi_ofm, nhi_ofm)
+            nhi_labels = r'$S$ = $2^n$ x {:.1f}x$10^{{ {:d} }}$ Jy/bm km/s ($n$=0,1...)'.format(nhi/10**nhi_ofm, nhi_ofm)
 
     return nhi, nhi_label, nhi_labels
 

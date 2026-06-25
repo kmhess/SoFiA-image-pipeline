@@ -146,6 +146,8 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
                 else:
                     spec_z = (spec_line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
                     z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
+                    if spec_line['label']:
+                        z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['label'], spec_z.value)
                 # Calculate spectral axes quantities for plotting
                 spec = ascii.read(specfile)
                 for old_col, new_col in zip(spec.colnames, col_names[:len(spec.colnames)]):
@@ -172,10 +174,14 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
                     v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = (source['v_opt'] * u.m / u.s / const.c).decompose()
                     z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
+                    if spec_line['label']:
+                        z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['label'], spec_z.value)
                 else:
                     v_sys = (source['v_app'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
                     z_label = r"$z_\mathrm{{app}}$ = {:.5f}".format(spec_z.value)
+                    if spec_line['label']:
+                        z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['label'], spec_z.value)
                 # Calculate spectral axes quantities for plotting. Force velocity column to common name.
                 spec = ascii.read(specfile)
                 for old_col, new_col in zip(spec.colnames, col_names[:len(spec.colnames)]):
@@ -314,6 +320,8 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
                 else:
                     spec_z = (spec_line['restfreq'].to(u.Hz) - source['freq'] * u.Hz) / (source['freq'] * u.Hz).decompose()
                     z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
+                    if spec_line['label']:
+                        z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['label'], spec_z.value)
                 # SoFiA-2 puts out frequency w20/w50 in Hz units
                 w50_vel = (const.c * source['w50'] / (source['freq'])).to(u.km/u.s).value
                 w20_vel = (const.c * source['w20'] / (source['freq'])).to(u.km/u.s).value
@@ -339,10 +347,14 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
                     v_sys = (source['v_opt'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = (source['v_opt'] * u.m / u.s / const.c).decompose()
                     z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
+                    if spec_line['label']:
+                        z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['label'], spec_z.value)
                 else:
                     v_sys = (source['v_app'] * u.m / u.s).to(u.km / u.s).value
                     spec_z = (source['v_app'] * u.m / u.s / const.c).decompose()
-                    z_label = r"$z_\mathrm{{app}}$ = {:.5f}".format(spec_z.value)
+                    z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['name'], spec_z.value)
+                    if spec_line['label']:
+                        z_label = r"$z_\mathrm{{{0:s}}}$ = {1:.5f}".format(spec_line['label'], spec_z.value)
                 # SoFiA-2 puts out velocity w20/w50 in pixel units. https://github.com/SoFiA-Admin/SoFiA-2/issues/63
                 w50_vel = (source['w50'] * u.m / u.s).to(u.km / u.s).value
                 w20_vel = (source['w20'] * u.m / u.s).to(u.km / u.s).value

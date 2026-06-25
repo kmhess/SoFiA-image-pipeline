@@ -281,7 +281,12 @@ def main():
                                                                                                         spectral_line['restfreq']))    
     else:
         logger.info("\tContinuing to make plots for unknown spectral line.")
-    
+    if len(line) == 3:
+        spectral_line.update({'label':line[2]})
+        logger.info("\tUsing user provided label for spectral line: {}".format(spectral_line['label']))
+    else:
+        spectral_line.update({'label':''})
+
     for source in catalog:
 
         source['id'] = int(source['id'])  # For SoFiA-1 xml files--this doesn't work bc column type is float.
