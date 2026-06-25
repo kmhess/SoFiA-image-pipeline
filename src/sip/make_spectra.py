@@ -67,6 +67,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
             logger.warning("\tWrong name provided for original file, or original mask file doesn't exist, so can't generate a *_specfull.txt with noise.")
             return
 
+        mask[mask != source['id']] = 0
         mask2d = np.sum(mask, axis=0)
         flux_sum = np.nansum(cube[:, mask2d != 0], axis=1)
         n_pix = 0 * channels + np.sum(mask2d != 0)
