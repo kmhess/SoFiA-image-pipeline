@@ -112,6 +112,9 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
                               transform=ax1.transAxes, edgecolor='white', linewidth=1))
         if swapx:
             ax1.set_xlim(ax1.get_xlim()[::-1])
+        # Force any resizing of axes to go back to the original extent (ax.get_x/ylim() return larger values when stick edges break)
+        ax1.set_xlim(ax1.images[0].get_extent()[:2])
+        ax1.set_ylim(ax1.images[0].get_extent()[2:])
 
         fig.savefig(outfile, bbox_inches='tight')
         hdulist_hi.close()
