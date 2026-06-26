@@ -137,7 +137,10 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
     if not os.path.isfile(outfile2):
 
         try:
-            logger.info("\tMaking aperture spectrum plot.")
+            if both == True:
+                logger.info("\tMaking masked + aperture spectrum plot.")
+            else:
+                logger.info("\tMaking aperture spectrum plot.")
             if 'freq' in source.colnames:
                 # Calculate source quantities for labels
                 # v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
