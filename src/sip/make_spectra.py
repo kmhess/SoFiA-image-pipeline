@@ -133,7 +133,7 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
     specfile = src_basename + '_{}_spec_aperture.txt'.format(source['id'])
 
     # Possible SoFiA column names (new columns appended at the end; SoFiA 2.7 has 4 cols, SoFiA 2.8 has 5 cols)
-    col_names = ['chan', 'freq', 'f_sum', 'n_pix', 'f_peak']
+    col_names = ['chan', 'col2', 'f_sum', 'n_pix', 'f_peak']
 
     if original or (not os.path.isfile(specfile)):
         specfile = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
@@ -158,6 +158,7 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
             else:
                 logger.info("\tMaking aperture spectrum plot.")
             if 'freq' in source.colnames:
+                col_names[col_names.index('col2')] = 'freq'
                 # Calculate source quantities for labels
                 # v_sys = (source['freq'] * u.Hz).to(u.km/u.s, equivalencies=line['convention']).value
                 if spec_line['name'] == 'Unknown':
@@ -183,6 +184,7 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
                                                                                             const.c.to(u.km / u.s).value
                 v_sys = 0
             else:
+                col_names[col_names.index('col2')] = 'velo'
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
                     spec_line['rad_opt'] = 'Radio'
@@ -322,7 +324,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
     fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
 
     # Possible SoFiA column names (new columns appended at the end; SoFiA 2.7 has 4 cols, SoFiA 2.8 has 5 cols)
-    col_names = ['chan', 'freq', 'f_sum', 'n_pix', 'f_peak']
+    col_names = ['chan', 'col2', 'f_sum', 'n_pix', 'f_peak']
 
     if os.path.isfile(outfile1) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile1))
@@ -333,6 +335,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
         try:
             logger.info("\tMaking SoFiA masked spectrum plot.")
             if 'freq' in source.colnames:
+                col_names[col_names.index('col2')] = 'freq'
                 # Calculate source redshift for labels if line is known/recognized
                 if spec_line['name'] == 'Unknown':
                     z_label = ''
@@ -356,6 +359,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
                     w20_min_vel = z_w20_vel - ((source['w20'] * u.Hz / 2) / (source['freq'] * u.Hz) * const.c.to(u.km / u.s)).value
                     w20_max_vel = z_w20_vel + ((source['w20'] * u.Hz / 2) / (source['freq'] * u.Hz) * const.c.to(u.km / u.s)).value
             else:
+                col_names[col_names.index('col2')] = 'velo'
                 # Calculate source quantities for labels
                 if 'v_rad' in source.colnames:
                     spec_line['rad_opt'] = 'Radio'
