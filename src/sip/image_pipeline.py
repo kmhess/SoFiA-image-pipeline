@@ -5,7 +5,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 import os
 import random
 import string
-import traceback
+from traceback import print_exc, format_exc
 
 # Import installed Python libraries
 from astropy.table import Table
@@ -311,7 +311,8 @@ def main():
             except:
                 failed_srcs.append(int(source['id']))
                 n_fail += 1
-                traceback.print_exc()
+                print_exc()
+                logger.debug(format_exc())
             try:
                 if imagemagick:
                     code = ''.join(random.choices(string.ascii_letters + string.digits, k=6))
@@ -325,14 +326,18 @@ def main():
         # Make a source object for the overview image
         from sip.modules.functions import add_source
 
-        logger.info(" ")
-        logger.info("\tMaking summary images of full field.")
-        catalog = add_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '_mom0.fits')
-        src_basename = src_basename.split('_cubelets')[0]
-        make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
-                    chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
-                    user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
-                    catalog=catalog, noid=False, Jykms=args.jy_kms, overwrite=args.overwrite)
+        try:
+            logger.info(" ")
+            logger.info("\tMaking summary images of full field.")
+            catalog = add_source(catalog=catalog, fits_name=catalog_file.split("_cat.")[0] + '_mom0.fits')
+            src_basename = src_basename.split('_cubelets')[0]
+            make_images.main(catalog[-1], src_basename, original, opt_view=opt_view, suffix=suffix, beam=beam,
+                        chan_width=args.chan_width[0], surveys=list(surveys), snr_range=args.snr_range,
+                        user_image=args.user_image, user_range=args.user_range, spec_line=spectral_line,
+                        catalog=catalog, noid=False, Jykms=args.jy_kms, overwrite=args.overwrite)
+        except:
+            print_exc()
+            logger.debug(format_exc())
 
     logger.info(" ")
     logger.info("\tDONE! Made images for {} sources.".format(n_src))

@@ -30,7 +30,7 @@ class Logger:
     @classmethod
     def setup_logger(cls, log_path="sip.log", auto_logname=True):
         logger = logging.getLogger("sip_logger")
-        logger.setLevel(logging.INFO)
+        logger.setLevel(logging.DEBUG)
 
         timestamp = datetime.now().strftime("%y%m%d_%H%M%S")
 
@@ -39,7 +39,7 @@ class Logger:
             new_stem = f"{original_path.stem}_{timestamp}_sip"
             log_path = original_path.with_name(new_stem).with_suffix(original_path.suffix)
         file_handler = logging.FileHandler(log_path, encoding='utf-8')
-        file_handler.setLevel(logging.INFO)
+        file_handler.setLevel(logging.DEBUG)
         file_handler.setFormatter(
             logging.Formatter(
                 "%(asctime)s | %(levelname)s | %(module)s: - %(message)s"
