@@ -462,7 +462,7 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
     # Can be a bit more precise here in the output options/specification.
     sofia_aper_spec = src_basename + '_{}_spec_aperture.txt'.format(source['id'])
     specfull_file = src_basename.replace('cubelets', 'figures') + '_{}_specfull.txt'.format(source['id'])
-    if original or ((not os.path.isfile(sofia_aper_spec)) and (not os.path.isfile(specfull_file))):
+    if original or overwrite or ((not os.path.isfile(sofia_aper_spec)) and (not os.path.isfile(specfull_file))):
         get_noise_spec(source, src_basename, cube_params, original, overwrite=overwrite)
 
     # Make plot of spectrum with noise
