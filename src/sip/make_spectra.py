@@ -58,8 +58,8 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
                 cube = fits.getdata(fits_file)
                 mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
                 z1 = np.max([0, source['z_min'] - 10])
-                z2 = np.min([source['z_max'] + 10, z1 + cube.shape[0]])
-                channels = np.asarray(range(z1, z2 + 1))
+                z2 = z1 + cube.shape[0]
+                channels = np.asarray(range(z1, z2))
             else:
                 fits_file = original
                 cube = get_subcube(source, original)
