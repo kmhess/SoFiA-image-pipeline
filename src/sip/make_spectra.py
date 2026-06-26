@@ -27,6 +27,12 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
         logger.warning('\tRemoving existing file: {}'.format(outfile))
         os.system('rm -rf {}'.format(outfile))
 
+    # Set col_names based on most recent SoFiA spec.txt colums ('output' variable in line ~116 should match in number of entries):
+    spec_template = None
+    col_names = ['chan', 'col2', 'f_sum', 'n_pix', 'f_peak']
+    units_ = ['-','-','-','-','-']
+    f_sum_units = None
+
     if not os.path.isfile(outfile):
         # Make the output from this program as closely resemble the output from SoFiA as possible (units, etc)
         try:
@@ -44,14 +50,16 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
         except FileNotFoundError:
             pass
 
+        # Populate the aperture spectrum "specfull.txt" text file
         try:
             if not original:
                 logger.warning("\tOriginal data cube not provided: making spectrum of subcube with noise.")
                 fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
                 cube = fits.getdata(fits_file)
                 mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
-                spec_template = ascii.read(src_basename + '_{}_spec.txt'.format(source['id']), names=col_names)
-                channels = spec_template['chan']
+                z1 = np.max([0, source['z_min'] - 10])
+                z2 = np.min([source['z_max'] + 10, z1 + cube.shape[0]])
+                channels = np.asarray(range(z1, z2 + 1))
             else:
                 fits_file = original
                 cube = get_subcube(source, original)
@@ -73,9 +81,26 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
         n_pix = 0 * channels + np.sum(mask2d != 0)
         f_peak = np.zeros(len(channels))
 
-        if f_sum_units == 'Jy':
+        if f_sum_units == 'Jy' or f_sum_units == None:
             # Then must convert from Jy/beam to Jy using the beam information
             flux_sum = flux_sum / cube_params['pix_per_beam']
+            if f_sum_units == None:
+                units_[col_names.index('f_sum')] = 'Jy'
+                units_[col_names.index('f_peak')] = 'Jy'
+
+        # Calculate values for the spectral axis:
+        if 'freq' in source.colnames:
+            spectral_dim = spec_template[col_names[1]] if spec_template else chan2freq(channels, fits_file)
+            if col_names[1] == 'col2': col_names[1],units_[1] = 'freq','Hz'
+        elif 'FELO' in cube_params['spec_axis']:
+            spectral_dim = spec_template[col_names[1]] if spec_template else felo2vel(channels, fits_file)
+            # if col_names[1] == 'col2': col_names[1],units_[1] = 'v_opt','m/s'  # Not sure if correct
+        elif 'VRAD' in cube_params['spec_axis']:
+            spectral_dim = spec_template[col_names[1]] if spec_template else chan2vel(channels, fits_file)
+            if col_names[1] == 'col2': col_names[1],units_[1] = 'v_rad','m/s'
+        else:
+            spectral_dim = spec_template[col_names[1]] if spec_template else chan2vel(channels, fits_file)
+            # if col_names[1] == 'col2': col_names[1],units_[1] = 'v_app','m/s'  # Not sure if correct
 
         with open('temp.txt', 'w') as f:
             f.write("# Integrated source spectrum with noise\n")
@@ -88,15 +113,6 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
             f.write("# "+"\t".join('{}'.format(c) for c in col_names)+"\n")
             f.write("# "+"\t".join('{}'.format(n) for n in units_)+"\n")
             f.write("# \n")
-
-            if 'freq' in source.colnames:
-                spectral_dim = spec_template[col_names[1]] if spec_template else chan2freq(channels, fits_file)
-            elif 'FELO' in cube_params['spec_axis']:
-                spectral_dim = spec_template[col_names[1]] if spec_template else felo2vel(channels, fits_file)
-            elif 'VRAD' in cube_params['spec_axis']:
-                spectral_dim = spec_template[col_names[1]] if spec_template else chan2vel(channels, fits_file)
-            else:
-                spectral_dim = spec_template[col_names[1]] if spec_template else chan2vel(channels, fits_file)
 
             output = [channels, spectral_dim, flux_sum, n_pix, f_peak]
             if len(col_names) == 4:
