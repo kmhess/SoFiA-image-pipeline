@@ -681,7 +681,7 @@ def add_source(catalog, fits_name):
     catalog[-1]['pos_x'], catalog[-1]['pos_y'] = wcs.celestial.wcs_pix2world(catalog[-1]['x'], catalog[-1]['y'], 0)
     if 'freq' in catalog.colnames:
         catalog[-1]['freq'] = (np.min(catalog['freq']) + np.max(catalog['freq'])) / 2
-    elif 'vrad' in catalog.colnames:
+    elif 'v_rad' in catalog.colnames:
         catalog[-1]['v_rad'] = (np.min(catalog['v_rad']) + np.max(catalog['v_rad'])) / 2
     elif 'v_opt' in catalog.colnames:
         catalog[-1]['v_opt'] = (np.min(catalog['v_opt']) + np.max(catalog['v_opt'])) / 2
