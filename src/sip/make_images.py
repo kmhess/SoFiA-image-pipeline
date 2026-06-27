@@ -1257,10 +1257,15 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
     # !!! Actually we do not need to read the entire image every single time. We want to read it just once.
     # I leave this for later.
     if user_image and os.path.isfile(user_image):
-        logger.info("\tLoading usr image {0:s}".format(user_image))
+        logger.info("\tLoading user image {0:s}".format(user_image))
         with fits.open(user_image) as usrim:
-            usrim_d = usrim[0].data
-            usrim_h = usrim[0].header
+            # Deal with images that have multiple extensions; guessing first ext with >2 axes is desired one:
+            ext = 0
+            while usrim[ext].header['NAXIS'] < 2:
+                ext += 1
+            logger.info("\tGuessing data is in extension {} of user image.".format(ext))
+            usrim_d = usrim[ext].data
+            usrim_h = usrim[ext].header
             # Deal with images that have extra axes:
             if len(usrim_d.shape) == 4:
                 usrim_d = usrim_d[0,0,:,:]
