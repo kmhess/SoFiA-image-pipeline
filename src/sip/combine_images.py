@@ -33,7 +33,7 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     logger.info("\tAssembling figures with imagemagick")
     new_file = "{}combo.{}".format(infile, suffix)
     # Remove redundant y-axies for the 2D images:
-    for im in ['mom0', 'snr', 'mom1', 'mom2', 'specfull']:
+    for im in ['mom0', 'snr', 'mom1', 'mom2', 'specboth']:
         os.system('{0} {1}{2}.{3} -gravity west -chop 40x0 {2}_{4}.{3}'.format(imgck, infile, im, suffix, code))
 
     # Use imagemagick to append images together:
@@ -50,7 +50,7 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
         os.system("{0} {1}mom0.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append"
                   " -gravity south -splice 0x18 temp_{3}.{2}".format(imgck, infile, suffix, code))
     os.system("{0} {1}spec.{2} -resize 133% temp2_{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} specfull_{3}.{2} -resize 133% temp3_{3}.{2}".format(imgck, infile, suffix, code))
+    os.system("{0} specboth_{3}.{2} -resize 133% temp3_{3}.{2}".format(imgck, infile, suffix, code))
 
     # Remove redundant y-axes for pv plots and create a little space between pv and spectra:
     if os.path.isfile('{0}pv.{1}'.format(infile, suffix)):
