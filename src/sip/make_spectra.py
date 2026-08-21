@@ -463,8 +463,8 @@ def main(source, src_basename, original=None, spec_line=None, suffix='png', beam
 
     logger.info("\tStart making spectral profiles")
     id_label = ''
-    if source['id'] != 0:
-        id_label = ' ({})'.format(source['id'])
+    if (source['id'] != 0) and (not noid):
+        id_label = ', #{}'.format(source['id'])
 
     # Get beam information from the source cubelet
     try:
