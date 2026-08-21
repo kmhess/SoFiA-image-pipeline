@@ -1290,7 +1290,7 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
         logger.info('\tImage loaded.')
         logger.info('\tExtracting {0}-wide 2D cutout centred at RA = {1}, Dec = {2}.'.format(opt_view, hi_pos.ra, hi_pos.dec))
         try:
-            usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value/usrim_pix_y, opt_view.to(u.deg).value/usrim_pix_x],
+            usrim_cut = Cutout2D(usrim_d, hi_pos, [opt_view.to(u.deg).value[0]/usrim_pix_y, opt_view.to(u.deg).value[0]/usrim_pix_x],
                                  wcs=usrim_wcs, mode='partial')
             make_overlay_usr(source, src_basename, cube_params, patch, usrim_cut, HIlowest, swapx, user_range,
                              suffix='png', spec_line=spec_line, id_label=id_label, Jykms=Jykms, overwrite=overwrite)
