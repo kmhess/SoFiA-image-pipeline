@@ -154,7 +154,12 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
 
     if os.path.isfile(outfile2) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile2))
-        subprocess.run(['rm', '-rf', '{}'.format(outfile2)])
+        subprocess.run(['rm', '-rf', outfile2])
+        # If overwriting specfull, it's implied that an old specboth is also no longer valid.
+        outfile_both = outfile2.replace('specfull', 'specboth')
+        if outfile_both:
+            logger.warning('\tRemoving existing file: {}'.format(outfile_both))
+            subprocess.run(['rm', '-rf', outfile_both])
 
     if not os.path.isfile(outfile2):
 
