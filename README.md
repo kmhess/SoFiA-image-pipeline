@@ -5,7 +5,7 @@ SoFiA Image Pipeline (SIP)
 
 Introduction
 ------------
-SIP takes a SoFiA generated source catalog and produce images for publication or quick inspection.  Images include spectral line total intensity contours overlaid on multiwavelength images, spectral line moment maps, pixel-by-pixel SNR maps, pv-diagrams with source mask, masked spectra, and aperture spectra using the 2D projection of the source mask.  SIP also generates an image of the aperture and masked spectrum overplotted.
+SIP takes a SoFiA generated source catalog and produces images for publication or quick inspection.  Images include spectral line total intensity contours overlaid on multiwavelength images, spectral line moment maps, pixel-by-pixel SNR maps, pv-diagrams with source mask, masked spectra, and aperture spectra using the 2D projection of the source mask.  SIP also generates an image of the aperture and masked spectra overplotted.
 
 ![](docs/sofia_test_output_3_combo.png)
 <!-- <img src="docs/sofia_test_output_3_specboth.png" alt="drawing" width="35%"/> -->
@@ -50,7 +50,9 @@ pip install sofia-image-pipeline
 You can install the latest GitHub version of SIP locally by cloning the repository and running:
 
 ```
-python3 setup.py develop
+git clone https://github.com/kmhess/SoFiA-image-pipeline.git
+cd SoFiA-image-pipeline
+python3 -m pip install -e .
 ```
 
 ### Docker
@@ -69,7 +71,7 @@ SIP works under the assumption that the user has run [SoFiA-2](https://github.co
 ```
 $ sofia_image_pipeline
 
-usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-s [SURVEYS ...]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE] [-line SPECTRAL_LINE] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-o ORIGINAL] [-b BEAM] [-cw CHAN_WIDTH] [-x SUFFIX] [-m [IMAGEMAGICK]] [-log LOGFILE_NAME] [-noid] [-cm] [-spec] [-j]
+usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-s [SURVEYS ...]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE] [-line SPECTRAL_LINE] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-o [ORIGINAL]] [-b BEAM] [-cw CHAN_WIDTH] [-x SUFFIX] [-m [IMAGEMAGICK]] [-log LOGFILE_NAME] [-noid] [-cm] [-spec] [-j] [-ow]
 
 sofia_image_pipeline: error: the following arguments are required: -c/--catalog
 ```
@@ -89,13 +91,13 @@ REQUIRED:
     -c     Catalog file. Can be the ascii file ending in .txt or the XML file from SoFiA-2.
     
 OPTIONAL:
-    -id    Select certain sources, or range of sources from catalog based on the source id number. Default is all sources. Include `0` to make summary image of all sources. Run with `-id -1` for all sources and summary images.
-    -s     List of surveys on which to overlay HI contours. Only the first entry will be used in the combined image if `-m` option is used. If 'none', work in offline mode. Default is 'DSS2 Blue'.
-    -ui    User supplied image for overlaying HI contours.  Can use this in combination with `-s` and a list of surveys.
+    -id    Select certain sources, or range of sources from catalog based on the source id number. Default is all sources. Include `0` to make summary images of all sources. Run with `-id -1` for all individual sources plus summary images.
+    -s     List of surveys on which to overlay spectral line contours. Only the first entry will be used in the combined image if `-m` option is used. If 'none', work in offline mode. Default is 'DSS2 Blue'.
+    -ui    User supplied image for overlaying spectral line contours.  Can use this in combination with `-s` and a list of surveys.
     -ur    Percentile range when plotting the user supplied image.  Requires two values. Default is [10., 99.].
-    -line  Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO(1-0)' up to (3-2) and 'OH_1667' and the 3 other OH lines which may fall within L-band observations. A second possibility is specifying 1-3 comma-separated parameters that are molecule,rest frequency in GHz,label such as 'CO,115,CO(1-0)'. A line table is provided with the software in `src/data/tier1_lines_reformat.list`.
-    -i     Minimum image size (ARCMIN). Images will be square. If an HI source exceeds the requested size, a larger image to fit the HI contours will be generated. Default is 6 arcmin.
-    -snr   Specify the SNR range within which to plot the lowest HI contour. Requires 2 values. Default is [2.0, 3.0].
+    -line  Specify a spectral line for all sources in catalog. Default is 'HI'.  Also possible is 'CO(1-0)' up to (3-2) and 'OH_1667' and the 3 other OH lines which may fall within L-band observations. A second possibility is specifying 1-3 comma-separated parameters that are <molecule>,<rest frequency in GHz>,<label> such as 'CO,115,CO(1-0)'. A line table is provided with the software in `src/data/tier1_lines_reformat.list`.
+    -i     Minimum image size (ARCMIN). Images will be square. If a spectral line source exceeds the requested size, a larger image to fit the contours will be generated. Default is 6 arcmin.
+    -snr   Specify the SNR range within which to plot the lowest spectral line contour. Requires 2 values. Default is [2.0, 3.0].
     -o     Path to the original data file on which source finding was conducted. This allows the spectrum with noise to be plotted over the full spectral range of the original cube.  If -o set with no filename provided, will attempt to guess file name based on catalog name.
     -b     Synthesized beam dimensions. If the primary header of the FITS files do not contain the beam information, this can be provided by the user. Accepts 1 to 3 values in order (bmaj,bmin,bpa). Format is comma separated, with no spaces.
     -cw    Channel width. This is only necessary if a source cubelet is not available, for example if user only has a mom0.  Channel width must then be provided in the native units of the original data cube (typically Hz or m/s.)
@@ -106,7 +108,7 @@ OPTIONAL:
     -cm    Make channel maps for each source. These will be written to a multi-page pdf file in 4x5 portrait format.
     -spec  Only make spectra, no spatial images. May be useful for multi-line sources where the moment maps are less meaningful.
     -j     Plot the units of the moment 0 map in Jy/beam km/s.  Only works when HI line is not requested, otherwise defaults to cm^-2 or native units.
-    -ow    Overwrite option. Will delete existing plots of the same name, if they exist before making new one.
+    -ow    Overwrite option. Will delete existing plots of the same name, if they exist before making a new one.
 ```
 
 ### Examples
@@ -117,10 +119,10 @@ OPTIONAL:
 sofia_image_pipeline -c <path/to/catalog.xml>
 ```
 
-* Use ascii catalog file with output images in pdf format and specify original data set to plot full noise spectrum: 
+* Use ascii catalog file for a subest of sources in the catalog, separated by a space, and specify original data set to plot full noise spectrum: 
 
 ```
-sofia_image_pipeline -c <path/to/catalog.txt> -x pdf -o <path/to/original_cube.fits>
+sofia_image_pipeline -c <path/to/catalog.txt> -id 2 3 5 -o <path/to/original_cube.fits>
 ```
 
 * Request spectral line contours on multiple survey images, separated by a space, and make a combined image for each source:
@@ -144,7 +146,7 @@ Advanced tips
 
 * SIP is now capable of doing spectral lines.  All available lines can be specified by providing a molecule name and optionally a frequency in GHz.  If there are multiple or no spectral lines matched within the tolerances of 1-0.001 GHz of the provided frequency, an error message will appear that the line could not be identified from those in the reference data table, but SIP will continue.  If a unique line can be identified, SIP will use this knowledge to plot a redshift for the source in the spectrum plots.  A small subset of lines can be accessed by only providing one entry: `HI`, `CO(1-0)`, `CO(2-1)`, `CO(3-2)`, and `OH_1667`, `OH_1665`, `OH_1720`, `OH_1612` are accepted.
 
-* SIP can be run in 'offline' mode, by setting `-s none`.  In this case no survey archive data will be downloaded, and SIP will only generate the HI images.  Any surveys in a list in which `none` appears will be ignored.
+* SIP can be run in 'offline' mode, by setting `-s none`.  In this case no survey archive data will be downloaded, and SIP will only generate the images derived from the user provided data.  Any surveys in a list in which `none` appears will be ignored.
 
 * SIP now generates a plot called `*specboth.png` which overlays the masked and aperture spectra on the same plot, although it is not in the combo plot.
 
@@ -223,6 +225,10 @@ Version history
 * SIP 1.0.0
     * Released 18 April 2022
     
+Acknowledgements
+--------
+SIP acknowledges support from the ESO/ALMA development study "Prototype for ALMA Spectral Line Advanced Data Product Pipeline" funded by the framework of the ESO “Advanced Study for Upgrades of the Atacama Large Millimeter/submillimeter Array (ALMA)” (CFP/ESO/22/328/AMA).
+
 Copyright and licence
 ---------------------
 SIP was created by Kelley M. Hess
