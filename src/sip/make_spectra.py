@@ -53,8 +53,9 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
 
         # Populate the aperture spectrum "specfull.txt" text file
         try:
+            logger.info('\tMaking an aperture spectrum text file.')
             if not original:
-                logger.warning("\tOriginal data cube not provided: making spectrum of subcube with noise.")
+                logger.warning("\tOriginal data cube not provided: calculating aperture spectrum from subcube.")
                 fits_file = src_basename + '_{}_cube.fits'.format(source['id'])
                 cube = fits.getdata(fits_file)
                 mask = fits.getdata(src_basename + '_{}_mask.fits'.format(source['id']))
@@ -65,15 +66,19 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
                 fits_file = original
                 cube = get_subcube(source, original)
                 if os.path.isfile(original) and os.path.isfile(original[:-5] + '_mask.fits'):
-                    logger.info("\tOriginal data cube provided: making full spectrum image with noise.")
+                    logger.info("\tOriginal data cube provided: calculating aperture spectrum over full spectral range.")
                     mask = get_subcube(source, original[:-5] + '_mask.fits')
                 elif os.path.isfile(original) and os.path.isfile(src_basename.split('_cubelets')[0] + '_mask.fits'):
-                    logger.info("\tOriginal data cube provided, original file name differs from catalog file: Making full spectrum image with noise.")
+                    logger.info("\tOriginal data cube provided, original file name differs from catalog file: calculating aperture spectrum over full spectral range.")
                     mask = get_subcube(source, src_basename.split('_cubelets')[0] + '_mask.fits')
+                else:
+                    logger.error("\tNeither " + original[:-5] + "_mask.fits" + " nor " + src_basename.split("_cubelets")[0] + "_mask.fits" + 
+                                 " exist: can't generate {}.".format(outfile))
+                    return
                 spec_template = None
                 channels = np.asarray(range(cube.shape[0]))
         except:
-            logger.warning("\tWrong name provided for original file, or original mask file doesn't exist, so can't generate a *_specfull.txt with noise.")
+            logger.warning("\tWrong name provided for original file, or original mask file doesn't exist, so can't generate a *_specfull.txt.")
             return
 
         mask[mask != source['id']] = 0
@@ -219,7 +224,7 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
                 maskmax = (spec['velo'][spec['chan'] == source['z_max']] * u.m / u.s).to(u.km / u.s,
                                                                                          equivalencies=spec_line['convention']).value
         except FileNotFoundError:
-            logger.warning("\tNo existing _specfull.txt file. Perhaps there is no cube to generate one, or need to specify original.")
+            logger.warning("\tNo existing _specfull.txt file. Perhaps there is no cube or mask to generate one, or need to specify original.")
             fig2, ax2_spec, outfile2 = None, None, None
             return fig2, ax2_spec, outfile2
 
