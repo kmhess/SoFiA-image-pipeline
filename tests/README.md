@@ -4,7 +4,7 @@ We provide a test case so that users are able to verify the installation of SIP 
 
 ### 1. Setup
 
-The first step to run the test case is to generate a catalogue file. This will require a local installation of [`sofia`](https://github.com/SoFiA-Admin/SoFiA-2) (installation instructions available on in the repository. Once installed, it can be run on the provided image cube (`UGC7012.fits`) from within the `tests/data` subdirectory. The command to run this, from `tests/data` is:
+The first step to run the test case is to generate a catalogue file. This will require a local installation of [`sofia`](https://gitlab.com/SoFiA-Admin/SoFiA-2) (installation instructions available on in the repository. Once installed, it can be run on the provided image cube (`UGC7012.fits`) from within the `tests/data` subdirectory. The command to run this, from `tests/data` is:
 
 ```
 sofia sofia2_ugc7012.par
@@ -15,7 +15,7 @@ sofia sofia2_ugc7012.par
 We provide a CLI tool for running the `sofia_image_pipeline`. Once you have cloned this repository you can install it in a development environment by running
 
 ```
-python3 setup.py develop
+python3 -m pip install -e .
 ```
 
 from the base directory of the repository. You can verify the installation was successful by running
@@ -27,7 +27,7 @@ sofia_image_pipeline
 which should then print usage and configuration instructions to your screen
 
 ```
-usage: sofia_image_pipeline [-h] -c CATALOG [-x SUFFIX] [-o ORIGINAL] [-b BEAM] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-s [SURVEYS [SURVEYS ...]]] [-m [IMAGEMAGICK]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE]
+usage: sofia_image_pipeline [-h] -c CATALOG [-id [SOURCE_ID ...]] [-s [SURVEYS ...]] [-ui USER_IMAGE] [-ur USER_RANGE USER_RANGE] [-line SPECTRAL_LINE] [-i IMAGE_SIZE] [-snr SNR_RANGE SNR_RANGE] [-o [ORIGINAL]] [-b BEAM] [-cw CHAN_WIDTH] [-x SUFFIX] [-m [IMAGEMAGICK]] [-log LOGFILE_NAME] [-noid] [-cm] [-spec] [-j] [-ow]
 sofia_image_pipeline: error: the following arguments are required: -c/--catalog
 ```
 
