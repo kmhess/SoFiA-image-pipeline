@@ -1,7 +1,7 @@
 SoFiA Image Pipeline (SIP)
 =====
 [![DOI](https://zenodo.org/badge/455147174.svg)](https://zenodo.org/badge/latestdoi/455147174)
-[![Docker build latest](https://github.com/axshen/SoFiA-image-pipeline/actions/workflows/docker-build-latest.yml/badge.svg)](https://github.com/axshen/SoFiA-image-pipeline/actions/workflows/docker-build-latest.yml)
+[![Docker build latest](https://github.com/axshen/SoFiA-image-pipeline/actions/workflows/docker-build-latest.yml/badge.svg)](https://github.com/kmhess/SoFiA-image-pipeline/actions/workflows/docker-build-latest.yml)
 
 Introduction
 ------------
