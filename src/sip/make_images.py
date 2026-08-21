@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from astropy.nddata import Cutout2D
 from astropy import constants as const
@@ -65,7 +66,7 @@ def make_overlay_usr(source, src_basename, cube_params, patch, opt, base_contour
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
         try:
@@ -162,7 +163,7 @@ def make_overlay(source, src_basename, cube_params, patch, opt, base_contour, sp
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
         try:
@@ -262,7 +263,7 @@ def make_mom0(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
         try:
@@ -368,7 +369,7 @@ def make_snr(source, src_basename, cube_params, patch, opt_head, base_contour, s
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
         try:
@@ -473,7 +474,7 @@ def make_mom1(source, src_basename, original, cube_params, patch, opt_head, opt_
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
 
@@ -693,7 +694,7 @@ def make_mom2(source, src_basename, cube_params, patch, opt_head, base_contour, 
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
 
@@ -840,7 +841,7 @@ def make_color_im(source, src_basename, cube_params, patch, color_im, opt_head, 
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
         logger.info("\tMaking {} contour overlay on {} false color image.".format(spec_line['name'], survey))
@@ -931,7 +932,7 @@ def make_pv(source, src_basename, cube_params, opt_view=6*u.arcmin, spec_line=No
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
         try:
@@ -1094,7 +1095,7 @@ def make_overview_summary(source, src_basename, cube_params, patch, opt_head, ca
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
         try:

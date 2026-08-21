@@ -1,5 +1,6 @@
 # from datetime import datetime
 import os
+import subprocess
 
 from astropy import constants as const
 from astropy.io import ascii, fits
@@ -25,7 +26,7 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', '{}'.format(outfile)])
 
     # Set col_names based on most recent SoFiA spec.txt colums ('output' variable in line ~116 should match in number of entries):
     spec_template = None
@@ -119,8 +120,8 @@ def get_noise_spec(source, src_basename, cube_params, original=None, overwrite=F
                 output = [channels, spectral_dim, flux_sum, n_pix]
             ascii.write(output, 'temp2.txt', format='fixed_width_two_line', names=col_names)
 
-        os.system("cat temp.txt temp2.txt > {}".format(outfile))
-        os.system("rm temp.txt temp2.txt")
+        subprocess.run(['cat temp.txt temp2.txt > {}'.format(outfile)], shell=True)
+        subprocess.run(['rm', 'temp.txt', 'temp2.txt'])
 
         return
 
@@ -148,7 +149,7 @@ def make_spec_aper(source, src_basename, cube_params, original, spec_line=None, 
 
     if os.path.isfile(outfile2) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile2))
-        os.system('rm -rf {}'.format(outfile2))
+        subprocess.run(['rm', '-rf', '{}'.format(outfile2)])
 
     if not os.path.isfile(outfile2):
 
@@ -328,7 +329,7 @@ def make_spec(source, src_basename, cube_params, spec_line=None, suffix='png', i
 
     if os.path.isfile(outfile1) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile1))
-        os.system('rm -rf {}'.format(outfile1))
+        subprocess.run(['rm', '-rf', '{}'.format(outfile1)])
 
     if not os.path.isfile(outfile1):
 

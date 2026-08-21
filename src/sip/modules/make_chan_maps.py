@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from astropy.io import fits
 import astropy.units as u
@@ -35,7 +36,7 @@ def main(source, src_basename, suffix='png', beam=None, noid=False, opt_head=Non
 
     if os.path.isfile(outfile) and overwrite == True:
         logger.warning('\tRemoving existing file: {}'.format(outfile))
-        os.system('rm -rf {}'.format(outfile))
+        subprocess.run(['rm', '-rf', outfile])
 
     if not os.path.isfile(outfile):
         # Get beam information from the source cubelet

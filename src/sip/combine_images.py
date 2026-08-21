@@ -1,4 +1,5 @@
 import os
+import subprocess
 
 from sip.modules.logger import Logger
 
@@ -34,52 +35,58 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     new_file = "{}combo.{}".format(infile, suffix)
     # Remove redundant y-axies for the 2D images:
     for im in ['mom0', 'snr', 'mom1', 'mom2', 'specboth']:
-        os.system('{0} {1}{2}.{3} -gravity west -chop 40x0 {2}_{4}.{3}'.format(imgck, infile, im, suffix, code))
-
+        subprocess.run([imgck, '{0}{1}.{2}'.format(infile, im, suffix), '-gravity', 'west', '-chop', '40x0',
+                        '{0}_{1}.{2}'.format(im, code, suffix)])
+        
     # Use imagemagick to append images together:
     if user_image and os.path.exists('{0}mom0_usr.{1}'.format(infile, suffix)):
-        os.system("{0} {1}mom0_usr.{2} mom0_{3}.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append"
-                  " -gravity south -splice 0x18 temp_{3}.{2}".format(imgck, infile, suffix, code))
+        subprocess.run([imgck, '{}mom0_usr.{}'.format(infile, suffix), 'mom0_{}.{}'.format(code, suffix), 'snr_{}.{}'.format(code, suffix),
+                        'mom1_{}.{}'.format(code, suffix), 'mom2_{}.{}'.format(code, suffix), '+append', '-gravity', 'south', '-splice',
+                        '0x18', 'temp_{}.{}'.format(code, suffix)])
     elif surveys and os.path.exists('{0}mom0_{2}.{1}'.format(infile, suffix, 
                                         surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'))):
-        os.system("{0} {1}mom0_{3}.{2} mom0_{4}.{2} snr_{4}.{2} mom1_{4}.{2} mom2_{4}.{2} +append"
-                  " -gravity south -splice 0x18 temp_{4}.{2}".format(imgck, infile, suffix,
-                                        surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'), code))
+        subprocess.run([imgck, '{}mom0_{}.{}'.format(infile, surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'),suffix),
+                        'mom0_{}.{}'.format(code, suffix), 'snr_{}.{}'.format(code, suffix), 'mom1_{}.{}'.format(code, suffix),
+                        'mom2_{}.{}'.format(code, suffix), '+append', '-gravity', 'south', '-splice', '0x18',
+                        'temp_{}.{}'.format(code, suffix)])
     else:
         logger.warning("\tNo ancillary data image available for source {}.".format(source['id']))
-        os.system("{0} {1}mom0.{2} snr_{3}.{2} mom1_{3}.{2} mom2_{3}.{2} +append"
-                  " -gravity south -splice 0x18 temp_{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} {1}spec.{2} -resize 133% temp2_{3}.{2}".format(imgck, infile, suffix, code))
-    os.system("{0} specboth_{3}.{2} -resize 133% temp3_{3}.{2}".format(imgck, infile, suffix, code))
+        subprocess.run([imgck, '{}mom0.{}'.format(infile, suffix), 'snr_{}.{}'.format(code, suffix), 'mom1_{}.{}'.format(code, suffix), 
+                        'mom2_{}.{}'.format(code, suffix), '+append', '-gravity', 'south', '-splice', '0x18', 
+                        'temp_{}.{}'.format(code, suffix)])
+    subprocess.run([imgck, '{}spec.{}'.format(infile, suffix), '-resize', '133%', 'temp2_{}.{}'.format(code, suffix)])
+    subprocess.run([imgck, 'specboth_{}.{}'.format(code, suffix), '-resize', '133%', 'temp3_{}.{}'.format(code, suffix)])
 
     # Remove redundant y-axes for pv plots and create a little space between pv and spectra:
     if os.path.isfile('{0}pv.{1}'.format(infile, suffix)):
         if os.path.isfile('{0}pv_min.{1}'.format(infile, suffix)):
             if 'freq' in source.colnames:
-                os.system('{0} {1}pv_min.{2} -gravity west -chop 132x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
-                os.system('{0} {1}pv.{2} -gravity east -chop 128x0 -splice 40x0 pv_{3}.{2}'.format(imgck, infile, 
-                                                                                                suffix, code))
-                os.system("{0} temp2_{3}.{2} temp3_{3}.{2} pv_{3}.{2} -gravity west -splice 20x0 pv_min_{3}.{2}"
-                        " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+                subprocess.run([imgck, '{}pv_min.{}'.format(infile, suffix), '-gravity', 'west', '-chop', '132x0', 
+                                'pv_min_{}.{}'.format(code, suffix)])
+                subprocess.run([imgck, '{}pv.{}'.format(infile, suffix), '-gravity', 'east', '-chop', '128x0', '-splice', '40x0', 
+                                'pv_{}.{}'.format(code, suffix)])
+                subprocess.run([imgck, 'temp2_{}.{}'.format(code, suffix), 'temp3_{}.{}'.format(code, suffix),
+                                'pv_{}.{}'.format(code, suffix), '-gravity', 'west', '-splice', '20x0', 
+                                'pv_min_{}.{}'.format(code, suffix), '+append', 'temp4_{}.{}'.format(code, suffix)])
             else:
-                os.system('{0} {1}pv_min.{2} -gravity west -chop 40x0 pv_min_{3}.{2}'.format(imgck, infile, suffix, code))
-                os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} -gravity west -splice 20x0 pv_min_{3}.{2}"
-                        " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
+                subprocess.run([imgck, '{}pv_min.{}'.format(infile, suffix), '-gravity', 'west', '-chop', '40x0', 'pv_min_{}.{}'.format(code, suffix)])
+                subprocess.run([imgck, 'temp2_{}.{}'.format(code, suffix), 'temp3_{}.{}'.format(code, suffix), '{}pv.{}'.format(infile, suffix), 
+                                '-gravity', 'west', '-splice', '20x0', 'pv_min_{}.{}'.format(code, suffix), '+append', 'temp4_{}.{}'.format(code, suffix)])
         else:
-            os.system("{0} temp2_{3}.{2} temp3_{3}.{2} {1}pv.{2} -gravity west -splice 20x0"
-                    " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
-        os.system("{0} temp_{3}.{2} temp4_{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
+            subprocess.run([imgck, 'temp2_{}.{}'.format(code, suffix), 'temp3_{}.{}'.format(code, suffix), '{}pv.{}'.format(infile, suffix), 
+                            '-gravity', 'west', '-splice', '20x0', '+append', 'temp4_{}.{}'.format(code, suffix)])
+        subprocess.run([imgck, 'temp_{}.{}'.format(code, suffix), 'temp4_{}.{}'.format(code, suffix), '-append', new_file])
     else:
-        os.system("{0} temp2_{3}.{2} temp3_{3}.{2} -gravity west -splice 20x0"
-                " +append temp4_{3}.{2}".format(imgck, infile, suffix, code))
-        os.system("{0} temp_{3}.{2} temp4_{3}.{2} -append {1}".format(imgck, new_file, suffix, code))
+        subprocess.run([imgck, 'temp2_{}.{}'.format(code, suffix), 'temp3_{}.{}'.format(code, suffix), '-gravity', 'west', '-splice', '20x0',
+                        '+append', 'temp4_{}.{}'.format(code, suffix)])
+        subprocess.run([imgck, 'temp_{}.{}'.format(code, suffix), 'temp4_{}.{}'.format(code, suffix), '-append', new_file])
 
     new_file_size = os.path.getsize(new_file)
 
     if new_file_size > file_size_limit:
         logger.info('\tReducing size of combined image to {0:.0f}% of original (it was {1:.1e}B)'.format(100*file_size_limit/new_file_size, 
-                                                                                                   new_file_size))
-        os.system("{0} {1} -resize {2:.0f}% {1}".format(imgck, new_file, 100*file_size_limit/new_file_size))
-    os.system('rm -rf *_{1}.{0}'.format(suffix, code))
+                                                                                                         new_file_size))
+        subprocess.run([imgck, new_file, '-resize', '{0:.0f}%'.format(100*file_size_limit/new_file_size), new_file])
+    subprocess.run(['rm -rf *_{}.{}'.format(code, suffix)], shell=True)
 
     return

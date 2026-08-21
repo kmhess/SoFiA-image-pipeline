@@ -5,6 +5,7 @@ from argparse import ArgumentParser, RawTextHelpFormatter
 import os
 import random
 import string
+import subprocess
 from traceback import print_exc, format_exc
 
 # Import installed Python libraries
@@ -256,7 +257,7 @@ def main():
     figure_dir = catalog_file.split("_cat.")[0] + '_figures/'
     if not os.path.isdir(figure_dir):
         logger.info("\tMaking figure directory.")
-        os.system('mkdir {}'.format(figure_dir))
+        subprocess.run(['mkdir','{}'.format(figure_dir)])
 
     src_basename = cubelet_dir + catalog_file.split("/")[-1].split("_cat.")[0]
 
@@ -319,7 +320,7 @@ def main():
                     combine_images(source, src_basename, imagemagick, suffix=suffix, surveys=list(surveys), 
                                    user_image=args.user_image, code=code)
             except:
-                os.system('rm -rf *_{1}.{0}'.format(suffix, code))
+                subprocess.run(['rm -rf *_{}.{}'.format(code, suffix)], shell=True)   # Duplicated inside combine_images
                 pass
 
     if ((0 in args.source_id) or (-1 in args.source_id)) & (not args.spec_only):
