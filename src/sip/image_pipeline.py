@@ -23,7 +23,7 @@ version = importlib.metadata.version('SoFiA-image-pipeline')
 
 def main():
     parser = ArgumentParser(description="Welcome to the SoFiA Image Pipeline, version {}.\n"
-                            "Create images from a SoFiA catalog, and cubelets or fits file. Only works with SoFiA-2 and wcs=True (for now).".format(version),
+                            "Create images from a SoFiA-2 catalog, source moment and pv FITS, and spectrum text files.".format(version),
                             formatter_class=RawTextHelpFormatter)
 
     parser.add_argument('-c', '--catalog', required=True,
