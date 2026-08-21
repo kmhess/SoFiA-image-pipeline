@@ -1,44 +1,16 @@
-### ____________________________________________________________________ ###
-###                                                                      ###
-### SoFiA 2.1.1 (default_parameters.par) - Source Finding Application    ###
-### Copyright (C) 2020 Tobias Westmeier                                  ###
-### ____________________________________________________________________ ###
-###                                                                      ###
-### Address:  Tobias Westmeier                                           ###
-###           ICRAR M468                                                 ###
-###           The University of Western Australia                        ###
-###           35 Stirling Highway                                        ###
-###           Crawley WA 6009                                            ###
-###           Australia                                                  ###
-###                                                                      ###
-### E-mail:   tobias.westmeier [at] uwa.edu.au                           ###
-### ____________________________________________________________________ ###
-###                                                                      ###
-### This program is free software: you can redistribute it and/or modify ###
-### it under the terms of the GNU General Public License as published by ###
-### the Free Software Foundation, either version 3 of the License, or    ###
-### (at your option) any later version.                                  ###
-###                                                                      ###
-### This program is distributed in the hope that it will be useful,      ###
-### but WITHOUT ANY WARRANTY; without even the implied warranty of       ###
-### MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the         ###
-### GNU General Public License for more details.                         ###
-###                                                                      ###
-### You should have received a copy of the GNU General Public License    ###
-### along with this program. If not, see http://www.gnu.org/licenses/.   ###
-### ____________________________________________________________________ ###
-###                                                                      ###
-
-
-# Default parameter settings for SoFiA
-# Please do not modify!
+# List of template parameter settings for SoFiA
+#
+# Note that SoFiA's default parameters are actually hard-coded in the
+# file Parameter.c, and any changes to this file will have no effect.
+# This file can instead be used as a template for setting up your own
+# parameter files.
 
 
 # Global settings
 
 pipeline.verbose           =  false
-pipeline.pedantic          =  false # Keep this true!  Detects new *big* features in SoFiA
-pipeline.threads           =  24
+pipeline.pedantic          =  true # Keep this true!  Detects new *big* features in SoFiA
+pipeline.threads           =  0
 
 
 # Input
@@ -48,6 +20,7 @@ input.region               =
 input.gain                 =  
 input.noise                =  
 input.weights              =  
+input.primaryBeam          =  
 input.mask                 =  
 input.invert               =  false
 
@@ -55,6 +28,7 @@ input.invert               =  false
 # Flagging
 
 flag.region                =
+flag.cube                  =  
 flag.catalog               =
 flag.radius                =  0
 flag.auto                  =  false
@@ -125,23 +99,32 @@ linker.minSizeXY           =  5
 linker.minSizeZ            =  5
 linker.maxSizeXY           =  200
 linker.maxSizeZ            =  140
-#linker.minPixels           =  0
-#linker.maxPixels           =  0
-#linker.minFill             =  0.0
-#linker.maxFill             =  0.0
+linker.minPixels           =  0
+linker.maxPixels           =  0
+linker.minFill             =  0.0
+linker.maxFill             =  0.0
 linker.positivity          =  false
-linker.keepNegative        =  false
 
 
 # Reliability
 
 reliability.enable         =  false 
+reliability.parameters     =  peak, sum, mean
 reliability.threshold      =  0.95
 reliability.scaleKernel    =  0.5
-reliability.minSNR         =  12.0
+reliability.autoKernel     =  false
+reliability.iterations     =  30
+reliability.tolerance      =  0.05
 reliability.catalog        =
 reliability.plot           =  true
 reliability.debug          =  false
+
+
+# Filtering
+
+filter.discardNegative     =  true
+filter.minSNR              =  12.0
+filter.minPixels           =  0
 
 
 # Mask dilation
@@ -165,6 +148,8 @@ parameter.offset           =  true
 
 output.directory           =  
 output.filename            =  
+output.dataFormat          =  fits
+output.writeLogFile        =  true
 output.writeCatASCII       =  true
 output.writeCatXML         =  true
 output.writeCatSQL         =  false
@@ -175,10 +160,12 @@ output.writeMask2d         =  true
 output.writeRawMask        =  true
 output.writeMoments        =  true
 output.writeCubelets       =  true
-output.marginCubelets      =  5
+output.writePV             =  true
+output.writeKarma          =  true
+output.marginCubeletsXY    =  10
+output.marginCubeletsZ     =  10
+output.marginAperSpec      =  -1
 output.thresholdMom12      =  0.0
+output.showPreviewImage    =  false   # Mac OS users: requires iTerm2
+output.writeDiagnosticPlot =  true
 output.overwrite           =  true
-
-
-# Updated parameters
-
