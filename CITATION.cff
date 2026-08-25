@@ -1,0 +1,40 @@
+cff-version: 1.1.0
+message: "If you use this software, please cite it as below."
+authors:
+  - affiliation: Department of Physics and Astronomy, Chalmers University of Technology, Onsala Space Observatory, SE-439 92 Onsala, Sweden
+    alias: kmhess
+    family-names: Hess
+    given-names: Kelley M.
+    orcid: https://orcid.org/0000-0001-9662-9089
+  - affiliation: INAF - Osservatorio Astronomico di Cagliari
+    alias: paoloserra
+    family-names: Serra
+    given-names: Paolo
+    orcid: https://orcid.org/0000-0001-5965-252X
+  - affiliation: Department of Physics and Astronomy, Chalmers University of Technology, SE-439 92 Onsala, Sweden
+    alias: lboschman
+    family-names: Boschman
+    given-names: Leon
+    orcid: https://orcid.org/0000-0002-1060-1665
+  - affiliation: Commonwealth Scientific and Industrial Research Organisation (CSIRO)
+    alias: axshen
+    family-names: Shen
+    given-names: Austin, X.
+    orcid: https://orcid.org/0009-0002-5445-7770
+  - affiliation: University of Manchester
+    alias: healytwin1 
+    family-names: Healy
+    given-names: Julia
+    orcid: https://orcid.org/0000-0003-1020-8684
+  - affiliation: Rutgers, The State University of New Jersey
+    alias: tehreem-h 
+    family-names: Hai
+    given-names: Tehreem
+    orcid: https://orcid.org/0009-0005-9382-1362
+title: SoFiA Image Pipeline
+version: v1.4.0
+date-released: 2026-08-25
+license: GPL-3.0-or-later
+repository-artifact: https://pypi.org/project/sofia-image-pipeline
+repository-code: https://github.com/kmhess/SoFiA-image-pipeline
+doi: 10.5281/zenodo.6467035
