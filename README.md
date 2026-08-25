@@ -39,7 +39,7 @@ source .venv/bin/activate
 
 ### PyPI
 
-You can install the latest SIP released on [PyPI](https://pypi.org/project/sofia-image-pipeline/) by running pip install:
+You can install the latest SIP released on [PyPI](https://pypi.org/project/sofia-image-pipeline/) (currently v1.4.0) by running pip install:
 
 ```
 pip install sofia-image-pipeline
@@ -212,6 +212,8 @@ In addition we are aware of the following issues:
 
 Version history
 ---------------
+* SIP 1.4.0
+    * Released 25 August 2026
 * SIP 1.3.5
     * Released 31 October 2024
 * SIP 1.3.1
