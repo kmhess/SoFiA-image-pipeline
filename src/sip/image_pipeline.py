@@ -35,9 +35,9 @@ def main():
 
     parser.add_argument('-s', '--surveys', default=[], nargs='*', type=str,
                         help='Optional: Specify SkyView surveys to retrieve from astroquery on which to overlay HI contours.\n'
-                             'These additional non-SkyView options are also available: \'decals\',\'decals-dr9\',\'decaps\',\n'
-                             '\'sdss\', \'panstarrs\',\'hst\'. \'hst\' only refers to COSMOS HST. Default is "DSS2 Blue"\n' 
-                             'if no user provided image. If \'none\' is requested, work in offline mode.')
+                             'These additional non-SkyView options are also available: \'decals\', \'decals-dr9(dr10)\', \n'
+                             '\'decaps\', \'sdss\', \'panstarrs\', \'hsc\', \'hst\'. \'hst\' only refers to COSMOS HST. Default\n' 
+                             'is "DSS2 Blue" if no user provided image. If \'none\' is requested, work in offline mode.')
 
     parser.add_argument('-ui', '--user-image', default=None,
                         help='Optional: Full path to the FITS image on which to overlay HI contours.')

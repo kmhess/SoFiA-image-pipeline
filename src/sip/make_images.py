@@ -1370,32 +1370,45 @@ def main(source, src_basename, original, opt_view=6*u.arcmin, suffix='png', beam
     elif 'decals-dr9' in surveys:
         surveys[surveys.index('decals-dr9')] = 'decals'
         decals_url = 'dr9'
+    elif 'decals-dr10' in surveys:
+        surveys[surveys.index('decals-dr10')] = 'decals'
+        decals_url = 'dr10'
     elif 'decaps' in surveys:
         surveys[surveys.index('decaps')] = 'decals'
         decals_url = 'decaps'
     elif 'sdss' in surveys:
         decals_url = 'sdss'
-    if (('decals' in surveys) or ('decaps' in surveys) or ('sdss' in surveys)) and (hi_pos_common.frame.name != 'galactic'):
+    elif 'hsc' in surveys:
+        decals_url = 'hsc-dr3'
+    if (('decals' in surveys) or ('decaps' in surveys) or ('sdss' in surveys) or ('hsc' in surveys)) and (hi_pos_common.frame.name != 'galactic'):
         decals_im, decals_head = get_decals(hi_pos_common, opt_view=opt_view, decals=decals_url)
         if decals_url == 'dr9' : decals_url = 'decals'
+        if decals_url == 'dr10' : decals_url = 'decals'
         if decals_url == 'decaps' : decals_url = 'decals'  # Temp for file naming for now, but need to change in future.
+        if decals_url == 'hsc-dr3' : decals_url = 'hsc'  # Short name
         if decals_im:
             make_color_im(source, src_basename, cube_params, patch, decals_im, decals_head, HIlowest, suffix=suffix,
                         survey=decals_url, spec_line=spec_line, id_label=id_label, Jykms=Jykms, overwrite=overwrite)
-            if (surveys[0] == 'decals') or (surveys[0] == 'dr9') or (surveys[0] == 'decaps') or (surveys[0] == 'sdss'):
+            if (surveys[0] == 'decals') or (surveys[0] == 'dr9') or (surveys[0] == 'dr10') or (surveys[0] == 'decaps') or (surveys[0] == 'sdss') or (surveys[0] == 'hsc'):
                 opt_head = decals_head
-        elif surveys[0] == 'decals':
+        elif (surveys[0] == 'decals') or (surveys[0] == 'dr9') or (surveys[0] == 'dr10') or (surveys[0] == 'decaps') or (surveys[0] == 'sdss') or (surveys[0] == 'hsc'):
             opt_head = make_header(source, opt_view=opt_view)
         try: 
             surveys.remove('decals')
         except:
-            surveys.remove('sdss')
-    elif (('decals' in surveys) or ('decaps' in surveys) or ('sdss' in surveys)) and (hi_pos_common.frame.name == 'galactic'):
-        logger.info("\t'decals' and 'decaps' image retrieval not supported for catalog in Galactic coordinates.")
+            try:
+                surveys.remove('sdss')
+            except:
+                surveys.remove('hsc')
+    elif (('decals' in surveys) or ('decaps' in surveys) or ('sdss' in surveys) or ('hsc' in surveys)) and (hi_pos_common.frame.name == 'galactic'):
+        logger.info("\t'decals', 'decaps', 'hsc' image retrieval not supported for catalog in Galactic coordinates.")
         try:
             surveys.remove('decals')
         except:
-            surveys.remove('sdss')
+            try:
+                surveys.remove('sdss')
+            except:
+                surveys.remove('hsc')
 
     # If requested, plot the radio spectral line contours on any number of survey images available through SkyView.
     if len(surveys) > 0:
