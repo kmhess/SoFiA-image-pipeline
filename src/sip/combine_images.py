@@ -35,25 +35,47 @@ def combine_images(source, src_basename, imgck, suffix='png', surveys='DSS2 Blue
     new_file = "{}combo.{}".format(infile, suffix)
     # Remove redundant y-axies for the 2D images:
     for im in ['mom0', 'snr', 'mom1', 'mom2', 'specboth']:
-        subprocess.run([imgck, '{0}{1}.{2}'.format(infile, im, suffix), '-gravity', 'west', '-chop', '40x0',
-                        '{0}_{1}.{2}'.format(im, code, suffix)])
+        try:
+            subprocess.run([imgck, '{0}{1}.{2}'.format(infile, im, suffix), '-gravity', 'west', '-chop', '40x0',
+                            '{0}_{1}.{2}'.format(im, code, suffix)], check=True, capture_output=True, text=True)
+        except subprocess.CalledProcessError as e:
+            # This block executes if the command failed with a non-zero return code
+            logger.error(f"\t{e.stderr}")
+        except FileNotFoundError as e:
+            # This block handles cases where the program itself can't be found
+            logger.error(f"{e}")
+        except subprocess.SubprocessError as e:
+            # This is the base class, useful for catching other less common subprocess-related errors
+            logger.error(f"An unexpected subprocess error occurred: {e}")
         
     # Use imagemagick to append images together:
     if user_image and os.path.exists('{0}mom0_usr.{1}'.format(infile, suffix)):
-        subprocess.run([imgck, '{}mom0_usr.{}'.format(infile, suffix), 'mom0_{}.{}'.format(code, suffix), 'snr_{}.{}'.format(code, suffix),
-                        'mom1_{}.{}'.format(code, suffix), 'mom2_{}.{}'.format(code, suffix), '+append', '-gravity', 'south', '-splice',
-                        '0x18', 'temp_{}.{}'.format(code, suffix)])
+        try:
+            subprocess.run([imgck, '{}mom0_usr.{}'.format(infile, suffix), 'mom0_{}.{}'.format(code, suffix), 
+                            'snr_{}.{}'.format(code, suffix), 'mom1_{}.{}'.format(code, suffix), 
+                            'mom2_{}.{}'.format(code, suffix), '+append', '-gravity', 'south', '-splice',
+                            '0x18', 'temp_{}.{}'.format(code, suffix)])
+        except subprocess.SubprocessError as e:
+            logger.error(f"\t{e.stderr}")
     elif surveys and os.path.exists('{0}mom0_{2}.{1}'.format(infile, suffix, 
-                                        surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'))):
-        subprocess.run([imgck, '{}mom0_{}.{}'.format(infile, surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'),suffix),
-                        'mom0_{}.{}'.format(code, suffix), 'snr_{}.{}'.format(code, suffix), 'mom1_{}.{}'.format(code, suffix),
-                        'mom2_{}.{}'.format(code, suffix), '+append', '-gravity', 'south', '-splice', '0x18',
-                        'temp_{}.{}'.format(code, suffix)])
+                                     surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'))):
+        try:
+            subprocess.run([imgck, '{}mom0_{}.{}'.format(infile, 
+                            surveys[0].replace(" ", "").lower().replace('decals-dr9', 'decals'), suffix),
+                            'mom0_{}.{}'.format(code, suffix), 'snr_{}.{}'.format(code, suffix), 
+                            'mom1_{}.{}'.format(code, suffix), 'mom2_{}.{}'.format(code, suffix), '+append', 
+                            '-gravity', 'south', '-splice', '0x18', 'temp_{}.{}'.format(code, suffix)])
+        except subprocess.SubprocessError as e:
+            logger.error(f"\t{e.stderr}")
     else:
         logger.warning("\tNo ancillary data image available for source {}.".format(source['id']))
-        subprocess.run([imgck, '{}mom0.{}'.format(infile, suffix), 'snr_{}.{}'.format(code, suffix), 'mom1_{}.{}'.format(code, suffix), 
-                        'mom2_{}.{}'.format(code, suffix), '+append', '-gravity', 'south', '-splice', '0x18', 
-                        'temp_{}.{}'.format(code, suffix)])
+        try:
+            subprocess.run([imgck, '{}mom0.{}'.format(infile, suffix), 'snr_{}.{}'.format(code, suffix), 
+                            'mom1_{}.{}'.format(code, suffix), 'mom2_{}.{}'.format(code, suffix), '+append', 
+                            '-gravity', 'south', '-splice', '0x18', 'temp_{}.{}'.format(code, suffix)], 
+                            check=True, capture_output=True, text=True)
+        except subprocess.SubprocessError as e:
+            logger.error(f"\t{e.stderr}")
     subprocess.run([imgck, '{}spec.{}'.format(infile, suffix), '-resize', '133%', 'temp2_{}.{}'.format(code, suffix)])
     subprocess.run([imgck, 'specboth_{}.{}'.format(code, suffix), '-resize', '133%', 'temp3_{}.{}'.format(code, suffix)])
 
