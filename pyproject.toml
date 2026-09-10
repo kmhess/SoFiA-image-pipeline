@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "sofia-image-pipeline"
-version = "1.4.0"
+version = "1.4.1"
 description = "SIP takes a SoFiA generated source catalog and produces images for publication or quick inspection. Images include spectral line contours overlaid on multiwavelength images, moment maps, pixel-by-pixel SNR maps, pv-diagrams with SoFiA mask, and masked and aperture spectra."
 readme = "README.md"
 authors = [
