@@ -135,11 +135,13 @@ def get_decals(hi_pos, opt_view=6*u.arcmin, decals='decals'):
         color_im = Image.open(BytesIO(r.content))
     except HTTPError:
         if decals == 'decaps':
-            logger.warning("\tHTTP Error, no DECaPS false color image retrieved. Server error or no DECaPS coverage?")
+            logger.error("\tHTTP Error, no DECaPS false color image retrieved. Server error or no DECaPS coverage?")
         elif decals == 'dr9':
-            logger.warning("\tHTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR9 coverage?")
+            logger.error("\tHTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR9 coverage?")
+        elif decals == 'dr10':
+            logger.error("\tHTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR10 coverage?")
         else:
-            logger.warning("\tHTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR10 coverage?")
+            logger.error("\tHTTP Error, no DECaLS false color image retrieved. Server error or no DECaLS DR11 coverage?")
         fits_head = None
         color_im = None
     except URLError:
