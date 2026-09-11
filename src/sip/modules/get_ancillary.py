@@ -74,14 +74,14 @@ def get_panstarrs(hi_pos, opt_view=6*u.arcmin):
         logger.warning("\tPanSTARRS only returns square images; taking largest dimension.")
         opt_view = np.max(opt_view)
     try:
-        path = geturl(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value / pstar_pixsc),
+        path = geturl(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value[0] / pstar_pixsc),
                     filters="r", format="fits")
     except URLError:
         path = []
 
     if len(path) != 0:
         fits_head = fits.getheader(path[0])
-        color_im = getcolorim(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value / pstar_pixsc),
+        color_im = getcolorim(hi_pos.ra.deg, hi_pos.dec.deg, size=int(opt_view.to(u.arcsec).value[0] / pstar_pixsc),
                               filters="gri")
         logger.info("\tOptical false color image retrieved from PanSTARRS.")
     else:
